@@ -18,9 +18,9 @@ let FANS=null;
 function fansBuild(){const cols=['#e5e7eb','#f87171','#60a5fa','#fbbf24','#a78bfa','#34d399','#f472b6','#94a3b8','#fb923c','#1f2937'];let seed=7;const rr=()=>(seed=(seed*16807)%2147483647)/2147483647,g=cols.map(()=>[]);
  for(let row=0;row<11;row++){const y=28+row*10;for(let x=(row%2)*3;x<1600;x+=6){if(rr()<.12)continue;const c=rr()*cols.length|0;g[c].push(x,y,row)}}FANS={cols,g}}
 function vCrowd(now){const hm=vHome(),e=Math.min(1,(XV.ex[hm]||0)+.3*(XV.ex[vOth(hm)]||0)),w=XV.wave;if(e<.04&&!w)return;if(!FANS)fansBuild();
- const ox=-((camX*S*.8)%400)-200,wx=w?w.t/w.d*1900-150:-9999,hd=XV.hd;hd.length=0;
- X.fillStyle='#2a2f3a';X.fillRect(0,22,W,TOP-34);for(let row=0;row<11;row++){X.fillStyle=row%2?'#3b4252':'#343a48';X.fillRect(0,34+row*10,W,3)}
- FANS.g.forEach((grp,ci)=>{X.fillStyle=FANS.cols[ci];for(let i=0;i<grp.length;i+=3){const fx=grp[i],sx=ox+fx;if(sx<-6||sx>W+6)continue;const row=grp[i+2];let o=0,arm=0;
+ const ox=-((camX*S*.8)%400)-200,wx=w?w.t/w.d*1900-150:-9999,hd=XV.hd;hd.length=0;const SF=typeof stadFans=='function'?stadFans():null,FS=SF||FANS;
+ if(SF)SF.bg(ox);else{X.fillStyle='#2a2f3a';X.fillRect(0,22,W,TOP-34);for(let row=0;row<11;row++){X.fillStyle=row%2?'#3b4252':'#343a48';X.fillRect(0,34+row*10,W,3)}}
+ FS.g.forEach((grp,ci)=>{X.fillStyle=FS.cols[ci];for(let i=0;i<grp.length;i+=3){const fx=grp[i],sx=ox+fx;if(sx<-6||sx>W+6)continue;const row=grp[i+2];let o=0,arm=0;
   if(e>.04){o=-Math.abs(Math.sin(now*(7+fx%5)+fx*.37+row))*3.2*e;arm=e>.45&&(fx*7+row)%3!=0?1:0}
   if(w){const dx=Math.abs(fx-wx);if(dx<46){const k=1-dx/46;o=Math.min(o,-k*4.5);if(k>.3)arm=1}}
   const y=grp[i+1]+o;X.fillRect(sx,y,4,4);hd.push(sx,y,arm)}});

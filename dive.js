@@ -14,7 +14,7 @@ function dvAI(dt,h){const d=G.dir;P.def.forEach(p=>{p.dvcd=(p.dvcd||0)-dt;if(p.d
  const ux=(h.x-p.x)/dd,uy=(h.y-p.y)/dd,away=(h.vx||0)*ux+(h.vy||0)*uy,gl=d>0?110:10,near=(gl-h.x)*d<7,side=h.y<3||h.y>50.3;
  if(!(away>p.spd*.75||near||side))return;const iq=p.t=='C'?.5+.5*IQ():.9;if(rnd()<dt*4.5*iq)dvStart(p,h,0)})}
 function dvPre(dt){P.def.forEach(p=>{if(p.dv||p.dvd>0){p.dvsv=[p.x,p.y,p.fa];p.bite=dt*1.01;p.cool=Math.max(p.cool||0,.15)}else p.dvsv=null})}
-function dvPost(dt){const d=G.dir;P.def.forEach(p=>{if(!p.dvsv)return;const sv=p.dvsv;p.dvsv=null;p.x=sv[0];p.y=sv[1];p.fa=sv[2];
+function dvPost(dt){const d=G.dir;P.def.forEach(p=>{if(!p.dvsv)return;const sv=p.dvsv;p.dvsv=null;p.x=sv[0];p.y=sv[1];p.fa=sv[2];p.bite=0;
  if(p.dvd>0){p.dvd-=dt;const f=p.fall;if(f){f.t+=dt;const kk=Math.exp(-4.5*dt);f.vx*=kk;f.vy*=kk;p.x=clamp(p.x+f.vx*dt,.5,119.5);p.y=clamp(p.y+f.vy*dt,.4,52.9)}
   if(p.dvd<=0){p.fall=null;p.an=null;p.stun=.25;p.cool=.3}return}
  const v=p.dv;if(!v)return;v.t+=dt;p.x=clamp(p.x+v.ux*v.sp*dt,.5,119.5);p.y=clamp(p.y+v.uy*v.sp*dt,.4,52.9);p.vx=v.ux*v.sp;p.vy=v.uy*v.sp;

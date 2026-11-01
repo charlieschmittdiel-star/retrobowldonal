@@ -15,7 +15,7 @@ function covPre(dt){if(!feat('cover2'))return;const t=eyesTarget(),d=G.dir,L=P.L
   for(let f=Math.max(.4,b.t/b.T+.05);f<=.88;f+=.06){if(bzAt(b,f)>3.3)continue;const x=b.sx+(b.tx-b.sx)*f,y=b.sy+(b.ty-b.sy)*f,dd=Math.hypot(p.x-x,p.y-y);if(dd>8)continue;if(dd/(p.spd*1.05)<=b.T*f-b.t){if(Math.hypot(x-b.tx,y-b.ty)>1.4){p.ucpt=[x,y];p.bite=dt*1.01}break}}})}
  P.def.forEach(p=>{p.zsv=null;if(!p.zone||!t||p.rush||p.eng)return;const read=p.t=='C'?.25+.7*IQ():.75;if(!p.smart||rnd()>read*1.4)return;
  const zx=p.zone[0],zy=p.zone[1],dd=Math.hypot(t.x-zx,t.y-zy);if(dd>14)return;const k=Math.min(3,dd*.35);p.zsv=p.zone;p.zone=[zx+(t.x-zx)/dd*k,zy+(t.y-zy)/dd*k]})}
-function covPost(dt){P.def.forEach(p=>{if(p.zsv){p.zone=p.zsv;p.zsv=null}if(p.ucpt&&P.b.st=='air'&&!P.over){mv(p,p.ucpt[0],p.ucpt[1],p.spd*1.05,dt)}});const b=P.b;if(!feat('cover2')||b.st!='air'||P.over)return;const f=b.t/b.T;if(f<.25||f>.9)return;
+function covPost(dt){P.def.forEach(p=>{if(p.zsv){p.zone=p.zsv;p.zsv=null}if(p.ucpt&&P.b.st=='air'&&!P.over){mv(p,p.ucpt[0],p.ucpt[1],p.spd*1.05,dt);p.bite=0}});const b=P.b;if(!feat('cover2')||b.st!='air'||P.over)return;const f=b.t/b.T;if(f<.25||f>.9)return;
  if(bzAt(b,f)>3.4)return;
  for(const p of P.def){if(p.ucut||p.eng||p.fall||(p.stun>0)||dist(p,b)>1.05)continue;p.ucut=1;const read=p.t=='C'?.7+.4*IQ():.95,sk=p.sk||{awr:60,skl:60},r=rnd();
   const pi=clamp(.17+((sk.awr+sk.skl)/2-60)/220,.08,.34)*read,pd=.38;if(r<pi){p.an={k:'catch',t:0,d:.35};return intReturn({x:b.x,y:b.y},p)}if(r<pi+pd){G.msg='Broken up in the passing lane!';p.an={k:'catch',t:0,d:.3};return tip({x:b.x,y:b.y})}}}
