@@ -124,7 +124,7 @@ function vGround(now){if(!G||!P)return;const wx2=feat('wx2')&&feat('weather');if
 function vTick(dt){['U','C'].forEach(t=>{XV.ex[t]=Math.max(0,(XV.ex[t]||0)-dt*.33)});
  if(G.bigHit>0){if(!XV.bh){XV.bh=1;vHype(vOth(G.poss),.6)}}else XV.bh=0;if(XV.fd>0)XV.fd-=dt*.8;if(XV.dnk){XV.dnk.t-=dt;if(XV.dnk.t<=0)XV.dnk=null}
  if(feat('crowd2')&&G.live){if(XV.wave){XV.wave.t+=dt;if(XV.wave.t>XV.wave.d)XV.wave=null}else if(G.phase=='pre'&&XV.ex.U<.1&&XV.ex.C<.1){XV.waveCd-=dt;if(XV.waveCd<=0&&rnd()<dt*.25){XV.wave={t:0,d:6};XV.waveCd=55+rnd()*60}}}}
-function vOverlay(dt){const now=performance.now()/1000;if(feat('wx2')&&feat('weather'))vSplDraw();
+function vOverlay(dt){const now=performance.now()/1000;if(feat('wx2')&&feat('weather')){if(typeof camWorld=='function')camWorld(vSplDraw);else vSplDraw()}
  if(feat('crowd2')){const hm=vHome(),e=Math.min(1,(XV.ex[hm]||0)+.3*(XV.ex[vOth(hm)]||0));if(e>.45)for(let i=0;i<4;i++)if(rnd()<e*.45){const x=rnd()*W,y=26+rnd()*(TOP-46);X.fillStyle='#fff';X.fillRect(x,y,2,2);X.fillStyle='rgba(255,255,255,.35)';X.fillRect(x-2,y-2,6,6)}}
  if(feat('field3')&&XV.fd>0&&P&&!P.kr&&G.phase!='replay'){const x1=P.L+G.ytg*G.dir,s=P2(x1,0);X.save();X.globalAlpha=Math.min(1,XV.fd*1.6);X.font='900 italic 15px "Trebuchet MS",sans-serif';X.textAlign='center';X.fillStyle='#000a';X.fillText('FIRST DOWN',s[0]+2,s[1]-6+2-(1-XV.fd)*14);X.fillStyle='#ffd84d';X.fillText('FIRST DOWN',s[0],s[1]-6-(1-XV.fd)*14);X.restore()}
  if(XV.dnk&&feat('ballfx')){const q=XV.dnk,s=P2(q.x,q.y,q.z+1.5+(1.2-q.t)*2);X.save();X.globalAlpha=Math.min(1,q.t*2);X.font='900 italic 22px "Trebuchet MS",sans-serif';X.textAlign='center';X.fillStyle='#000a';X.fillText('DOINK!',s[0]+2,s[1]+2);X.fillStyle='#facc15';X.fillText('DOINK!',s[0],s[1]);X.restore()}}
