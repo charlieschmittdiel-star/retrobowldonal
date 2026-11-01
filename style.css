@@ -173,6 +173,7 @@ kbd{background:#0b1626;color:#ffd84d;border:1px solid #ffffff30;border-radius:4p
  body.desk #plays button::before,body.desk #dctl button::before,body.desk #mv button::before,body.desk #snap::before,body.desk #top button::before{font:700 10px sans-serif;color:#0b1626;background:#ffd84d;border-radius:4px;padding:2px 5px;line-height:12px}
  body.desk #plays button::before,body.desk #top button::before{content:none;padding:0}
  body.desk #plays [data-a="form"]::before{content:"O";padding:2px 5px}body.desk #plays [data-a="hurry"]::before{content:"H";padding:2px 5px}body.desk #plays [data-a="tt"]::before{content:"T";padding:2px 5px}
+body.desk #plays [data-a="dsg"]::before{content:"X";padding:2px 5px}
  body.desk #top #pbb::before{content:"B";padding:2px 5px}body.desk #top #rb::before{content:"Esc";padding:2px 5px}
  body.desk #dctl [data-k=" "]::before{content:"Space"}body.desk #dctl [data-k="e"]::before{content:"E"}body.desk #dctl [data-k="f"]::before{content:"F"}body.desk #dctl [data-k="g"]::before{content:"G"}body.desk #dctl [data-k="r"]::before{content:"R"}
 body.desk #dctl [data-k="v"]::before{content:"V"}
