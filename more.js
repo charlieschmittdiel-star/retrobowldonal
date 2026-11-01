@@ -75,7 +75,7 @@ function stiffArm(c){if(!feat('stiff')||!c||(c.mc||0)>0)return;const s=c.stm==nu
 {const _sk=startKick;startKick=function(kind,kt,spot){const pen=kind=='ko'&&G.koPen&&G.koPen==kt;const r=_sk(kind,kt,spot);if(pen&&G.phase=='pre'&&!G.ch){G.koPen=null;G.los=clamp(G.los+G.dir*15,11,109);setup();G.msg='Touchback, plus 15 yards for the celebration penalty.'}return r}}
 // ---------- catch animations ----------
 {const _rs=resolve;resolve=function(){const b=P.b,r=b.tgt,l={x:b.tx,y:b.ty},rd=r?dist(r,l):99;_rs();
- if(feat('catchanim')&&r&&b.st=='carry'&&b.c===r){const dd=P.def.reduce((a,p)=>dist(p,r)<dist(a,r)?p:a);if(dist(dd,r)<1.3){r.ml=.8;r.mv='over the top';r.ca=.6}else if(rd>1.35){r.ml=.8;r.mv='one-handed!';r.ca=.6;r.ca1=1}}}}
+ if(feat('catchanim')&&r&&b.st=='carry'&&b.c===r){const dd=P.def.reduce((a,p)=>dist(p,r)<dist(a,r)?p:a);if(dist(dd,r)<1.3){r.ml=.8;r.mv='over the top';r.an={k:'overtop',t:0,d:.9}}else if(rd>1.35){r.ml=.8;r.mv='one-handed!';r.an={k:'onehand',t:0,d:.9}}else if(!r.an)r.an={k:'catch',t:0,d:.35}}}}
 // ---------- endPlay: celebration penalty yards, play-by-play for fakes ----------
 {const _ep=endPlay;endPlay=function(k,x){if(!P||P.over)return _ep(k,x);const ko=P.kr&&P.wasKO,pen=G.koPen;_ep(k,x);if(P.over&&ko&&pen&&k!='td'&&G.poss!=pen){G.koPen=null;G.nl=clamp(G.nl+G.dir*15,11,109);G.msg+=' Plus 15 yards for the celebration penalty.'}}}
 // ---------- drawing: stiff-arm, raised catching arm, tired slump, portraits ----------
@@ -83,8 +83,6 @@ function stiffArm(c){if(!feat('stiff')||!c||(c.mc||0)>0)return;const s=c.stm==nu
  const s=P2(p.x,p.y),k=scY(p.y),u=2.6*k;if(tired){X.save();X.translate(s[0],s[1]);X.rotate((Math.cos(p.fa)>=0?1:-1)*.14);X.translate(-s[0],-s[1])}
  let hy;try{hy=_sp(p,t)}finally{if(tired)X.restore()}
  const c=TEAM[p.t]||TEAM.C,jz=(p.jz||0)*GZ*k,yb=s[1]-jz;
- if(live&&p.sa>0){const f=Math.cos(p.fa)>=0?1:-1;X.fillStyle=c.j;X.fillRect(s[0]+f*2.5*u,yb-7*u,f*4.5*u,1.6*u);X.fillStyle='#e8c39e';X.fillRect(s[0]+f*7*u,yb-7.4*u,f*1.4*u,2.2*u)}
- if(live&&p.ca>0){const f=Math.cos(p.fa)>=0?1:-1;X.fillStyle=c.j;X.fillRect(s[0]+f*1.6*u,yb-15*u,1.4*u,5*u);if(p.ca1){X.fillStyle='#e8c39e';X.fillRect(s[0]+f*1.4*u,yb-16.4*u,1.8*u,1.6*u)}}
  if(tired&&rnd()<.15){X.fillStyle='#93c5fd';X.fillRect(s[0]+(rnd()-.5)*10,hy+2,2,3)}return hy}}
 const FACE=new Map();
 function pface(p,sz){if(!feat('faces')||!p)return'';if(!FACE.has(p.id)){try{const c=document.createElement('canvas');c.width=12;c.height=12;const g=c.getContext('2d');if(!g||!g.fillRect)return'';const h=hsh(p.id),pick=(a,n)=>a[(h>>>n)%a.length];

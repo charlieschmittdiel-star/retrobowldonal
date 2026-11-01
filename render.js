@@ -39,19 +39,59 @@ function drawField(){
  X.fillStyle='#14532d';X.fillRect(0,P2(0,FW)[1]+2,W,H)}
 // ---------- players ----------
 const TEAM={U:{j:'#2563eb',j2:'#1e3a8a',h:'#1d4ed8',pt:'#e5e7eb',st:'#facc15'},C:{j:'#dc2626',j2:'#7f1d1d',h:'#b91c1c',pt:'#f5f5f4',st:'#111827'}};
-function sprite(p,t){const s=P2(p.x,p.y),k=scY(p.y),u=2.6*k,c=TEAM[p.t]||TEAM.C,f=Math.cos(p.fa)>=0?1:-1,line=(p.s=='O'&&p.i>5)||(p.s=='D'&&p.i<4);
- const sp=Math.hypot(p.vx||0,p.vy||0),ph=sp>.5?Math.sin(t*14+p.i)*1:0,bw=line?6:5,x0=Math.round(s[0]-bw*u/2),yb=Math.round(s[1]);
- X.fillStyle='rgba(0,0,0,.32)';X.beginPath();X.ellipse(s[0],s[1],9*k,3.2*k,0,0,7);X.fill();
- const R=(dx,dy,w,h,col)=>{X.fillStyle=col;X.fillRect(x0+dx*u,yb-(dy+h)*u,w*u,h*u)};
- const st=p.stun>0||p.bite>0;
- R(1,0+(ph>0?1:0),1,3,'#111');R(bw-2,0+(ph<0?1:0),1,3,'#111');                       // shoes / legs
- R(1,1+(ph>0?1:0),Math.max(1,bw/2-1)|0,3,c.pt);R(bw/2|0,1+(ph<0?1:0),bw-1-(bw/2|0),3,c.pt);
- R(0,4,bw,5,c.j);R(0,7,bw,1,c.j2);R(0,4,1,5,c.j2);                                    // jersey with stripe
- R(f>0?bw:-1,5+(ph>0?1:0),1,3,c.j);R(f>0?-1:bw,5+(ph<0?1:0),1,3,c.j);                // arms
- R(1,9,bw-2,3,c.h);R(f>0?bw-2:1,10,1,1,'#e5e7eb');R(f>0?bw-1:0,10,1,1,'#9ca3af');     // helmet + facemask on the facing side
- R(1,12,bw-2,1,c.st);                                                                 // helmet stripe
- if(st){X.fillStyle='#fde047';X.fillRect(s[0]-4*k,yb-15*u,2,2);X.fillRect(s[0]+3*k,yb-16*u,2,2)}
- return yb-14*u}
+// Players are drawn from a pose: where each foot, elbow and hand is, how far the body crouches and leans. The pose
+// comes from what the player is doing (running, in a stance, blocking, throwing, catching, diving, kicking, celebrating).
+const SKIN=['#f2d0b1','#e0ac85','#c68863','#a86b4a','#8a5536','#6b3f26'];
+function skinOf(p){const h=(((p.pid||0)+p.i*7+3)*2654435761)>>>0;return SKIN[(h>>>5)%SKIN.length]}
+function pose(p,t,line){const b=P&&P.b,ph=G?G.phase:'',sp=Math.hypot(p.vx||0,p.vy||0),an=p.an&&p.an.t<p.an.d?p.an:null,isQB=!!(P&&p===P.off[0]&&p.s==P.off[0].s),pre=ph=='pre'||ph=='motion';
+ let d=0,l=0,F=[[.9,0],[-.7,0]],A=[[[-.4,6.9],[-.7,5.4]],[[.9,6.9],[1.1,5.4]]],ball=-1;
+ if(sp>.6&&!pre){const w=t*(5+Math.min(sp,9)*.95)+p.i*1.7;for(let j=0;j<2;j++){const a=w+j*Math.PI,s=Math.sin(a),lf=Math.max(0,Math.cos(a)),s2=-s;F[j]=[s*1.7,lf*1.2];A[j]=[[s2*.6+.2,6.9],[s2*1.3+.6,5.7+Math.max(0,s2)*.9]]}d=Math.abs(Math.sin(w))*.3;l=.7}
+ const car=!!(b&&b.st=='carry'&&b.c===p),hold=!!(b&&(b.st=='qb'||b.st=='pre')&&isQB&&p.s=='O');
+ if(pre&&ph!='kick'){if(line){d=2.3;l=1.4;F=[[.9,0],[-1.5,0]];A[1]=[[1.8,2.8],[2.7,.45]];A[0]=[[.6,4],[1,3.1]]}
+  else if(isQB){d=1.1;l=.8;A[1]=[[1.6,5.6],[2.3,4.6]];A[0]=[[1.2,5.8],[2,4.8]]}else{d=.8;l=.6;A[1]=[[1.3,5.2],[1.4,3.6]];A[0]=[[.3,5.3],[.6,3.6]]}}
+ if(hold&&!pre){A[1]=[[1,6.7],[1.6,7.3]];A[0]=[[.4,6.6],[1.2,7.1]];ball=1;if(P.aim||(G.poss!='U'&&P.look&&P.t>.9)){A[1]=[[-.7,9.4],[-1.7,10.8]];A[0]=[[1.2,8.4],[2.2,8.8]]}}
+ if(car){A[1]=[[-.1,6.5],[.9,7]];ball=1;if(p.sa>0){A[1]=[[1.9,8.2],[3.5,8.3]];A[0]=[[-.3,6.5],[.6,7]];ball=0}}
+ if(p.eng&&ph=='play'){d=.9;l=1.7;A[1]=[[1.6,7.4],[2.8,7.2]];A[0]=[[1.3,7.1],[2.5,6.8]]}
+ if(p.hs>0){d=1;l=2.3;A[1]=[[1.8,7.6],[3.3,7.6]];A[0]=[[1.5,7.3],[3,7.2]]}
+ if(ph=='play'&&b&&!car&&((b.st=='air'&&b.T-b.t<.45&&(b.tgt===p||Math.hypot(p.x-b.tx,p.y-b.ty)<2.6))||(b.st=='tip'&&Math.hypot(p.x-b.tx,p.y-b.ty)<3)||p.swat>0||p.hawk>0)){A[1]=[[1,10.8],[1.3,13]];A[0]=[[.3,10.9],[.5,13.2]];ball=-1}
+ if(p.fall&&p.fall.wrap){l=1.4;A[1]=[[1.6,7.3],[2.9,7]];A[0]=[[1.4,7],[2.7,6.6]]}
+ if(an){switch(an.k){
+  case'throw':{const r=an.t/.34;if(r<.38){A[1]=[[-.7,9.6],[-1.8,11]];A[0]=[[1.2,8.4],[2.2,8.8]];l=-.4}else if(r<1){const k2=(r-.38)/.62;A[1]=[[1.4,9.6-k2*1.6],[2.7,10.4-k2*4]];A[0]=[[.4,7],[.6,5.8]];l=.4+k2*.8}ball=-1;break}
+  case'pump':A[1]=an.t<.18?[[-.6,9.5],[-1.5,10.8]]:[[1,8.8],[2.1,10]];A[0]=[[1.1,8.2],[2,8.5]];ball=1;break;
+  case'hand':A[1]=[[1.6,6.6],[2.9,6.2]];ball=-1;break;
+  case'catch':if(an.t<.18){A[1]=[[1,10],[1.6,11.5]];A[0]=[[.4,10],[.9,11.8]];ball=1}break;
+  case'onehand':if(an.t<.55){A[1]=[[1.6,11],[2.6,13.6]];A[0]=[[-.9,7],[-1.8,6.2]];ball=1}break;
+  case'overtop':if(an.t<.55){A[1]=[[1,10.8],[1.4,13.1]];A[0]=[[.4,10.9],[.7,13.3]];ball=1}break;
+  case'dive':A[1]=[[1.1,10.8],[1.5,13.2]];A[0]=[[.6,10.9],[.9,13.4]];F=[[.3,0],[-.4,.4]];ball=b&&b.c===p?1:-1;d=0;l=0;break;
+  case'toetap':F=[[.25,.6],[-.25,.6]];d=-.4;l=-.3;A[1]=[[1,8.4],[1.2,9.4]];A[0]=[[.3,8.4],[.8,9.3]];ball=1;break;
+  case'kick':{const r=Math.min(1,an.t/.32);F=[[-1.8+r*5,Math.sin(r*Math.PI)*4.2+(r>.5?(r-.5)*2:0)],[-.2,0]];A[1]=[[1.6,8],[2.6,7.4]];A[0]=[[-1.4,8],[-2.6,7.6]];l=-.5*Math.sin(r*Math.PI);break}}}
+ if(ph=='kick'&&P.kk&&P.kk.kind!='punt'&&isQB&&p.s=='O'){d=2.3;l=.8;F=[[1.2,0],[-1.9,0]];F.kneel=1;A[1]=[[1.6,4.2],[2.6,3.2]];A[0]=[[1.2,4.4],[2.3,3.4]]}
+ if(G&&G.cel&&ph=='post'&&G.cel.p){const c=G.cel,ct=c.t;if(c.p===p){const up=[[1,10.8],[1.3,13]],up0=[[.3,10.9],[.5,13.2]];
+   if(c.ty=='jump'){A[1]=up;A[0]=up0}else if(c.ty=='dance'){const k2=Math.floor(ct*5)%2;A[1]=k2?up:[[1,6.6],[1.6,5.4]];A[0]=k2?[[-.4,6.6],[-.9,5.4]]:up0}
+   else if(c.ty=='flex'){A[1]=[[1.9,9.6],[1.3,11.5]];A[0]=[[-1.5,9.6],[-.9,11.5]]}else if(c.ty=='spin'){A[1]=[[1.6,8.6],[2.9,8.6]];A[0]=[[-1.4,8.6],[-2.7,8.6]]}
+   else if(c.ty=='spike'){A[1]=ct<.3?[[1,10.6],[1.5,12.6]]:ct<.55?[[1.6,7.4],[2.5,5.2]]:A[1]}}
+  else if(p.t===c.p.t&&Math.hypot(p.x-c.p.x,p.y-c.p.y)<4&&!p.fall){A[1]=[[1,10.8],[1.2,13]];A[0]=[[.3,10.9],[.4,13.1]]}}
+ if(p.kb&&p.kb.t<.35){A[1]=[[1.2,8.5],[2.4,9.6]];A[0]=[[-1,8.5],[-2.2,9.6]];l=-.6}
+ return{d,l,F,A,ball}}
+function sprite(p,t){const s=P2(p.x,p.y),k=scY(p.y),u=2.6*k,c=TEAM[p.t]||TEAM.C,f=Math.cos(p.fa)>=0?1:-1,line=(p.s=='O'&&p.i>5)||(p.s=='D'&&p.i<4),bw=line?6:5,hw=bw/2,cx=s[0],yb=Math.round(s[1]);
+ X.fillStyle='rgba(0,0,0,.32)';X.beginPath();X.ellipse(cx,s[1],9*k,3.2*k,0,0,7);X.fill();
+ const ps=pose(p,t,line),d=ps.d,l=ps.l,sk=skinOf(p),SX=x=>cx+f*x*u,SY=y=>yb-y*u;
+ const sq=(x,y,w,h,col)=>{X.fillStyle=col;const a=SX(x),e=SX(x+w);X.fillRect(Math.min(a,e),SY(y+h),Math.abs(e-a),h*u)};
+ const seg=(a,e,col,w)=>{const dx=e[0]-a[0],dy=e[1]-a[1],n=Math.max(1,Math.ceil(Math.hypot(dx,dy)/.4)),ww=w*u;X.fillStyle=col;for(let i=0;i<=n;i++)X.fillRect(SX(a[0]+dx*i/n)-ww/2,SY(a[1]+dy*i/n)-ww/2,ww,ww)};
+ const hipY=4-d*.75,leg=j=>{const hip=[j?-.6:.6,hipY],ft=ps.F[j],dv=hip[1]-ft[1];let kn=[(hip[0]+ft[0])/2+Math.max(0,4-dv)*.45,(hip[1]+ft[1])/2+.1];if(ps.F.kneel&&j==1)kn=[-.3,.5];
+  seg(hip,kn,c.pt,1.3);seg(kn,[ft[0],ft[1]+.6],c.pt,1.1);sq(ft[0]-.5,ft[1],1.5,.75,'#111')};
+ let ballAt=null;const arm=j=>{const S=[(j?.7:-.5)+l*.75,8.3-d],E=ps.A[j][0],Hh=ps.A[j][1];seg(S,E,c.j,1.15);seg(E,Hh,sk,.95);sq(Hh[0]-.5,Hh[1]-.5,1,1,sk);if(ps.ball===j)ballAt=Hh};
+ const ballDraw=()=>{if(!ballAt)return;const bx=SX(ballAt[0]+.5),by=SY(ballAt[1]+.1);X.fillStyle='#5a3312';X.beginPath();X.ellipse(bx,by,4.4*k,2.9*k,f*-.4,0,7);X.fill();X.fillStyle='#8b5a2b';X.beginPath();X.ellipse(bx,by,3.5*k,2.1*k,f*-.4,0,7);X.fill();ballAt=null};
+ arm(0);ballDraw();leg(1);leg(0);
+ sq(-hw+l*.35,hipY,bw,2.5,c.j);sq(-hw+l*.7,hipY+2.4,bw,2.4,c.j);sq(-hw+l*.7,hipY+3.1,bw,1,c.j2);sq(-hw+l*.35,hipY,1,2.5,c.j2);sq(-hw+l*.7,hipY+2.4,1,2.4,c.j2);
+ const hx=-hw+1+l,hy=hipY+4.8;sq(hx,hy,bw-2,3,c.h);sq(hw-2+l,hy+1,1,1,'#e5e7eb');sq(hw-1+l,hy+1,1,1,'#9ca3af');sq(hx,hy+3,bw-2,1,c.st);
+ arm(1);ballDraw();
+ if(p.stun>0||p.bite>0){X.fillStyle='#fde047';X.fillRect(cx-4*k,SY(hy+5),2,2);X.fillRect(cx+3*k,SY(hy+5.4),2,2)}
+ return SY(hy+4.3)}
+function drawBall(s,k,b,now){if(b._px!=null){const dx=s[0]-b._px,dy=s[1]-b._py;if(dx*dx+dy*dy>.3)b._ang=Math.atan2(dy,dx)}b._px=s[0];b._py=s[1];
+ const eoe=b.st=='kick'&&P&&P.kk&&P.kk.kind!='punt'&&P.kk.st=='fly',ang=eoe?now*13:(b.st=='air'||b.st=='kick'||b.st=='tip'?(b._ang||0):b.st=='loose'?now*9:0),lace=Math.sin(now*55)>0;
+ X.save();X.translate(s[0],s[1]);X.rotate(ang);X.fillStyle='#5a3312';X.beginPath();X.ellipse(0,0,6.5*k,4.2*k,0,0,7);X.fill();X.fillStyle='#8b5a2b';X.beginPath();X.ellipse(0,0,5.3*k,3.2*k,0,0,7);X.fill();
+ X.fillStyle='#fff';if(eoe||lace||!(b.st=='air'||b.st=='kick')){X.fillRect(-2*k,-.7,4*k,1.3);X.fillRect(-.5,-1.8*k,1,3.6*k)}else X.fillRect(-2.6*k,-.4,5.2*k,.8);X.restore()}
 // ---------- main draw ----------
 function draw(){const L=P.L,d=G.dir,b=P.b,now=performance.now()/1000;ragTick();camX+=(clamp((typeof camTgt=='function'?camTgt(b,L):(G.phase=='play'||G.phase=='kick'?b.x:L))-48,-2,26)-camX)*(typeof camK=='function'?camK():.1);
  {const ks=typeof KS=='number'?KS:1,sh=shakeT>0?shakeA*shakeT/.28:0;X.setTransform(ks,0,0,ks,(rnd()-.5)*sh*ks,(rnd()-.5)*sh*ks)}X.imageSmoothingEnabled=false;X.clearRect(0,0,W,H);drawField();
@@ -75,12 +115,12 @@ function draw(){const L=P.L,d=G.dir,b=P.b,now=performance.now()/1000;ragTick();c
  const heads=new Map();
  all.forEach(([,p])=>{if(p==='ball'){if(b.st=='dead'&&G.phase!='post')return;const g=P2(b.x,b.y),s=P2(b.x,b.y,bz),k=scY(b.y);
    if(bz>1.3){X.fillStyle='rgba(0,0,0,.35)';X.beginPath();X.ellipse(g[0],g[1],5*k,2*k,0,0,7);X.fill()}
-   if(b.st=='qb'||b.st=='carry')return;X.fillStyle='#5a3312';X.beginPath();X.ellipse(s[0],s[1],6.5*k,4.2*k,0,0,7);X.fill();X.fillStyle='#8b5a2b';X.beginPath();X.ellipse(s[0],s[1],5.3*k,3.2*k,0,0,7);X.fill();X.fillStyle='#fff';X.fillRect(s[0]-2,s[1]-.6,4,1.2);return}
+   if(b.st=='qb'||b.st=='carry')return;drawBall(s,k,b,now);return}
   if(p.fall&&fallProg(p)>0)return drawFallen(p,now);heads.set(p,sprite(p,now))});
  DUST.forEach(q=>{const s=P2(q.x,q.y),a=1-q.t/q.life,k=scY(q.y);X.fillStyle=`rgba(214,196,150,${(a*.55).toFixed(2)})`;X.beginPath();X.ellipse(s[0],s[1]-2*k,(q.r+q.t*1.4)*S*k,(q.r+q.t*1.4)*KY*.55,0,0,7);X.fill()});
  // labels above heads: line moves, stamina
  X.textAlign='center';X.font='bold 9px sans-serif';
- heads.forEach((hy,p)=>{const s=P2(p.x,p.y);if(p.ml>0&&G.phase=='play'){X.fillStyle='#ffd84d';X.fillText(p.mv,s[0],hy-4)}if(b.st=='carry'&&b.c===p){X.fillStyle='#7c4a1e';X.beginPath();X.ellipse(s[0]+(Math.cos(p.fa)>=0?6:-6)*scY(p.y),hy+20*scY(p.y),4.5,3,0,0,7);X.fill()}});
+ heads.forEach((hy,p)=>{const s=P2(p.x,p.y);if(p.ml>0&&G.phase=='play'){X.fillStyle='#ffd84d';X.fillText(p.mv,s[0],hy-4)}});
  [ctl,b.st=='carry'?b.c:null].forEach((p,i)=>{if(!p||(i==1&&p==ctl)||!heads.has(p))return;const s=P2(p.x,p.y),hy=heads.get(p),v=(p.stm==null?100:p.stm)/100;X.fillStyle='#000a';X.fillRect(s[0]-14,hy-14,28,5);X.fillStyle=v>.3?'#4ade80':v>.1?'#fbbf24':'#ef4444';X.fillRect(s[0]-13,hy-13,26*v,3)});
  if(P.look&&G.poss!='U'&&b.st=='qb'){const s=P2(P.look.x,P.look.y);X.fillStyle='#ff4d4d';X.fillText('QB EYES',s[0],s[1]-30)}
  if(ctl&&G.phase=='play'){const v=(ctl.stm==null?100:ctl.stm)/100;X.fillStyle='#000a';X.fillRect(W-170,6,160,20);X.fillStyle=v>.3?'#4ade80':v>.1?'#fbbf24':'#ef4444';X.fillRect(W-168,8,156*v,16);X.fillStyle='#fff';X.font='bold 11px sans-serif';X.textAlign='right';X.fillText('STAMINA',W-14,20)}

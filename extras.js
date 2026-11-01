@@ -134,12 +134,13 @@ function xCall(k,x,u,L0,d){const b=P.b,g=Math.round(((x==null?L0:x)-L0)*d),n=xNm
  xLog(`${side}: ${t}`)}
 // ---------- catches: dives, toe taps, slippery balls; and bullet / lob passes ----------
 {const _rs=resolve;resolve=function(){const b=P.b,r=b.tgt,l={x:b.tx,y:b.ty};P.lastTgt={r,l};let dv=0;
- if(feat('dive')&&r&&!r.fall){const rd=dist(r,l);if(rd>2.4&&rd<3.7&&rnd()<.3+((r.sk?r.sk.skl:60)-60)/200){const dx=l.x-r.x,dy=l.y-r.y,m=Math.hypot(dx,dy)||1;r.x=l.x-dx/m*.6;r.y=l.y-dy/m*.6;r.dvx=dx/m;r.dvy=dy/m;dv=1}}
+ if(feat('dive')&&r&&!r.fall){const rd=dist(r,l);if(rd>2.4&&rd<3.7&&rnd()<.3+((r.sk?r.sk.skl:60)-60)/200){const dx=l.x-r.x,dy=l.y-r.y,m=Math.hypot(dx,dy)||1;r.dox=r.x;r.doy=r.y;r.x=l.x-dx/m*.6;r.y=l.y-dy/m*.6;r.dvx=dx/m;r.dvy=dy/m;dv=1}}
  if(feat('weather')&&G.wx=='rain'&&r&&dist(r,l)<2.4&&rnd()<.06){b.st='dead';endPlay('inc');if(!/^FLAG/.test(G.msg))G.msg='Dropped! The ball is slick. '+G.msg;return}
- _rs();
- if(b.st=='carry'&&r&&b.c===r){sfx('catch');const gl=G.dir>0?110:10,end=(r.x-gl)*G.dir>=0?'td':'tackle';
-  if(dv){P.dv=1;r.fall={t:0,lag:0,dur:.3,vx:r.dvx*3,vy:r.dvy*3};FALLS.push(r);puff(r.x,r.y,5,1);endPlay(end,r.x);if(!/^FLAG/.test(G.msg))G.msg=(end=='td'?'TOUCHDOWN! DIVING CATCH! ':'DIVING CATCH! ')+G.msg.replace('TOUCHDOWN!','').trim();xLog('What a diving catch!')}
-  else if(feat('dive')&&(r.y<1.6||r.y>51.7)&&Math.abs(r.vy)>1&&Math.sign(r.vy)==(r.y<26.5?-1:1)){P.oob=1;endPlay(end,r.x);if(!/^FLAG/.test(G.msg))G.msg=(end=='td'?'TOUCHDOWN! TOE-TAP CATCH! ':'TOE-TAP CATCH! ')+G.msg.replace('TOUCHDOWN!','').trim();xLog('Toe-tap catch on the sideline!')}}}}
+ _rs();let spot=r?r.x:0;
+ if(dv){spot=r.x;const dd=Math.hypot(r.x-r.dox,r.y-r.doy),v=dd*4.5+1.5;r.x=r.dox;r.y=r.doy;r.vx=r.vy=0;r.an={k:'dive',t:0,d:2.5};r.fall={t:0,lag:0,dur:.32,vx:r.dvx*v,vy:r.dvy*v};FALLS.push(r);puff(r.x+r.dvx*dd,r.y+r.dvy*dd,6,1.1)}
+ if(b.st=='carry'&&r&&b.c===r){sfx('catch');const gl=G.dir>0?110:10,end=(spot-gl)*G.dir>=0?'td':'tackle';
+  if(dv){P.dv=1;endPlay(end,spot);if(!/^FLAG/.test(G.msg))G.msg=(end=='td'?'TOUCHDOWN! DIVING CATCH! ':'DIVING CATCH! ')+G.msg.replace('TOUCHDOWN!','').trim();xLog('What a diving catch!')}
+  else if(feat('dive')&&(r.y<1.6||r.y>51.7)&&Math.abs(r.vy)>1&&Math.sign(r.vy)==(r.y<26.5?-1:1)){P.oob=1;r.an={k:'toetap',t:0,d:1.2};if(feat('slowmo')&&!(CAR()&&autoMode()))G.slow=.75;puff(r.x,r.y,5,.7);endPlay(end,r.x);if(!/^FLAG/.test(G.msg))G.msg=(end=='td'?'TOUCHDOWN! TOE-TAP CATCH! ':'TOE-TAP CATCH! ')+G.msg.replace('TOUCHDOWN!','').trim();xLog('Toe-tap catch on the sideline!')}}}}
 {const _ta=throwAt;throwAt=function(tx,ty){const q=P.off[0],tt=feat('throwT')&&G.poss=='U'&&qbIsMe()?(G.tt||'n'):'n',dd=Math.hypot(tx-q.x,ty-q.y);
  if(feat('weather')&&G.wind&&G.wind.m>3){const f=dd/40*.08*(.7+rnd()*.6);tx+=G.wind.x*f;ty+=G.wind.y*f}
  if(tt=='bul'){const e=dd/22*.7;tx+=(rnd()-.5)*e;ty+=(rnd()-.5)*e}
