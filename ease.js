@@ -1,7 +1,7 @@
 'use strict';
 // Ease of use: an interactive 5-step tutorial (it never counts in your league), a game speed setting and a
 // bigger text option. The tutorial has its own switch; speed and text size are settings on the Game features page.
-{const a=['Help','tut','Interactive tutorial','A guided 5-step practice: passing, running, moves, defense and kicking. Start it from the Tutorial page (or the card on the home screen). It never counts in your league.'];
+{const a=['Help','tut2','Interactive tutorial','A guided 5-step practice: passing, running, moves, defense and kicking. Start it from the Tutorial page (or the card on the home screen). It never counts in your league.'];
  if(!FEATS.some(f=>f[1]==a[1])){let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)}}
 (()=>{const ins=(a,after,item)=>{if(a.some(x=>x[0]==item[0]))return;const i=a.findIndex(x=>x[0]==after);a.splice(i<0?a.length:i+1,0,item)};ins(NAVF,'prac',['tut','tutUI()','Tutorial'])})();
 // ---------- the tutorial ----------
@@ -17,7 +17,7 @@ const TS=[{t:'Throw a pass',s:'U',l:30,p:'Slants',
   m:'You control the defender with the <b>yellow ring</b> (tap another to switch). Use the stick to chase the ball, and the Hit stick, Dive and Intercept buttons. Tap Snap to start. <b>Goal: hold them under 5 yards.</b>',ok:r=>r.int||(r.k!='td'&&r.g<5)},
  {t:'Kick a field goal',s:'U',l:88,p:'',kick:1,k:'Press <b>Space</b> (or click) to stop the power meter, then press it again when the needle is in the <b>green</b>. <b>Goal: make the field goal.</b>',m:'Tap to stop the power meter, then tap again when the needle is in the <b>green</b>. <b>Goal: make the field goal.</b>',ok:r=>r.fg}];
 function tutUI(){VW.page='tut';if(CAR())return modal(`${nav()}<h1>Tutorial</h1><p>The tutorial runs in franchise mode, where you call the plays. Switch modes in Settings to try it.</p>`);
- if(!feat('tut'))return modal(`${nav()}<h1>Tutorial</h1><p>The tutorial is switched off on the Game features page.</p>`);const done=lsGet('gdtutdone');
+ if(!feat('tut2'))return modal(`${nav()}<h1>Tutorial</h1><p>The tutorial is switched off on the Game features page.</p>`);const done=lsGet('gdtutdone');
  modal(`${nav()}<h1>Tutorial</h1><p>Five quick steps against a practice defense: passing, running, moves, defense and kicking. Each step repeats until you get it (or press Skip). Nothing here counts in your league.</p>
  <div class="dash">${TS.map((s,i)=>card(`Step ${i+1}`,`<div class="big">${s.t}</div>`)).join('')}</div><div class="btns" style="margin-top:14px">${B('tutGo(0)',done?'Take it again':'Start the tutorial','go')}${B('tutGo(3)','Jump to defense')}</div>`)}
 function tutGo(i){const o=1,t=R.lg.t[o];autoFill(0);autoFill(o);newGame({n:t.n,r:Math.round(teamR(o)),i:o});G.live=1;G.po='';G.tut={i:i||0,tries:0,fb:''};tutStep();$('modal').hidden=1;tutBox()}
@@ -36,7 +36,7 @@ function tutDone(){lsSet('gdtutdone','1');G.live=0;G.prac=null;G.tut=null;G.phas
 {const _eg=endGame;endGame=function(...a){if(G&&G.tut){G.tut=null;tutBox()}return _eg.apply(this,a)}}
 {const _gl=gameLobby;gameLobby=function(...a){const r=_gl.apply(this,a);try{if(G&&G.tut){const g=$('modal').querySelector('.gmenu,.grid');if(g&&!$('modal').querySelector('[data-tq]'))g.insertAdjacentHTML('afterbegin','<button data-tq="1" onclick="tutQuit()"><em>&#10006;</em>Quit tutorial<span>Back to the lobby</span></button>')}}catch(e){}return r}}
 // a card on the home screen for new players
-{const _dh=dashHome;dashHome=function(...a){const r=_dh.apply(this,a);try{if(feat('tut')&&!lsGet('gdtutdone')&&!CAR()){const d=$('modal').querySelector('.dash');if(d)d.insertAdjacentHTML('afterbegin',card('New here?','<p>Take the 5-step tutorial: passing, running, moves, defense and kicking. It never counts in your league.</p><div class="btns">'+B('tutGo(0)','Start the tutorial','go')+B("lsSet('gdtutdone','1');lobby()",'No thanks')+'</div>'))}}catch(e){}return r}}
+{const _dh=dashHome;dashHome=function(...a){const r=_dh.apply(this,a);try{if(feat('tut2')&&!lsGet('gdtutdone')&&!CAR()){const d=$('modal').querySelector('.dash');if(d)d.insertAdjacentHTML('afterbegin',card('New here?','<p>Take the 5-step tutorial: passing, running, moves, defense and kicking. It never counts in your league.</p><div class="btns">'+B('tutGo(0)','Start the tutorial','go')+B("lsSet('gdtutdone','1');lobby()",'No thanks')+'</div>'))}}catch(e){}return r}}
 // ---------- game speed ----------
 const gSpd=()=>{const v=+OPT.gspd;return v>0?clamp(v,.5,1.5):1};
 {const _s=step;step=function(dt,...a){return _s(dt*gSpd(),...a)}}
