@@ -73,7 +73,7 @@ function vKick(dt){const kk=P&&P.kk,b=P&&P.b;if(!kk||kk.kind=='punt'||!feat('bal
  if(kk.hit){const h=kk.hit;h.x+=h.vx*dt;h.y+=h.vy*dt;h.vz-=10.7*dt;h.z+=h.vz*dt;if(h.z<0){h.z=0;h.vz=-h.vz*.35;h.vx*=.6;h.vy*=.6}b.x=h.x;b.y=h.y;b.z=h.z;return}
  if(kk.net){const n=kk.net;n.v+=dt*6;n.z=Math.max(3.6,n.z-n.v*dt);b.x=n.x;b.y=n.y;b.z=n.z;return}
  if(kk.st!='fly'&&kk.st!='done')return;const cross=(b.x-px)*d;
- if(kk.dk&&cross>=0){const sg=Math.sign(kk.lat)||1,o=kk.dk=='out';kk.hit={x:px,y:26.5+sg*3.08,z:b.z,vx:o?-d*7:d*5,vy:o?sg*3:-sg*2.5,vz:o?2:-1};b.x=px;b.y=kk.hit.y;XV.dnk={x:px,y:kk.hit.y,z:b.z,t:1.2};shakeT=.18;shakeA=3;if(typeof sfx=='function')sfx('hit');return}
+ if(kk.dk&&cross>=0){const sg=Math.sign(kk.lat)||1,o=kk.dk=='out';kk.hit={x:px,y:26.5+sg*3.08,z:b.z,vx:o?-d*7:d*5,vy:o?sg*3:-sg*2.5,vz:o?2:-1};b.x=px;b.y=kk.hit.y;XV.dnk={x:px,y:kk.hit.y,z:b.z,t:1.2};shakeT=.18;shakeA=3;if(typeof sfx=='function')sfx('doink');return}
  if(!kk.dk&&cross>=1.1&&b.z>3.4&&b.z<12.4&&Math.abs(b.y-26.5)<5.9){kk.net={x:px+d*1.1,y:b.y,z:b.z,v:1};b.x=kk.net.x}}
 {const _kl=kLaunch;kLaunch=function(){_kl();try{const kk=P.kk;kk.dk=null;if(!feat('ballfx')||kk.kind=='punt'||kk.blk)return;const r=kk.fd/kk.C,zg=kk.C>=kk.fd?4*kk.h*r*(1-r):-1,yg=Math.abs(kk.lat);
  if(zg>3.33&&yg>=2.9&&yg<3.3){kk.dk=rnd()<.5?'in':'out';kk.lat=(Math.sign(kk.lat)||1)*(kk.dk=='in'?2.86:3.34)}}catch(e){console.error(e)}}}
