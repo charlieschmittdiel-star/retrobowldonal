@@ -10,6 +10,7 @@
  ['On the field','nfl','Realistic NFL numbers','Completion rates, yards per carry, sacks, interceptions, tackling, blitz rates, penalties and kicking are tuned to land close to real NFL averages.'],
  ['On the field','scrd','Scramble drill','When your QB leaves the pocket, receivers work toward the side he is rolling to and find open grass in his throwing range.'],
  ['On the field','zhunt','Zone defenders hunt','Underneath zone defenders whose zone is empty, with every receiver covered, come after the QB.'],
+ ['On the field','miss2','Realistic misses','Off-target throws land near where you aimed (long, short or to the side). A miss that is bad enough can\'t be caught.'],
  ['On the field','qbhead','Look while running','A QB on the move can turn his head about 90 degrees to either side and throw. Throws on the run are less accurate.']];
  add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
 // ---------- wiring: new players, saves, game setup ----------
@@ -81,3 +82,6 @@ const NFL_DEEP=['Go','Verts','Post Corner','PA Deep'];
   if(Math.abs(p.zone[0]-L)>=12)return;
   const guarded=el.every(r=>D.some(o=>o!==p&&!(o.rush&&!o.hunt)&&(o.on===r||o.cover===r||dist(o,r)<3.2)));if(!guarded)return;
   if(dist(p,q)>(P.sd?22:16))return;p.rush=true;p.hunt=1;p.zone=null;p.cool=Math.max(p.cool||0,.1)})}catch(e){}}}
+// an uncatchable miss: nobody on offense can get a hand on it (a defender still might pick it off)
+{const _rs=resolve;resolve=function(...a){const b=P&&P.b,m=b&&b.mis;let tg=null;if(m&&m.bad&&feat('miss2')){tg=b.tgt;b.tgt=null}const r=_rs.apply(this,a);
+ try{if(m&&m.bad&&feat('miss2')&&P.over&&!/INTERCEPT|TOUCHDOWN/i.test(G.msg||'')&&P.b.st!='carry')G.msg=`${m.kind}! Incomplete.`}catch(e){}return r}}

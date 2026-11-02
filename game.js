@@ -72,10 +72,10 @@ function mv(p,tx,ty,sp,dt){if(p.stun>0){p.stun-=dt;sp*=.25}sp*=moveSpd(p);const 
 function throwAt(tx,ty){const b=P.b,q=P.off[0];if(b.st!='qb'||P.scr||P.run)return;
  let dd=Math.hypot(tx-q.x,ty-q.y);const rg=thRange(q);if(dd>rg){tx=q.x+(tx-q.x)*rg/dd;ty=q.y+(ty-q.y)*rg/dd;dd=rg}
  const pr=P.def.filter(p=>p.rush&&dist(p,q)<3.5).length,sc=accSc(q,dd,tx,ty,pr);
- tx=clamp(tx+(rnd()-.5)*sc,1,119);ty=clamp(ty+(rnd()-.5)*sc,1,52);
+ {const mp=missPt(q,tx,ty,sc,dd);tx=mp[0];ty=mp[1]}
  const T=Math.max(.3,Math.hypot(tx-q.x,ty-q.y)/thr(q,dd));let tg=null,m=99;
  P.off.forEach((r,i)=>{if(i==0||(i>5&&!r.route.length))return;const e=Math.hypot(r.x+r.vx*T*.5-tx,r.y+r.vy*T*.5-ty)/r.spd;if(e<T+.9&&e<m){m=e;tg=r}});
- Object.assign(b,{st:'air',sx:q.x,sy:q.y,tx,ty,t:0,T,tgt:tg});P.passer=q;sRec(q,'pa');P.def.forEach(p=>p.rt=(Math.max(.05,.4-p.o*.003)+rnd()*.2)*(p.t=='C'?1.35-.6*IQ():1))}
+ Object.assign(b,{st:'air',sx:q.x,sy:q.y,tx,ty,t:0,T,tgt:tg,mis:P.mis||null});P.passer=q;sRec(q,'pa');P.def.forEach(p=>p.rt=(Math.max(.05,.4-p.o*.003)+rnd()*.2)*(p.t=='C'?1.35-.6*IQ():1))}
 function throwTo(r){const q=P.off[0],dd=dist(q,r),T=dd/thr(q,dd);throwAt(r.x+r.vx*T,r.y+r.vy*T)}
 function pump(){const b=P.b;if(b.st!='qb'||P.scr||P.run||P.pump>0)return;P.pump=.5;P.def.forEach(p=>{if(!p.rush&&!p.eng&&rnd()<(.75-PRC(p)*.005)*(p.t=='C'?1.3-.6*IQ():1))p.bite=.4+rnd()*.3});G.msg='Pump fake!'}
 function aimT(){const a=P.aim,q=P.off[0];let x=(a.a[0]-a.c[0])/S*3,y=(a.a[1]-a.c[1])/S*3;const m=Math.hypot(x,y),rg=thRange(q);if(m>rg){x*=rg/m;y*=rg/m}return[clamp(q.x+x,1,119),clamp(q.y+y,1,52)]}

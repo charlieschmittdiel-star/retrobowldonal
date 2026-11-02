@@ -95,3 +95,11 @@ function scrSpot(r,qb,L,d,D,O){const yq=clamp(qb.y+(qb.vy||0)*.9,4,49),rg=thRang
   const open=Math.min(6,...cov.map(p=>Math.hypot(p.x-x,p.y-y))),crowd=mates.reduce((a,o)=>a+Math.max(0,6-Math.hypot(o.fl[0]-x,o.fl[1]-y)),0),
    sc=open-Math.abs(y-yq)*.26-Math.hypot(x-r.x,y-r.y)*.05-Math.max(0,f-16)*.15-Math.abs(dq-13)*.04-crowd*.35+(coneOff(qb,x,y)<=0?1.4:0);if(sc>bs){bs=sc;bt=[x,y]}}
  return bt||[r.x+d*2,clamp(r.y+(yq-r.y)*.3,2,51)]}
+
+// Where an off-target throw goes: near where he aimed, missed long, short or to one side. A miss bigger than about
+// three yards can't be caught (the receiver can't get a hand on it); a smaller one still can. Old behavior when off.
+function missPt(q,tx,ty,sc,dd){P.mis=null;if(!FT('miss2'))return[clamp(tx+(rnd()-.5)*sc,1,119),clamp(ty+(rnd()-.5)*sc,1,52)];
+ const g=()=>{let u=0,v=0;while(!u)u=rnd();while(!v)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)},cap=3.2+dd*.085,
+  ux=(tx-q.x)/(dd||1),uy=(ty-q.y)/(dd||1),sp=4.2*(1-Math.exp(-sc/10))*(1+Math.max(0,dd-20)*.02),al=clamp(g()*sp*.75,-cap,cap),sd=clamp(g()*sp*.6,-cap*.8,cap*.8),
+  nx=clamp(tx+ux*al-uy*sd,1,119),ny=clamp(ty+uy*al+ux*sd,1,52),m=Math.hypot(nx-tx,ny-ty);
+ P.mis={m,sc,bad:m>3,kind:Math.abs(al)>=Math.abs(sd)?(al>0?'Overthrown':'Underthrown'):'Off target'};return[nx,ny]}
