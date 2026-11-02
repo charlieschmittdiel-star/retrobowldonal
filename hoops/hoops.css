@@ -49,3 +49,4 @@ kbd{background:#334155;border-radius:5px;padding:1px 6px;font-family:inherit;fon
 .pbp{max-height:50vh;overflow:auto;font-size:13px}.pbp div{padding:3px 0;border-bottom:1px solid #1e293b}.pbp small{color:#94a3b8;display:inline-block;width:70px}details summary{cursor:pointer;margin:8px 0;color:#fdba74}
 .ach{background:#0f172a;border-radius:8px;padding:8px 10px;opacity:.55}.ach.on{opacity:1;outline:1px solid #f59e0b}.ach b{display:block}.ach small{color:#94a3b8}
 .ph>div:nth-child(2){flex:1}
+.adv>div{background:#0f172a;border-radius:8px;padding:6px 10px}.adv small{display:block;color:#94a3b8}.adv b{font-size:18px}

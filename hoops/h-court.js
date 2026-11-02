@@ -43,20 +43,20 @@ offMod=function(k){if(!G)return OM0;const c=G.calls&&G.calls[k],L=[];if(feat('pl
 defMod=function(k){if(!G)return DM0;const c=G.calls&&G.calls[k],L=[];if(feat('plays')&&c)L.push(DSETS[c.d].m);if(feat('half')&&G.plan&&G.plan[k])L.push(PLANS[G.plan[k]][3]);return L.length?mergeM(DM0,L):DM0};
 // what the coach suggests: compare the matchups on the floor
 function coachSug(k){const O=onT(k),D=onT(opp(k)),av=(L,f)=>L.reduce((a,e)=>a+f(e.p.sk,e.p),0)/Math.max(1,L.length),big=L=>L.slice().sort((a,b)=>b.p.ht-a.p.ht)[0],hand=L=>L.slice().sort((a,b)=>b.p.sk.han-a.p.sk.han)[0];
- const ob=big(O),db=big(D),oh=hand(O),dh=hand(D),why=[];const os={motion:.5+(av(O,s=>s.pas+s.vis)/2-60)/40};
+ const ob=big(O),db=big(D),oh=hand(O),dh=hand(D),why=[];const os={motion:.75+(av(O,s=>s.pas+s.vis)/2-60)/40};
  os.post=ob&&db?(ob.p.sk.post+ob.p.sk.str*.5-db.p.sk.id-db.p.sk.str*.5)/18+(ob.p.ht-db.p.ht)*.12:0;
- os.pnr=oh&&ob&&db?(oh.p.sk.han-60)/25+(ob.p.sk.lay+ob.p.sk.dnk-db.p.sk.pd*2)/40:0;
- const star=O.slice().sort((a,b)=>ovr(b.p)-ovr(a.p))[0];os.iso=star&&star.man?(star.p.sk.han+star.p.sk.spd-star.man.p.sk.pd*2)/24+(ovr(star.p)-70)/20:0;
- os.spread=(av(O,s=>s.thr)-64)/9+(av(D,s=>s.pd)<60?.2:0);os.give=(av(O,s=>s.spd)-av(D,s=>s.pd))/20;
- os.push=(av(O,s=>s.spd)-av(D,s=>s.spd))/12;const mg=G.sc[k]-G.sc[opp(k)];if(lateG()&&mg<-6)os.push+=1.5;if(lateG()&&mg>4)os.slow=1.5;
- const ds={man:.6};const dthr=av(D,s=>s.thr),ddr=av(D,s=>s.lay+s.han)/2;ds.zone=(62-dthr)/8+(av(O,s=>s.id)<58?.2:0);ds.pack=(ddr-dthr)/12;ds.tight=(dthr-66)/7;
- ds.press=(62-av(D,s=>s.han))/10+(lateG()&&mg<-5?1.6:0);const hs=O.map(e=>e.p.ht);ds.switch=(4-(Math.max(...hs)-Math.min(...hs)))/5;
+ os.pnr=oh&&ob&&db?(oh.p.sk.han-70)/25+(ob.p.sk.lay+ob.p.sk.dnk-db.p.sk.pd*2-40)/40:0;
+ const star=O.slice().sort((a,b)=>ovr(b.p)-ovr(a.p))[0];os.iso=star&&star.man?(star.p.sk.han+star.p.sk.spd-star.man.p.sk.pd*2-25)/24+(ovr(star.p)-76)/20:0;
+ os.spread=(av(O,s=>s.thr)-61)/7+(av(D,s=>s.pd)<55?.15:0);os.give=(av(O,s=>s.spd)-av(D,s=>s.pd)-4)/20;
+ os.push=(av(O,s=>s.spd)-av(D,s=>s.spd)-3)/12;const mg=G.sc[k]-G.sc[opp(k)];if(lateG()&&mg<-6)os.push+=1.5;if(lateG()&&mg>4)os.slow=1.5;
+ const ds={man:.9};const dthr=av(D,s=>s.thr),ddr=av(D,s=>s.lay+s.han)/2;ds.zone=(55-dthr)/6+(av(O,s=>s.id)<52?.15:0);ds.pack=(ddr-dthr-10)/12;ds.tight=(dthr-63)/6;
+ ds.press=(55-av(D,s=>s.han))/10+(lateG()&&mg<-5?1.6:0);const hs=O.map(e=>e.p.ht);ds.switch=(4-(Math.max(...hs)-Math.min(...hs)))/5;
  const bo=Object.keys(os).sort((a,b)=>os[b]-os[a])[0],bd=Object.keys(ds).sort((a,b)=>ds[b]-ds[a])[0];
  if(bo=='post'&&ob&&db)why.push(`${ob.p.ln} has the edge inside on ${db.p.ln}`);else if(bo=='pnr')why.push(`${oh.p.ln} and ${ob.p.ln} can work the pick and roll`);else if(bo=='iso'&&star)why.push(`${star.p.ln} can beat ${star.man.p.ln} one on one`);
  else if(bo=='spread')why.push('your shooters can hurt them from three');else if(bo=='push')why.push(lateG()&&mg<0?'you need points fast':'you are quicker than they are');else if(bo=='slow')why.push('protect the lead');else if(bo=='give')why.push('your cutters are quicker');else why.push('move the ball and find the open man');
  if(bd=='zone')why.push('they can\'t shoot well from outside');else if(bd=='pack')why.push('they like to drive more than shoot');else if(bd=='tight')why.push('their shooters are dangerous');else if(bd=='press')why.push(lateG()&&mg<0?'you need steals':'their ball handling is shaky');else if(bd=='switch')why.push('your players are all about the same size');
  return{o:bo,d:bd,why}}
-function cpuCall(k){if(!feat('plays'))return;const iq=IQ(k);let s=coachSug(k);if(rnd()>iq){s={o:pick(OKEYS),d:pick(DKEYS)}}G.calls[k]={o:s.o,d:s.d};if(!lateG()&&s.o=='slow')G.calls[k].o='motion'}
+function cpuCall(k){if(!feat('plays'))return;const iq=IQ(k);let s=coachSug(k);if(rnd()>iq*.85){s={o:rnd()<.5?'motion':pick(OKEYS),d:rnd()<.55?'man':pick(DKEYS)}}else if(rnd()<.3)s={o:rnd()<.5?s.o:'motion',d:rnd()<.5?s.d:'man'};G.calls[k]={o:s.o,d:s.d};if(!lateG()&&s.o=='slow')G.calls[k].o='motion'}
 function cycleCall(side,dir){if(!feat('plays')||!G.calls)return;const L=side=='o'?OKEYS:DKEYS,c=G.calls[0];c[side]=L[(L.indexOf(c[side])+(dir||1)+L.length)%L.length];say((side=='o'?'Offense: ':'Defense: ')+(side=='o'?OSETS:DSETS)[c[side]].n,1.2)}
 function useCoach(){if(!feat('coach')||!feat('plays')||!G)return;const s=coachSug(0);G.calls[0]={o:s.o,d:s.d};say(`Coach: ${OSETS[s.o].n} / ${DSETS[s.d].n}`,1.6)}
 // 2-3 zone positions, shifted toward the ball
@@ -180,7 +180,7 @@ function halfUI(){const r=gameResult(),me=r.a===0?0:1;const top=k=>r.res.T[k].ps
   if(feat('mom')){const w=240,x=cx-w/2,y=62;CX.fillStyle='rgba(15,23,42,.7)';CX.fillRect(x,y,w,5);const m=G.mom;CX.fillStyle=m>=0?R.t[G.tm[0]].col[0]:R.t[G.tm[1]].col[0];if(m>=0)CX.fillRect(cx,y,w/2*m,5);else CX.fillRect(cx+w/2*m,y,-w/2*m,5);CX.fillStyle='#fff';CX.fillRect(cx-1,y-1,2,7)}
   if(feat('tout')){[0,1].forEach(k=>{const x=k===(G.tm[0]===G.home?1:0)?cx+70:cx-240;for(let i=0;i<4;i++){CX.fillStyle=i<G.to[k]?'#fde047':'rgba(255,255,255,.2)';CX.fillRect(x+150+i*9,52,6,3)}})}
   if(feat('plays')&&G.calls&&!G.paused){const c=G.calls[0],sg=feat('coach')&&(G.sgT=(G.sgT||0)+1)?(G.sgC&&G.sgT%120?G.sgC:(G.sgC=coachSug(0))):null;
-   const t=`Offense: ${OSETS[c.o].n} (C) · Defense: ${DSETS[c.d].n} (V)`+(sg?` · Coach: ${OSETS[sg.o].n} / ${DSETS[sg.d].n} (X)`:'');CX.font='600 12px system-ui';const w=CX.measureText(t).width+20;CX.fillStyle='rgba(15,23,42,.75)';CX.fillRect(cx-w/2,VH-64,w,20);CX.fillStyle='#e2e8f0';CX.fillText(t,cx,VH-54)}
+   const car=typeof CAREER=='function'&&CAREER();const t=car?`Coach's call: ${OSETS[c.o].n} / ${DSETS[c.d].n}`:`Offense: ${OSETS[c.o].n} (C) · Defense: ${DSETS[c.d].n} (V)`+(sg?` · Coach: ${OSETS[sg.o].n} / ${DSETS[sg.d].n} (X)`:'');CX.font='600 12px system-ui';const w=CX.measureText(t).width+20;CX.fillStyle='rgba(15,23,42,.75)';CX.fillRect(cx-w/2,VH-64,w,20);CX.fillStyle='#e2e8f0';CX.fillText(t,cx,VH-54)}
   if(G.ctl2&&!G.paused){CX.font='600 12px system-ui';CX.fillStyle='rgba(226,232,240,.75)';CX.textAlign='left';CX.fillText('Player 2: arrows · / shoot or jump · . pass or steal · , lob or switch · ; crossover',12,VH-56)}}catch(e){}}}
 {const _dp=drawPlayer;drawPlayer=function(e){_dp(e);try{if(e===G.ctl2){const [gx,gy]=P(e.x,e.y,0),w=S*1.25;CX.strokeStyle='#38bdf8';CX.lineWidth=2.5;CX.beginPath();CX.ellipse(gx,gy,w*1.05,w*.42,0,0,Math.PI*2);CX.stroke()}
   if(feat('hot')&&G.hot&&(G.hot[e.p.id]||0)>=3){const [gx,gy]=P(e.x,e.y,e.z),h=ftOf(e.p)*S*HZ;CX.font=`${Math.round(S*1.3)}px system-ui`;CX.textAlign='center';CX.fillText(G.hot[e.p.id]>=4?'🔥':'♨',gx+S*1.2,gy-h*.9)}}catch(x){}}}

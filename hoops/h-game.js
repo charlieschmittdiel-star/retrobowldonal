@@ -41,7 +41,7 @@ function endQuarter(){const q=G.q;say(q<4?`End of the ${['1st','2nd','3rd'][q-1]
 // ---------- shooting ----------
 function shotInfo(e,x,y){const s=G.dir[e.t],hx=hoopX(s),d=Math.hypot(x-hx,y-25),corner=(y<3||y>47)&&Math.abs(x-hx)<14,three=corner?Math.abs(y-25)>=G3C:d>=G3;return{d,three,corner,hx}}
 function makeProb(e,info,q){const s=e.p.sk,d=info.d,D=onT(opp(e.t));let cd=99,cdE=null;D.forEach(x=>{const k=dist(x,e);if(k<cd){cd=k;cdE=x}});
- let p,typ;if(d<4.5){typ=e.act&&e.act.k=='dunk'?'dunk':'rim';p=typ=='dunk'?.9+(s.dnk-65)*.004:.71+(s.lay-64)*.006}else if(d<14){typ='close';p=.46+(s.mid*.5+s.lay*.5-64)*.005}else if(!info.three){typ='mid';p=.43+(s.mid-64)*.0055}else{typ='three';p=(info.corner?.387:.363)+(s.thr-66)*.0055}
+ let p,typ;if(d<4.5){typ=e.act&&e.act.k=='dunk'?'dunk':'rim';p=typ=='dunk'?.9+(s.dnk-65)*.004:.71+(s.lay-64)*.006}else if(d<14){typ='close';p=.46+(s.mid*.5+s.lay*.5-64)*.005}else if(!info.three){typ='mid';p=.43+(s.mid-64)*.0055}else{typ='three';p=(info.corner?.38:.356)+(s.thr-66)*.0055}
  if(d>27)p-=(d-27)*.03;
  // the closest defender
  if(cdE){const jump=cdE.z>.6,htd=(ftOf(cdE.p)-ftOf(e.p));let c=cd>6?.05:cd>4?.015:cd>2.5?-.025:-.06;if(jump&&cd<4)c-=.035;if(d<6){c*=.6;if(cd<4)c-=htd*.025+(cdE.p.sk.id-60)*.0012}if(d>=6&&cd<5)c-=(cdE.p.sk.pd-60)*.0012;p+=c}
