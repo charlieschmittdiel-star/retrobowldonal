@@ -1,6 +1,6 @@
 'use strict';
 // 1) Touchdown fix: a runner who is tackled (or steps out) after the ball has crossed the goal line scores.
-// 2) Access codes, one per device: the game shows a device ID; the owner turns it into a code with the separate
+// 2) Access codes, one per device (only for the downloaded copy opened from a folder; the website stays free): the game shows a device ID; the owner turns it into a code with the separate
 //    code maker page (kept by the owner, not shipped). A code only works on the device it was made for.
 {const _ep=endPlay;endPlay=function(k,x){try{if(P&&!P.over&&!G.two&&(k=='tackle'||k=='sack')){const d=G.dir,gl=d>0?110:10,c=P.b&&P.b.st=='carry'?P.b.c:null,cx=c?c.x:null;
  if((x!=null&&(x-gl)*d>=0)||(cx!=null&&(cx-gl)*d>=0)){k='td';x=null}}}catch(e){}return _ep(k,x)}}
@@ -15,7 +15,7 @@ function lkCode(dev){const k=lkClean(dev),a=lkSig('A'+k),b=lkSig('B'+k);return a
 function lkValid(c){const k=lkClean(c);if(k.length!=12)return false;const dev=lkClean(lkDev());if(LK_REV.includes(dev))return false;return k===lkCode(dev)}
 function lkFmt(c){const k=lkClean(c);return k.slice(0,4)+'-'+k.slice(4,8)+'-'+k.slice(8,12)}
 function licOK(){try{return lkValid(localStorage.getItem('gdlic'))}catch(e){return false}}
-function lkGate(){if(licOK())return;const d=document.createElement('div');d.id='lkg';d.innerHTML=`<div class="lkb"><div class="lkl">GL</div><h1>Gridiron Lab</h1><p>To play on this computer you need an access code made for it.</p><p class="lkd">Your device ID<b id="lkdv">${lkDev()}</b><button id="lkc" type="button">Copy</button></p><p class="lks">Send this device ID to the person who gave you the game. They'll send back your code.</p>
+function lkGate(){if(location.protocol!=='file:')return;if(licOK())return;const d=document.createElement('div');d.id='lkg';d.innerHTML=`<div class="lkb"><div class="lkl">GL</div><h1>Gridiron Lab</h1><p>To play on this computer you need an access code made for it.</p><p class="lkd">Your device ID<b id="lkdv">${lkDev()}</b><button id="lkc" type="button">Copy</button></p><p class="lks">Send this device ID to the person who gave you the game. They'll send back your code.</p>
  <input id="lki" maxlength="16" placeholder="XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false"><button id="lkb">Unlock</button><p id="lke" class="lke"></p><p class="lks">You only need to do this once. The code only works on this computer and this browser.</p></div>`;document.body.appendChild(d);
  const s=document.createElement('style');s.textContent=`#lkg{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 30%,#1f3a2c,#07100b);display:flex;align-items:center;justify-content:center;font-family:"Trebuchet MS",sans-serif;color:#e8f0ea}
  #lkg .lkb{background:#0b1410ee;border:2px solid #ffd84d;border-radius:16px;padding:28px 30px;width:min(420px,90vw);text-align:center;box-shadow:0 10px 40px #000a}#lkg h1{margin:6px 0 4px}#lkg .lkl{width:64px;height:64px;margin:0 auto;border-radius:50%;background:linear-gradient(#2563eb,#1e3a8a);border:3px solid #ffd84d;display:flex;align-items:center;justify-content:center;font:900 22px "Trebuchet MS",sans-serif}
