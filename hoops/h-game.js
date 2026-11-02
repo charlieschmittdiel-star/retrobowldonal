@@ -15,6 +15,9 @@ function newGame(home,away,opt){opt=opt||{};const tm=[0,home===0?away:home];cons
  assignMen();tipOff();return G}
 function mkEnt(p,k,i){return{p,t:k,i,x:47,y:25,vx:0,vy:0,fa:0,z:0,vz:0,act:null,cd:{},spot:null,man:null,bite:0,stun:0,jx:0}}
 const onT=k=>G.ent.filter(e=>e.t===k);
+// hooks other files fill in (playbook, momentum, halftime plans); these defaults change nothing
+const OM0={need:0,drive:1,three:1,screen:1,spots:null},DM0={sag:1,ball:1,stl:1,help:1,sw:0,zone:0,press:0,foul:1};
+function offMod(k){return OM0}function defMod(k){return DM0}function shotAdj(e,typ,info){return 0}
 const opp=k=>1-k;
 function assignMen(){const A=onT(0),B=onT(1);const ord=e=>POS.indexOf(e.p.pos)*10+e.i;const a=A.slice().sort((x,y)=>ord(x)-ord(y)),b=B.slice().sort((x,y)=>ord(x)-ord(y));a.forEach((e,i)=>{e.man=b[i];b[i].man=e})}
 function say(s,t){G.msg=s;G.msgT=t||1.8}
@@ -43,9 +46,9 @@ function makeProb(e,info,q){const s=e.p.sk,d=info.d,D=onT(opp(e.t));let cd=99,cd
  // the closest defender
  if(cdE){const jump=cdE.z>.6,htd=(ftOf(cdE.p)-ftOf(e.p));let c=cd>6?.05:cd>4?.015:cd>2.5?-.025:-.06;if(jump&&cd<4)c-=.035;if(d<6){c*=.6;if(cd<4)c-=htd*.025+(cdE.p.sk.id-60)*.0012}if(d>=6&&cd<5)c-=(cdE.p.sk.pd-60)*.0012;p+=c}
  const sp=Math.hypot(e.vx,e.vy);if(typ!='rim'&&typ!='dunk'&&sp>9)p-=.05;
- if(feat('fatigue'))p*=.95+.05*(G.st[e.p.id]||100)/100;p+=q||0;if(!feat('realism'))p+=.04;return{p:clamp(p,.03,.97),typ,cd,cdE}}
+ if(feat('fatigue'))p*=.95+.05*(G.st[e.p.id]||100)/100;p+=(q||0)+shotAdj(e,typ,info);if(!feat('realism'))p+=.04;return{p:clamp(p,.03,.97),typ,cd,cdE}}
 function shoot(e,q){const b=G.b;if(b.st!='held'||b.h!==e||G.phase!='live')return;const info=shotInfo(e,e.x,e.y),mp=makeProb(e,info,q),hx=info.hx;
- let foul=false;if(feat('fouls')&&mp.cdE&&mp.cd<4){const fp=(mp.typ=='rim'||mp.typ=='dunk'?.23:mp.typ=='close'?.12:.035)*(mp.cdE.z>.6?1.4:1)*(1+(60-mp.cdE.p.sk.pd)/150);if(rnd()<fp)foul=mp.cdE}
+ let foul=false;if(feat('fouls')&&mp.cdE&&mp.cd<4){const fp=(mp.typ=='rim'||mp.typ=='dunk'?.23:mp.typ=='close'?.12:.035)*(mp.cdE.z>.6?1.4:1)*(1+(60-mp.cdE.p.sk.pd)/150)*defMod(mp.cdE.t).foul;if(rnd()<fp)foul=mp.cdE}
  // blocks
  let blk=null;if(mp.cdE&&mp.cd<3.6){const de=mp.cdE,bp=(info.d<10?.13:.025)*Math.pow(de.p.sk.blk/60,1.6)*(1+(ftOf(de.p)-ftOf(e.p))*.25+(de.p.sk.vert-60)/120)*(de.z>.4?1.6:1);if(rnd()<bp&&!foul)blk=de}
  let make=rnd()<mp.p*(foul?.42:1);if(blk)make=false;
@@ -97,7 +100,7 @@ function subs(force){[0,1].forEach(k=>{if(k===0&&R.autoSub===false&&!force)retur
   if(!(e.fouledOut||(feat('fatigue')&&st<52)||trouble))return;const cand=G.bench[k].map(id=>R.pl.find(p=>p.id===id)).filter(p=>p&&!p.inj&&(G.st[p.id]||100)>72&&(G.bx[p.id][SI.pf]<6)).sort((a,b)=>fitSc(b,e)-fitSc(a,e));
   const c=cand[0];if(!c)return;G.bench[k]=G.bench[k].filter(id=>id!==c.id).concat([e.p.id]);const ne=mkEnt(c,k,e.i);ne.x=e.x;ne.y=e.y;const idx=G.ent.indexOf(e);G.ent[idx]=ne;if(G.b.h===e)G.b.h=ne;if(G.ctl===e)G.ctl=ne;if(G.ft&&G.ft.e===e)G.ft.e=ne})});assignMen()}
 // ---------- the AI ----------
-function spotsFor(k){const s=G.dir[k],hx=hoopX(s),U=(u,y)=>[hx-s*u,y];return{PG:U(26,25),SG:U(21,42),SF:U(4,4),PF:U(15,33),C:U(6,18)}}
+function spotsFor(k){const s=G.dir[k],hx=hoopX(s),U=(u,y)=>[hx-s*u,y],M=offMod(k);if(M.spots)return M.spots(U);return{PG:U(26,25),SG:U(21,42),SF:U(4,4),PF:U(15,33),C:U(6,18)}}
 function offAI(e,dt){const b=G.b,s=G.dir[e.t],hx=hoopX(s),T=onT(e.t),D=onT(opp(e.t));
  if(b.st=='held'&&b.h===e)return handlerAI(e,dt);
  // a loose ball or rebound: go get it
@@ -134,16 +137,16 @@ function handlerAI(e,dt){const b=G.b,s=G.dir[e.t],hx=hoopX(s),T=onT(e.t),D=onT(o
  let sEP=mp.p*(info.three?3:2)*(info.d>26?.8:1);
  const lane=D.filter(d=>{const u=(d.x-e.x)*s;if(u<-1||u>Math.abs(hx-e.x)+2)return false;const ly=e.y+(25-e.y)*clamp(u/Math.max(1,Math.abs(hx-e.x)),0,1);return Math.abs(d.y-ly)<4}).length;
  const beat=e.man?((e.man.x-e.x)*s<0||dist(e.man,e)>6?1:0):0;
- const dEP=clamp(.6+(e.p.sk.lay-64)*.006+(e.p.sk.han-60)*.003-lane*.13+beat*.18,.15,.85)*2.1;
- const need=1.26-urg*.6;
+ const OM=offMod(e.t);const dEP=clamp(.6+(e.p.sk.lay-64)*.006+(e.p.sk.han-60)*.003-lane*.13+beat*.18,.15,.85)*2.1*OM.drive;
+ const need=1.26-urg*.6+OM.need+(el<4&&info.d>8&&onT(opp(e.t)).filter(d=>(d.x-e.x)*s>0).length>=4?.3:0);
  if(late)return shoot(e,gauss()*.05);
  const noise=()=>(1-iq)*(rnd()-.5)*.5;
- if(info.three)sEP*=e.p.sk.thr<58?.74:e.p.sk.thr<66?.9:.97;else if(info.d>8)sEP*=e.p.sk.mid>=e.p.sk.thr?1.16:1.06;
+ if(info.three)sEP*=(e.p.sk.thr<58?.74:e.p.sk.thr<66?.9:.97)*OM.three;else if(info.d>8)sEP*=e.p.sk.mid>=e.p.sk.thr?1.16:1.06;
  if(sEP+noise()>=need&&sEP>=dEP+(info.three?.02:.05)&&info.d<29)return shoot(e,gauss()*.04+(iq-.7)*.04);
  const swing=()=>{const o=T.filter(r=>r!==e&&passRisk(e,r)<.25&&openness(r)>3).sort((a,c)=>openness(c)-openness(a)+(rnd()-.5)*4)[0];if(o){passTo(e,o);return true}return false};
  if(el<9&&!beat&&rnd()<.6&&swing())return;
  if(dEP+noise()>need*.92&&info.d<32&&rnd()<.45+urg*.3){e.drv=1.5;return}
- if(feat('screens')&&e.p.pos=='PG'&&!G.scrUsed&&el>3&&el<14&&rnd()<.22*iq){const big=T.find(x=>(x.p.pos=='C'||x.p.pos=='PF')&&x!==e);if(big){big.scr=1.2;G.scrUsed=1}}
+ if(feat('screens')&&e.p.pos=='PG'&&!G.scrUsed&&el>3&&el<14&&rnd()<.22*iq*OM.screen){const big=T.find(x=>(x.p.pos=='C'||x.p.pos=='PF')&&x!==e);if(big){big.scr=1.2;G.scrUsed=1}}
  if(passBest(e,.12-urg*.2))return;
  // keep the ball moving early in the clock
  if(el<14&&rnd()<.45&&swing())return;
@@ -161,14 +164,15 @@ function defAI(e,dt){const b=G.b,k=e.t,s=G.dir[opp(k)],hx=hoopX(s),m=e.man;if(!m
  if(b.st=='shot'&&b.t>b.T*.3){// box out: stay between my man and the rim
   return seek(e,m.x+(hx-m.x)*.4,m.y+(25-m.y)*.4,1)}
  const hasB=b.st=='held'&&b.h===m;let tx,ty;
- if(hasB){const d=3.1-(e.p.sk.pd-60)*.02;const ux=hx-m.x,uy=25-m.y,l=Math.hypot(ux,uy)||1;tx=m.x+ux/l*d;ty=m.y+uy/l*d}
- else{const bxp=b.st=='held'?b.h:b,dball=Math.hypot(m.x-bxp.x,m.y-bxp.y),sag=clamp(dball/5,2,8)*(m.p.sk.thr>70&&shotInfo(m,m.x,m.y).three?.55:1);const ux=hx-m.x,uy=25-m.y,l=Math.hypot(ux,uy)||1;tx=m.x+ux/l*sag+(bxp.x-m.x)*.08;ty=m.y+uy/l*sag+(bxp.y-m.y)*.12}
+ const DM=defMod(k);
+ if(hasB){const d=(3.1-(e.p.sk.pd-60)*.02)*DM.ball;const ux=hx-m.x,uy=25-m.y,l=Math.hypot(ux,uy)||1;tx=m.x+ux/l*d;ty=m.y+uy/l*d}
+ else{const bxp=b.st=='held'?b.h:b,dball=Math.hypot(m.x-bxp.x,m.y-bxp.y),sag=clamp(dball/5,2,8)*(m.p.sk.thr>70&&shotInfo(m,m.x,m.y).three?.55:1)*DM.sag;const ux=hx-m.x,uy=25-m.y,l=Math.hypot(ux,uy)||1;tx=m.x+ux/l*sag+(bxp.x-m.x)*.08;ty=m.y+uy/l*sag+(bxp.y-m.y)*.12}
  // help on drives
- if(feat('help')&&b.st=='held'&&b.h!==m&&b.h.t!==k){const h=b.h,dh=Math.hypot(h.x-hx,h.y-25),hm=h.man;if(dh<13&&hm&&Math.hypot(hm.x-hx,hm.y-25)>dh+1.5){const helpers=onT(k).filter(x=>x!==hm).sort((a,c)=>dist(a,h)-dist(c,h));if(helpers[0]===e&&rnd()<.6+.4*iq){tx=h.x+(hx-h.x)*.25;ty=h.y+(25-h.y)*.25}}}
+ if(feat('help')&&b.st=='held'&&b.h!==m&&b.h.t!==k){const h=b.h,dh=Math.hypot(h.x-hx,h.y-25),hm=h.man;if(dh<13&&hm&&Math.hypot(hm.x-hx,hm.y-25)>dh+1.5){const helpers=onT(k).filter(x=>x!==hm).sort((a,c)=>dist(a,h)-dist(c,h));if(helpers[0]===e&&rnd()<(.6+.4*iq)*DM.help){tx=h.x+(hx-h.x)*.25;ty=h.y+(25-h.y)*.25}}}
  if(e.bite>0){e.bite-=dt;return}
  seek(e,tx,ty,hasB?1:.9);
  // reach for steals sometimes
- if(hasB&&dist(e,m)<3&&rnd()<dt*.1*(e.p.sk.stl/65)*(.5+iq*.5))stealTry(e)}
+ if(hasB&&dist(e,m)<3&&rnd()<dt*.1*(e.p.sk.stl/65)*(.5+iq*.5)*DM.stl)stealTry(e)}
 // move toward a point with acceleration, at a share of top speed
 function topSpd(e){let v=17+(e.p.sk.spd-60)*.12;if(feat('fatigue'))v*=.9+.1*Math.min(1,(G.st[e.p.id]||100)/60);if(G.b.st=='held'&&G.b.h===e)v*=.9-(70-e.p.sk.han)*.002;return v}
 function seek(e,tx,ty,f){const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy),v=topSpd(e)*(f||1)*(e.spr?1.15:1),want=d<.4?0:Math.min(v,d*4);const wx=d?dx/d*want:0,wy=d?dy/d*want:0;e.tx=wx;e.ty=wy}
@@ -189,6 +193,7 @@ function hStep(dt){if(!G||!G.live)return;G.msgT-=dt;if(G.asst)G.asst.t-=dt;
  // decisions
  G.ent.forEach(e=>{e.tx=0;e.ty=0;e.cd.st=(e.cd.st||0)-dt;if(e.stun>0)e.stun-=dt;
   if(e===G.ctl&&userControls(e,dt))return;
+  if(G.ctl2&&e===G.ctl2&&userControls2(e,dt))return;
   if(e.t===G.poss)offAI(e,dt);else defAI(e,dt)});
  moveAll(dt);ballStep(dt);
  if(G.b.st=='held'){const h=G.b.h;if(h.x<0||h.x>CW||h.y<0||h.y>CH)return turnover(h,'Out of bounds')}}
@@ -199,7 +204,7 @@ function moveAll(dt,slow){G.ent.forEach(e=>{const a=26+(e.p.sk.acc-60)*.25,k=Mat
  // players don't overlap
  for(let i=0;i<G.ent.length;i++)for(let j=i+1;j<G.ent.length;j++){const a=G.ent[i],b=G.ent[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),m=1.7;if(d<m&&d>0){const p=(m-d)/2,ux=dx/d,uy=dy/d;a.x-=ux*p;a.y-=uy*p;b.x+=ux*p;b.y+=uy*p}}
  // screens: a defender who runs into a screener is held up
- if(feat('screens'))G.ent.forEach(sc=>{if(!sc.scr&&!(sc.roll>0))return;G.ent.forEach(d=>{if(d.t===sc.t||d.bite>0)return;if(dist(d,sc)<2.1&&G.b.st=='held'&&d.man===G.b.h){d.bite=.55;G.ev.push('screen')}})})}
+ if(feat('screens'))G.ent.forEach(sc=>{if(!sc.scr&&!(sc.roll>0))return;G.ent.forEach(d=>{if(d.t===sc.t||d.bite>0)return;if(dist(d,sc)<2.1&&G.b.st=='held'&&d.man===G.b.h){if(defMod(d.t).sw&&sc.man){const o=sc.man;o.man=G.b.h;d.man=sc;G.b.h.man=o;sc.man=d;sc.scr=0;return}d.bite=.55;G.ev.push('screen')}})})}
 function ballStep(dt){const b=G.b;
  if(b.st=='held'){const h=b.h;b.x=h.x+Math.cos(h.fa+.9)*.9;b.y=h.y+Math.sin(h.fa+.9)*.5;b.z=h.act&&h.act.k=='shot'?ftOf(h.p)+1:Math.abs(Math.sin(performance.now()/130))*2.6+.4;
   if(h.t!==G.poss)changePoss(h.t);return}
@@ -227,3 +232,4 @@ function ftStep(dt){const f=G.ft;if(!f)return;G.pt-=dt;const b=G.b;
  if(f.e.t===0&&feat('meter')&&!autoPlay()){if(!f.meter)G.wantFT=1;return}
  ftShoot(gauss()*.02)}
 function autoPlay(){return !!G.auto}
+function userControls2(e,dt){return false}

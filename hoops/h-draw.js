@@ -1,7 +1,7 @@
 'use strict';
 // Drawing: the arena, the court and its lines, both hoops, players (running, dribbling, shooting, jumping),
 // the ball and its shadow, the scoreboard, the shot meter and on-screen hints.
-let CV,CX,VW=0,VH=0,S=10,OX=0,OY=0;const KY=.6,HZ=.82;
+let HIDEHELP=false,CV,CX,VW=0,VH=0,S=10,OX=0,OY=0;const KY=.6,HZ=.82;
 const SKIN=['#f1c27d','#e0ac69','#c68642','#8d5524','#5c3a1e','#ffdbac','#a0662f','#3d2314'];
 function hResize(){CV=$('cv');if(!CV)return;const dpr=Math.min(2,window.devicePixelRatio||1);VW=CV.clientWidth;VH=CV.clientHeight;CV.width=VW*dpr;CV.height=VH*dpr;CX=CV.getContext('2d');CX.setTransform(dpr,0,0,dpr,0,0);
  const top=78,bot=44;S=Math.min((VW-24)/100,(VH-top-bot-60)/(CH*KY+8));OX=(VW-CW*S)/2;OY=top+((VH-top-bot)-(CH*KY*S))/2+12;CROWD=null}
@@ -44,6 +44,12 @@ function drawPlayer(e){const p=e.p,home=G.tm[e.t]===G.home,col=R.t[G.tm[e.t]].co
  CX.fillStyle='rgba(0,0,0,.28)';CX.beginPath();CX.ellipse(gx,gy,w*.75,w*.3,0,0,Math.PI*2);CX.fill();
  if(e===G.ctl){CX.strokeStyle='#facc15';CX.lineWidth=2.5;CX.beginPath();CX.ellipse(gx,gy,w*1.05,w*.42,0,0,Math.PI*2);CX.stroke()}
  const y0=gy-z*S*HZ,leg=h*.42,swing=sp>1&&z<=0?Math.sin(e.ph)*w*.35:0,face=Math.cos(e.fa)>=0?1:-1;
+ drawBody(e,gx,gy,y0,h,w,sp,swing,face,jer,trim);CX.textAlign='center';CX.textBaseline='middle';
+ if(feat('labels')&&(e.t===0||e===G.ctl)){CX.font=`700 ${Math.max(9,Math.round(S*.85))}px system-ui,sans-serif`;CX.fillStyle=e===G.ctl?'#fde047':'rgba(255,255,255,.85)';CX.fillText(p.ln,gx,y0-h-w*.35)}
+ // pass numbers over your teammates while you have the ball
+ if(e.t===0&&G.phase=='live'&&G.poss===0&&G.b.st=='held'&&G.b.h===G.ctl&&e!==G.ctl&&!G.auto){const n=POS.indexOf(p.pos)+1;if(n>0){CX.fillStyle='rgba(15,23,42,.8)';CX.beginPath();CX.arc(gx,y0-h-w*1.2,w*.42,0,Math.PI*2);CX.fill();CX.fillStyle='#fff';CX.font=`800 ${Math.round(w*.5)}px system-ui`;CX.fillText(n,gx,y0-h-w*1.2)}}}
+// the figure itself (the detailed model in h-fx.js can replace this)
+function drawBody(e,gx,gy,y0,h,w,sp,swing,face,jer,trim){const p=e.p,z=e.z,leg=h*.42;
  const skin=SKIN[p.id%SKIN.length];
  CX.lineCap='round';CX.strokeStyle=skin;CX.lineWidth=w*.28;
  CX.beginPath();CX.moveTo(gx-w*.18,y0-leg);CX.lineTo(gx-w*.18+swing,y0);CX.moveTo(gx+w*.18,y0-leg);CX.lineTo(gx+w*.18-swing,y0);CX.stroke();
@@ -59,9 +65,7 @@ function drawPlayer(e){const p=e.p,home=G.tm[e.t]===G.home,col=R.t[G.tm[e.t]].co
  else{const db=G.b.st=='held'&&G.b.h===e;CX.moveTo(gx-w*.38,sh);CX.lineTo(gx-w*.48+(db?0:swing*.3),sh+h*.3);CX.moveTo(gx+w*.38,sh);CX.lineTo(gx+w*.5-(db?-w*.15:swing*.3),sh+h*.3)}CX.stroke();
  // head
  CX.fillStyle=skin;CX.beginPath();CX.arc(gx,y0-h*.88,w*.3,0,Math.PI*2);CX.fill();CX.fillStyle='#1f160f';CX.beginPath();CX.arc(gx,y0-h*.9,w*.3,Math.PI,0);CX.fill();
- if(feat('labels')&&(e.t===0||e===G.ctl)){CX.font=`700 ${Math.max(9,Math.round(S*.85))}px system-ui,sans-serif`;CX.fillStyle=e===G.ctl?'#fde047':'rgba(255,255,255,.85)';CX.fillText(p.ln,gx,y0-h-w*.35)}
- // pass numbers over your teammates while you have the ball
- if(e.t===0&&G.phase=='live'&&G.poss===0&&G.b.st=='held'&&G.b.h===G.ctl&&e!==G.ctl&&!G.auto){const n=POS.indexOf(p.pos)+1;if(n>0){CX.fillStyle='rgba(15,23,42,.8)';CX.beginPath();CX.arc(gx,y0-h-w*1.2,w*.42,0,Math.PI*2);CX.fill();CX.fillStyle='#fff';CX.font=`800 ${Math.round(w*.5)}px system-ui`;CX.fillText(n,gx,y0-h-w*1.2)}}}
+}
 function drawBall(){const b=G.b;if(!b||b.st=='dead')return;let x=b.x,y=b.y,z=b.z||0;if(b.st=='held'){const h=b.h,face=Math.cos(h.fa)>=0?1:-1;x=h.x+face*.7;y=h.y+.25;z=h.act&&(h.act.k=='shot'||h.act.k=='gather'||h.act.k=='lay'||h.act.k=='dunk')?ftOf(h.p)+1.1+h.z:Math.abs(Math.sin(performance.now()/120))*2.7+.3+h.z*.3}
  const [sx,sy]=P(x,y,0),[bx2,by2]=P(x,y,z),r=Math.max(3.5,S*.45);CX.fillStyle='rgba(0,0,0,.3)';CX.beginPath();CX.ellipse(sx,sy,r,r*.4,0,0,Math.PI*2);CX.fill();
  CX.fillStyle='#ea580c';CX.beginPath();CX.arc(bx2,by2,r,0,Math.PI*2);CX.fill();CX.strokeStyle='#431407';CX.lineWidth=1;CX.beginPath();CX.moveTo(bx2-r,by2);CX.lineTo(bx2+r,by2);CX.moveTo(bx2,by2-r);CX.lineTo(bx2,by2+r);CX.stroke()}
@@ -81,7 +85,7 @@ function drawHUD(){const A=G.tm[0]===G.home?1:0,Hm=1-A;// away team on the left 
  // bottom: your player and controls
  const e=G.ctl;CX.textAlign='left';CX.font='600 12px system-ui';
  if(e&&!G.auto){const st=G.st[e.p.id]||0;CX.fillStyle='rgba(15,23,42,.8)';CX.fillRect(10,VH-40,250,30);CX.fillStyle='#e2e8f0';CX.fillText(`${e.p.pos} ${e.p.n} · ${ovr(e.p)}`,18,VH-30);CX.fillStyle='#334155';CX.fillRect(18,VH-21,150,5);CX.fillStyle=st>60?'#4ade80':st>35?'#fbbf24':'#f87171';CX.fillRect(18,VH-21,150*st/100,5)}
- if(!G.auto){CX.fillStyle='rgba(226,232,240,.75)';CX.textAlign='right';const off=G.poss===0;CX.fillText(G.phase=='ft'&&G.ft&&G.ft.e.t===0?'Free throw: hold Space, let go in the green':off?'Move WASD/arrows · Hold Space shoot · E pass · 1-5 pass to · Q lob · R crossover · F screen · Shift sprint · P pause':'Move · Space jump/contest · E steal · Tab switch player · Shift sprint · P pause',VW-12,VH-20)}
+ if(!G.auto&&!HIDEHELP){CX.fillStyle='rgba(226,232,240,.75)';CX.textAlign='right';const off=G.poss===0;CX.fillText(G.phase=='ft'&&G.ft&&G.ft.e.t===0?'Free throw: hold Space, let go in the green':off?'Move WASD/arrows · Hold Space shoot · E pass · 1-5 pass to · Q lob · R crossover · F screen · Shift sprint · P pause':'Move · Space jump/contest · E steal · Tab switch player · Shift sprint · P pause',VW-12,VH-20)}
  if(G.paused){CX.fillStyle='rgba(2,6,23,.6)';CX.fillRect(0,0,VW,VH);CX.fillStyle='#fff';CX.textAlign='center';CX.font='800 34px system-ui';CX.fillText('Paused',VW/2,VH/2-10);CX.font='500 15px system-ui';CX.fillText('Press P or Esc to keep playing',VW/2,VH/2+24)}}
 function hDraw(){if(!CX||!G)return;drawArena();drawCourt();const items=G.ent.map(e=>[e.y,()=>drawPlayer(e)]);items.push([25.01,()=>drawHoop(0)],[25.01,()=>drawHoop(1)]);
  const b=G.b;let by=b.st=='held'?b.h.y+.3:b.y||25;items.push([by+.01,drawBall]);items.sort((a,c)=>a[0]-c[0]).forEach(i=>i[1]());drawHUD()}

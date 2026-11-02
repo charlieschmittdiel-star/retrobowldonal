@@ -102,4 +102,4 @@ const HFEATS=[['On the court','meter','Shot meter','Hold Shoot and let go at the
  ['Franchise','inj','Injuries','Players can get hurt and miss games.'],
  ['Franchise','trades','CPU trade offers','Other teams sometimes offer trades.'],
  ['Franchise','news','League news','Headlines from around the league.']];
-const feat=k=>OPT[k]==null?true:OPT[k]!==0;
+const HDEFOFF=new Set(['p2']),feat=k=>OPT[k]==null?!HDEFOFF.has(k):OPT[k]!==0;

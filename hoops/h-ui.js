@@ -12,7 +12,7 @@ const htTxt=h=>`${Math.floor(h/12)}'${h%12}"`;
 function tlink(t){return`<a href="#" onclick="teamUI(${t});return false">${esc(R.t[t].n)}</a>`}
 function plink(p){return`<a href="#" onclick="playerUI(${p.id});return false">${esc(p.n)}</a>`}
 // ---------- the shell ----------
-const NAV=[['home','Home','homeUI()'],['roster','Roster','rosterUI()'],['sched','Schedule','schedUI()'],['stand','Standings','standUI()'],['lead','League leaders','leadUI()'],['po','Playoffs','poUI()'],['trade','Trade','tradeUI()'],['fa','Free agents','faUI()'],['hist','History','histUI()'],['feat','Game features','featUI()'],['set','Settings','setUI()'],['keys','Controls','keysUI()']];
+const NAV=[['home','Home','homeUI()'],['roster','Roster','rosterUI()'],['sched','Schedule','schedUI()'],['stand','Standings','standUI()'],['lead','League leaders','leadUI()'],['po','Playoffs','poUI()'],['trade','Trade','tradeUI()'],['fa','Free agents','faUI()'],['hl','Highlights','hlUI()'],['hist','History','histUI()'],['feat','Game features','featUI()'],['set','Settings','setUI()'],['keys','Controls','keysUI()']];
 function shell(h){const me=R.t[0];$('ui').hidden=false;$('gamewrap').hidden=true;
  const stage=R.stage?`<button class="ni hot" onclick="offUI()">${{draft:'The draft',resign:'Re-sign players',fa:'Free agency'}[R.stage]}</button>`:'';
  $('ui').innerHTML=`<div class="shell"><aside class="side"><div class="brand"><div class="logo" style="background:${me.col[0]};color:${me.col[1]}">${esc(me.ab.slice(0,3))}</div><div><b>${esc(me.n)}</b><span>${rec(0)} · Season ${R.season}</span></div></div>${stage}
