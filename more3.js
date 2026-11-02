@@ -87,3 +87,4 @@ function g2Lobby(){ctx='game';g2Style();const car=R.mode=='career',me=R.lg.t[0],
  const pbp=(G.pbp||[]).slice(-7).reverse(),pc=card('Latest plays',pbp.length?`<div class="gpbp">${pbp.map(t=>`<p>${esc(t)}</p>`).join('')}</div>`:'<p class="dim">No plays yet.</p>');
  let st='';try{if(typeof mStats=='function')st=mStats()}catch(e){}
  modal(`<div class="glb">${sb}<button class="gbig" onclick="closeLobby()">&#9654; Back to the game <span style="font:400 12px sans-serif;opacity:.8">(Esc)</span></button><div class="gmenu">${it.join('')}</div>${st}<div class="dash" style="margin-top:14px">${qc}${pc}${card('Training points',`<div class="big">${R.pts}</div><p class="dim">Spend them on a player page.</p>`)}</div></div>`)}
+try{g2Style()}catch(e){}

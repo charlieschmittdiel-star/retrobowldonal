@@ -177,7 +177,7 @@ function step(dt){
   else if((p.cover||p.sw||p.zf)&&!c&&cutLag(p,p.cover||p.sw||p.zf)){tx=p.x+p.vx*.5;ty=p.y+p.vy*.5}
   else if(p.cover){const k=clamp(dt*(2.5+p.o*.04)*(i==7||i==8?.75:1),0,1),v=p.cover;p.cx=p.cx==null?v.x:p.cx+(v.x-p.cx)*k;p.cy=p.cy==null?v.y:p.cy+(v.y-p.cy)*k;tx=p.cx+v.vx*.3+d*1.2;ty=p.cy+v.vy*.3}
   else if((p.sw||p.zf)&&!c){const v=p.sw||p.zf;tx=v.x+v.vx*.3+d*1.5;ty=v.y+v.vy*.3}
-  else{const z=p.zone;
+  else{const z=p.zone||[p.x,p.y];
    if(Math.abs(z[0]-L)>=12){const rr=O.slice(1,6).filter(r=>(r.x-L)*d>6&&Math.abs(r.y-z[1])<(p.zr||10)).sort((a,e)=>(e.x-a.x)*d)[0];tx=L+d*deep;ty=rr?(z[1]+rr.y)/2:z[1]}
    else{const zz={x:z[0],y:z[1]},r=O.slice(1,6).filter(r=>dist(r,zz)<(p.zr||7)).sort((a,e)=>dist(a,zz)-dist(e,zz))[0];tx=r?r.x+d*1.5:z[0];ty=r?r.y:z[1]}}
   if(!u&&p==cd&&im&&!autoMode())mv(p,p.x+ix*5,p.y+iy*5,p.spd*1.05*(p.hs>0?1.4:1),dt);else mv(p,tx,ty,sp*(p.hs>0?1.4:1)*(p.boost>0?1.1:1),dt)});
