@@ -22,7 +22,9 @@ function lwHide(p){if(!feat('lw2')||!p||!LW2.has(p.mv))return false;if(P&&P.b&&P
 // ---------- link to the basketball game (Hardwood Lab, in the hoops folder; it has its own saves) ----------
 {const add=[['Presentation','hoops','Basketball link','Shows a link to Hardwood Lab, the basketball game, at the bottom of the sidebar. The two games keep separate saves.']];
  add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
-const HOOPL='<a class="ni" href="hoops/index.html" style="margin-top:auto;text-decoration:none;color:#fdba74">&#127936; Basketball</a>';
+// in the downloaded copy, pass this computer's device ID and code along so the basketball game never asks for a second one
+function hoopHref(){try{if(location.protocol==='file:'){const d=localStorage.getItem('gddev'),k=localStorage.getItem('gdlic');if(d&&k)return'hoops/index.html?d='+encodeURIComponent(d)+'&k='+encodeURIComponent(k)}}catch(e){}return'hoops/index.html'}
+const HOOPL='<a class="ni" href="hoops/index.html" onclick="this.href=hoopHref()" style="margin-top:auto;text-decoration:none;color:#fdba74">&#127936; Basketball</a>';
 {const _sh=shellHTML;shellHTML=function(...a){const r=_sh.apply(this,a);try{if(feat('hoops')&&typeof r=='string'&&r.includes('</aside>'))return r.replace('</aside>',HOOPL+'</aside>')}catch(e){}return r}}
 // the first screen can be drawn before this file loads, so add the link to it once the page is ready
 addEventListener('load',()=>{try{if(!feat('hoops'))return;const s=document.querySelector('.side');if(s&&!s.querySelector('a[href="hoops/index.html"]'))s.insertAdjacentHTML('beforeend',HOOPL)}catch(e){}});

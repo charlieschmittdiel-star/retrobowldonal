@@ -21,4 +21,6 @@ function lkGate(){if(location.protocol!=='file:')return;if(licOK())return;const 
  $('lkb').onclick=go;$('lkc').onclick=()=>{try{navigator.clipboard.writeText(lkDev());$('lkc').textContent='Copied'}catch(e){}};$('lki').addEventListener('keydown',e=>{e.stopPropagation();if(e.key=='Enter')go()});setTimeout(()=>{try{$('lki').focus()}catch(e){}},50)}
 // while the lock screen is up, the game ignores the keyboard
 addEventListener('keydown',e=>{if(document.getElementById('lkg')&&e.target&&e.target.id!='lki'){e.stopImmediatePropagation();e.preventDefault()}},true);
+// a code handed over from the football game's link (some browsers keep separate storage for each folder)
+try{const q=new URLSearchParams(location.search),d=q.get('d'),k=q.get('k');if(d&&k&&!licOK()){localStorage.setItem('gddev',d);if(lkValid(k))localStorage.setItem('gdlic',k)}if(d||k)history.replaceState(null,'',location.pathname)}catch(e){}
 lkGate();

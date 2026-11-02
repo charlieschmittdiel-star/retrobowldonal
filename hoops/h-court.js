@@ -36,7 +36,7 @@ const PLANS={none:['Stay the course','No changes.',{},{}],attack:['Attack the pa
  arc:['Lock down the arc','Crowd their shooters.',{},{sag:.75}],paint:['Protect the paint','Sag off and help more.',{},{sag:1.35,help:1.2}],pace:['Push the pace','Run more.',{need:-.08},{}],slowp:['Slow it down','Fewer, better shots.',{need:.1},{}]};
 const lateG=()=>G&&G.q>=4&&G.clk<=Math.min(120,G.ql*.25);
 function mergeM(base,list){const o=Object.assign({},base);list.forEach(m=>{if(!m)return;for(const k in m){if(k=='spots'||k=='zone'||k=='press'||k=='sw'||k=='post'||k=='give')o[k]=m[k];else if(k=='need')o.need+=m[k];else o[k]=(o[k]==null?1:o[k])*m[k]}});return o}
-offMod=function(k){if(!G)return OM0;const c=G.calls&&G.calls[k],L=[];if(feat('plays')&&c)L.push(OSETS[c.o].m);if(feat('half')&&G.plan&&G.plan[k])L.push(PLANS[G.plan[k]][2]);
+offMod=function(k){if(!G)return OM0;const c=G.calls&&G.calls[k],L=[];if(feat('plays')&&G.calls&&G.calls[opp(k)]&&G.calls[opp(k)].d=='zone')L.push({need:.1});if(feat('plays')&&c)L.push(OSETS[c.o].m);if(feat('half')&&G.plan&&G.plan[k])L.push(PLANS[G.plan[k]][2]);
  // end-of-game: run the clock when ahead, hold for the last shot when close, look for threes when down 3
  if(feat('late')&&G.q>=4){const mg=G.sc[k]-G.sc[opp(k)],c2=G.clk;if(mg>0&&c2<=G.shot+1&&G.shot>5)L.push({need:1.6});else if(mg>=-3&&mg<=0&&c2<=G.shot+1){L.push(c2>6?{need:1.6}:{need:-.5});if(mg<=-3&&mg>=-3&&c2<12)L.push({three:1.6,drive:.6})}}
  return L.length?mergeM(OM0,L):OM0};

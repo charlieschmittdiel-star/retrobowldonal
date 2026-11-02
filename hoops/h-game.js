@@ -138,7 +138,7 @@ function handlerAI(e,dt){const b=G.b,s=G.dir[e.t],hx=hoopX(s),T=onT(e.t),D=onT(o
  const lane=D.filter(d=>{const u=(d.x-e.x)*s;if(u<-1||u>Math.abs(hx-e.x)+2)return false;const ly=e.y+(25-e.y)*clamp(u/Math.max(1,Math.abs(hx-e.x)),0,1);return Math.abs(d.y-ly)<4}).length;
  const beat=e.man?((e.man.x-e.x)*s<0||dist(e.man,e)>6?1:0):0;
  const OM=offMod(e.t);const dEP=clamp(.6+(e.p.sk.lay-64)*.006+(e.p.sk.han-60)*.003-lane*.13+beat*.18,.15,.85)*2.1*OM.drive;
- const need=1.26-urg*.6+OM.need+(el<4&&info.d>8&&onT(opp(e.t)).filter(d=>(d.x-e.x)*s>0).length>=4?.3:0);
+ const need=1.3-urg*.62+OM.need+(el<5&&info.d>8&&onT(opp(e.t)).filter(d=>(d.x-e.x)*s>0).length>=4?.32:0);
  if(late)return shoot(e,gauss()*.05);
  const noise=()=>(1-iq)*(rnd()-.5)*.5;
  if(info.three)sEP*=(e.p.sk.thr<58?.74:e.p.sk.thr<66?.9:.97)*OM.three;else if(info.d>8)sEP*=e.p.sk.mid>=e.p.sk.thr?1.16:1.06;
