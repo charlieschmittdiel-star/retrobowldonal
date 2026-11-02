@@ -196,7 +196,7 @@ function xField(){gPosts();const now=performance.now()/1000;
   for(let i=0;i<4;i++)if(rnd()<.35){X.fillStyle='#fff';X.fillRect(rnd()*W,26+rnd()*(TOP-46),2,2)}}
  if(G.flag&&G.phase=='post'){const s=P2(G.flag.x,G.flag.y),w=Math.sin(now*9)*1.5;X.fillStyle='#facc15';X.beginPath();X.moveTo(s[0],s[1]);X.lineTo(s[0]+8,s[1]-3+w);X.lineTo(s[0]+1,s[1]-7);X.closePath();X.fill()}}
 {const _sp=sprite;sprite=function(p,t){if(p.gone)return 0;const jz=p.jz||0,k=scY(p.y);if(jz){X.save();X.translate(0,-jz*GZ*k)}const hy=_sp(p,t);
- if(feat('names')&&G.nmap){const m=G.nmap[p.pid];if(m){const s=P2(p.x,p.y),c=TEAM[p.t]||TEAM.C;X.fillStyle=c.num||'#fff';X.font=`bold ${Math.max(6,Math.round(7*k))}px sans-serif`;X.textAlign='center';X.fillText(m.j,s[0],Math.round(s[1])-5.2*2.6*k);X.textAlign='left'}}
+ if(feat('names')&&G.nmap&&!feat('model2')){const m=G.nmap[p.pid];if(m){const s=P2(p.x,p.y),c=TEAM[p.t]||TEAM.C;X.fillStyle=c.num||'#fff';X.font=`bold ${Math.max(6,Math.round(7*k))}px sans-serif`;X.textAlign='center';X.fillText(m.j,s[0],Math.round(s[1])-5.2*2.6*k);X.textAlign='left'}}
  if(jz)X.restore();return hy-jz*GZ*k}}
 {const _draw=draw;draw=function(){const now=performance.now()/1000,dt=Math.min(.05,xLast?now-xLast:0);xLast=now;
  try{xTick(dt)}catch(e){console.error(e)}

@@ -73,7 +73,7 @@ function pose(p,t,line){const b=P&&P.b,ph=G?G.phase:'',sp=Math.hypot(p.vx||0,p.v
   else if(p.t===c.p.t&&Math.hypot(p.x-c.p.x,p.y-c.p.y)<4&&!p.fall){A[1]=[[1,10.8],[1.2,13]];A[0]=[[.3,10.9],[.4,13.1]]}}
  if(p.kb&&p.kb.t<.35){A[1]=[[1.2,8.5],[2.4,9.6]];A[0]=[[-1,8.5],[-2.2,9.6]];l=-.6}
  return{d,l,F,A,ball}}
-function sprite(p,t){const s=P2(p.x,p.y),k=scY(p.y),u=2.6*k,c=TEAM[p.t]||TEAM.C,f=Math.cos(p.fa)>=0?1:-1,line=(p.s=='O'&&p.i>5)||(p.s=='D'&&p.i<4),bw=line?6:5,hw=bw/2,cx=s[0],yb=Math.round(s[1]);
+function sprite(p,t){if(typeof mdlSprite=='function'&&feat('model2'))return mdlSprite(p,t);const s=P2(p.x,p.y),k=scY(p.y),u=2.6*k,c=TEAM[p.t]||TEAM.C,f=Math.cos(p.fa)>=0?1:-1,line=(p.s=='O'&&p.i>5)||(p.s=='D'&&p.i<4),bw=line?6:5,hw=bw/2,cx=s[0],yb=Math.round(s[1]);
  X.fillStyle='rgba(0,0,0,.32)';X.beginPath();X.ellipse(cx,s[1],9*k,3.2*k,0,0,7);X.fill();
  const ps=pose(p,t,line),d=ps.d,l=ps.l,sk=skinOf(p),SX=x=>cx+f*x*u,SY=y=>yb-y*u;
  const sq=(x,y,w,h,col)=>{X.fillStyle=col;const a=SX(x),e=SX(x+w);X.fillRect(Math.min(a,e),SY(y+h),Math.abs(e-a),h*u)};
