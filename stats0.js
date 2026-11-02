@@ -67,7 +67,7 @@ function qbAcc(q,dd){if(!DS2())return q.sk?q.sk.skl:q.o;const a=fs(q,'sac'),b=fs
 // head angle: where the QB is looking (the cone). Same as his body unless he's moving and turning his head.
 const qLook=q=>q.ha!=null&&FT('qbhead')?q.ha:q.fa;
 const qTwist=q=>{if(q.ha==null||!FT('qbhead'))return 0;const d=q.ha-q.fa;return Math.abs(Math.atan2(Math.sin(d),Math.cos(d)))};
-function accSc(q,dd,tx,ty,pr){const sp=q._rs!=null&&DS2()?q._rs:Math.hypot(q.vx||0,q.vy||0),cf=1+coneOff(q,tx,ty)*4,dp=Math.min(NF(99,2.9),Math.pow(dd/22,dd>22?NF(1.5,2.4):1.5));
+function accSc(q,dd,tx,ty,pr){const sp=P&&P.dropping?0:q._rs!=null&&DS2()?q._rs:Math.hypot(q.vx||0,q.vy||0),cf=1+coneOff(q,tx,ty)*4,dp=Math.min(NF(99,2.9),Math.pow(dd/22,dd>22?NF(1.5,2.4):1.5));
  if(!DS2())return(1.2+Math.max(0,80-q.sk.skl)*.08)*(1+pr)*(1+sp*.24+(P.sd?.6:0))*dp*cf*(1+qTwist(q)/(Math.PI/2)*.7);
  const tor=fs(q,'tor'),pk=fs(q,'pkt'),base=1.2+Math.max(0,80-qbAcc(q,dd))*.08,run=1+sp*(.1+.24*(1-tor/99))+(P.sd?.6*(1-tor/200):0),tw=1+qTwist(q)/(Math.PI/2)*(.9-.4*tor/99);
  return base*(1+pr*(1.2-.5*pk/99))*run*tw*dp*cf}
