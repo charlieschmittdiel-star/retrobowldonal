@@ -36,7 +36,7 @@ const PLANS={none:['Stay the course','No changes.',{},{}],attack:['Attack the pa
  arc:['Lock down the arc','Crowd their shooters.',{},{sag:.75}],paint:['Protect the paint','Sag off and help more.',{},{sag:1.35,help:1.2}],pace:['Push the pace','Run more.',{need:-.08},{}],slowp:['Slow it down','Fewer, better shots.',{need:.1},{}]};
 const lateG=()=>G&&G.q>=4&&G.clk<=Math.min(120,G.ql*.25);
 function mergeM(base,list){const o=Object.assign({},base);list.forEach(m=>{if(!m)return;for(const k in m){if(k=='spots'||k=='zone'||k=='press'||k=='sw'||k=='post'||k=='give')o[k]=m[k];else if(k=='need')o.need+=m[k];else o[k]=(o[k]==null?1:o[k])*m[k]}});return o}
-offMod=function(k){if(!G)return OM0;const c=G.calls&&G.calls[k],L=[];if(feat('plays')&&G.calls&&G.calls[opp(k)]&&G.calls[opp(k)].d=='zone')L.push({need:.1});if(feat('plays')&&c)L.push(OSETS[c.o].m);if(feat('half')&&G.plan&&G.plan[k])L.push(PLANS[G.plan[k]][2]);
+offMod=function(k){if(!G)return OM0;const c=G.calls&&G.calls[k],L=[];if(feat('plays')&&G.calls&&G.calls[opp(k)]&&G.calls[opp(k)].d=='zone')L.push({three:1.08,drive:.9,need:feat('shotclk')&&G.shot>12?.3:.05});if(feat('plays')&&c)L.push(OSETS[c.o].m);if(feat('half')&&G.plan&&G.plan[k])L.push(PLANS[G.plan[k]][2]);
  // end-of-game: run the clock when ahead, hold for the last shot when close, look for threes when down 3
  if(feat('late')&&G.q>=4){const mg=G.sc[k]-G.sc[opp(k)],c2=G.clk;if(mg>0&&c2<=G.shot+1&&G.shot>5)L.push({need:1.6});else if(mg>=-3&&mg<=0&&c2<=G.shot+1){L.push(c2>6?{need:1.6}:{need:-.5});if(mg<=-3&&mg>=-3&&c2<12)L.push({three:1.6,drive:.6})}}
  return L.length?mergeM(OM0,L):OM0};
@@ -67,6 +67,8 @@ function zoneSpot(e,k){const D=onT(k),s=G.dir[opp(k)],hx=hoopX(s),b=G.b,bx0=b.st
    // the zone defender nearest the ball steps up to guard it
    const near=onT(e.t).slice().sort((a,c)=>Math.hypot(zoneSpot(a,e.t)[0]-h.x,zoneSpot(a,e.t)[1]-h.y)-Math.hypot(zoneSpot(c,e.t)[0]-h.x,zoneSpot(c,e.t)[1]-h.y))[0];
    if(near===e&&Math.hypot(h.x-hx,h.y-25)<26){const ux=hx-h.x,uy=25-h.y,l=Math.hypot(ux,uy)||1;seek(e,h.x+ux/l*3.4,h.y+uy/l*3.4,1);if(dist(e,h)<3&&rnd()<dt*.08*(e.p.sk.stl/65))stealTry(e);return}
+   // inside the zone: the two closest defenders collapse on the ball
+   if(Math.hypot(h.x-hx,h.y-25)<15){const two=onT(e.t).slice().sort((a,c)=>dist(a,h)-dist(c,h)).slice(0,2);if(two.includes(e)){const ux=hx-h.x,uy=25-h.y,l=Math.hypot(ux,uy)||1;return seek(e,h.x+ux/l*2.2,h.y+uy/l*2.2,1)}}
    if(e.bite>0){e.bite-=dt;return}return seek(e,sp[0],sp[1],.9)}
   // full-court press: pick up the ball in the backcourt
   if(DM.press&&b.st=='held'&&b.h.t!==e.t&&b.h===e.man){const s=G.dir[opp(e.t)],own=(b.h.x-47)*s<0;if(own){const h=b.h,ux=hoopX(s)-h.x,uy=25-h.y,l=Math.hypot(ux,uy)||1;seek(e,h.x+ux/l*2.4,h.y+uy/l*2.4,1);if(feat('fatigue'))G.st[e.p.id]=Math.max(0,G.st[e.p.id]-dt*.25*(12*60/G.ql));if(dist(e,h)<3&&rnd()<dt*.3*(e.p.sk.stl/65))stealTry(e);return}}

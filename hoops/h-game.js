@@ -70,9 +70,9 @@ function shotLand(){const b=G.b,e=b.sh,k=e.t;
  G.ev.push('rim');missBounce(b,k,b.sx,b.sy)}
 // who gets a rebound: weighted by rebounding ratings and how close each player is (defenders get most, as in the NBA),
 // then the ball caroms toward that player
-function rebPick(k,hx){const c=G.ent.map(e=>{const d=Math.hypot(e.x-hx,e.y-25),off=e.t===k;const w=Math.pow((off?e.p.sk.orb:e.p.sk.drb)/60,2)*Math.max(.05,1-d/22)*(off?(feat('realism')?.36:.45):1)*(1+(ftOf(e.p)-6.5)*.3);return[e,w]});
+function rebPick(k,hx){const c=G.ent.map(e=>{const d=Math.hypot(e.x-hx,e.y-25),off=e.t===k;const w=Math.pow((off?e.p.sk.orb:e.p.sk.drb)/60,2)*Math.max(.03,1-d/17)*(off?(feat('realism')?.36:.45):1)*(1+(ftOf(e.p)-6.5)*.3);return[e,w]});
  let s=c.reduce((a,x)=>a+x[1],0),q=rnd()*s;for(const [e,w] of c){q-=w;if(q<=0)return e}return c[0][0]}
-function missBounce(b,k,sx,sy){const hx=b.hx,w=rebPick(k,hx);let ang=Math.atan2(w.y-25,w.x-hx)+(rnd()-.5)*.5;const dd=clamp(Math.hypot(w.x-hx,w.y-25),3,16),sp=dd*1.1+rnd()*2;
+function missBounce(b,k,sx,sy){const hx=b.hx,w=rebPick(k,hx);let ang=Math.atan2(w.y-25,w.x-hx)+(rnd()-.5)*.5;const dd=clamp(Math.hypot(w.x-hx,w.y-25),3,11),sp=dd*1.05+rnd()*1.5;
  Object.assign(b,{st:'loose',x:hx+Math.cos(ang)*.9,y:25+Math.sin(ang)*.9,z:10,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,vz:3+rnd()*3,reb:k,t:0,tgt:w})}
 function foulOn(d,v){bx(d,'pf');G.tf[d.t]++;G.ev.push('whistle');const n=G.bx[d.p.id][SI.pf];if(n>=6){say(`${d.p.ln} fouled out!`,2);d.fouledOut=1}}
 // ---------- free throws ----------
@@ -103,6 +103,8 @@ function subs(force){[0,1].forEach(k=>{if(k===0&&R.autoSub===false&&!force)retur
 function spotsFor(k){const s=G.dir[k],hx=hoopX(s),U=(u,y)=>[hx-s*u,y],M=offMod(k);if(M.spots)return M.spots(U);return{PG:U(26,25),SG:U(21,42),SF:U(4,4),PF:U(15,33),C:U(6,18)}}
 function offAI(e,dt){const b=G.b,s=G.dir[e.t],hx=hoopX(s),T=onT(e.t),D=onT(opp(e.t));
  if(b.st=='held'&&b.h===e)return handlerAI(e,dt);
+ // the man the pass is going to moves to meet it
+ if(b.st=='pass'&&b.to===e)return seek(e,b.tx,b.ty,1);
  // a loose ball or rebound: go get it
  if(b.st=='loose'){const near=T.slice().sort((a,c)=>dist(a,b)-dist(c,b));if(b.tgt===e||near.indexOf(e)<1||dist(e,b)<6)return seek(e,b.x+b.vx*.3,b.y+b.vy*.3,1);}
  if(b.st=='shot'&&b.t>b.T*.35){if(e.p.pos=='C'||(e.p.pos=='PF'&&rnd()<.7)||dist(e,{x:hx,y:25})<9)return seek(e,hx-s*5,25+(e.y-25)*.3,.9);return seek(e,hoopX(-s)+s*44,e.y,.7)}
@@ -175,7 +177,7 @@ function defAI(e,dt){const b=G.b,k=e.t,s=G.dir[opp(k)],hx=hoopX(s),m=e.man;if(!m
  if(hasB&&dist(e,m)<3&&rnd()<dt*.1*(e.p.sk.stl/65)*(.5+iq*.5)*DM.stl)stealTry(e)}
 // move toward a point with acceleration, at a share of top speed
 function topSpd(e){let v=17+(e.p.sk.spd-60)*.12;if(feat('fatigue'))v*=.9+.1*Math.min(1,(G.st[e.p.id]||100)/60);if(G.b.st=='held'&&G.b.h===e)v*=.9-(70-e.p.sk.han)*.002;return v}
-function seek(e,tx,ty,f){const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy),v=topSpd(e)*(f||1)*(e.spr?1.15:1),want=d<.4?0:Math.min(v,d*4);const wx=d?dx/d*want:0,wy=d?dy/d*want:0;e.tx=wx;e.ty=wy}
+function seek(e,tx,ty,f){if(G.b.st=='held'&&G.b.h===e){tx=clamp(tx,2,CW-2);ty=clamp(ty,2,CH-2)}else{tx=clamp(tx,-1,CW+1);ty=clamp(ty,-1,CH+1)}const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy),v=topSpd(e)*(f||1)*(e.spr?1.15:1),want=d<.4?0:Math.min(v,d*4);const wx=d?dx/d*want:0,wy=d?dy/d*want:0;e.tx=wx;e.ty=wy}
 // ---------- the main step ----------
 const KEYS={};let PAD=null;
 function hStep(dt){if(!G||!G.live)return;G.msgT-=dt;if(G.asst)G.asst.t-=dt;
@@ -212,7 +214,7 @@ function ballStep(dt){const b=G.b;
   // interceptions and deflections
   if(b.z<8)for(const d of onT(opp(b.fr.t))){if(Math.hypot(d.x-b.x,d.y-b.y)<1.5&&!(d.cd.ic>0)){d.cd.ic=.5;const p=.22*(d.p.sk.stl/60)*(1.2-b.fr.p.sk.pas/150);if(rnd()<p){bx(d,'stl');bx(b.fr,'tov');say(`Picked off by ${d.p.ln}!`);G.ev.push('steal');G.b={st:'held',h:d,x:d.x,y:d.y,z:3};changePoss(d.t);setCtl();return}
     if(rnd()<p*.6){bx(b.fr,'tov');G.b={st:'loose',x:b.x,y:b.y,z:b.z,vx:(rnd()-.5)*12,vy:(rnd()-.5)*12,vz:3,t:0,stl:d};say('Deflected!');return}}}
-  if(k>=1){const r=b.to;if(dist(r,b)<3.2&&r.z<4)return catchBall(r);G.b={st:'loose',x:b.x,y:b.y,z:b.z,vx:(b.tx-b.sx)/b.T*.35,vy:(b.ty-b.sy)/b.T*.35,vz:0,t:0}}return}
+  if(k>=1){const r=b.to;if(dist(r,b)<4&&r.z<4)return catchBall(r);G.b={st:'loose',x:b.x,y:b.y,z:b.z,vx:(b.tx-b.sx)/b.T*.35,vy:(b.ty-b.sy)/b.T*.35,vz:0,t:0}}return}
  if(b.st=='shot'){b.t+=dt;const k=Math.min(1,b.t/b.T);
   if(b.blk&&k>.12){bx(b.blk,'blk');say(`Blocked by ${b.blk.p.ln}!`,1.8);G.ev.push('block');const s=G.dir[b.sh.t];G.b={st:'loose',x:b.x,y:b.y,z:b.z,vx:-s*(8+rnd()*8),vy:(rnd()-.5)*14,vz:5,t:0,reb:b.sh.t};return}
   b.x=b.sx+(b.hx-b.sx)*k;b.y=b.sy+(25-b.sy)*k;const ap=b.ap;b.z=b.sz+(RIM-b.sz)*k+4*(ap-Math.max(b.sz,RIM))*k*(1-k);if(k>=1)shotLand();return}
@@ -220,7 +222,7 @@ function ballStep(dt){const b=G.b;
  if(b.st=='loose'){b.t+=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;b.vz-=32*dt;if(b.z<=0){b.z=0;b.vz=-b.vz*.55;if(b.vz<1.5)b.vz=0;b.vx*=.86;b.vy*=.86}
   if(b.x<0||b.x>CW||b.y<0||b.y>CH){const k2=b.stl?b.stl.t:opp(G.lastTouch);G.b.x=clamp(b.x,1,93);G.b.y=clamp(b.y,1,49);say('Out of bounds');deadBall(.8,()=>giveBall(k2,'side'));return}
   // someone grabs it
-  let best=null,bs=0;G.ent.forEach(e=>{if(b.tgt&&e!==b.tgt&&b.t<1&&b.z>1.5)return;const reach=ftOf(e.p)+1.3+e.z,d=Math.hypot(e.x-b.x,e.y-b.y);if(d<2.2&&b.z<=reach){const w=(e.p.sk[b.reb!=null?(e.t===b.reb?'orb':'drb'):'stl']||60)/60*(1+e.z*.3)*(2.3-d)*(e.t===b.reb?.7:1.25)*(.6+rnd()*.8)*(b.tgt===e?4:1);if(w>bs){bs=w;best=e}}});
+  let best=null,bs=0;G.ent.forEach(e=>{if(b.tgt&&e!==b.tgt&&b.t<.6&&b.z>1.5)return;const reach=ftOf(e.p)+1.3+e.z,d=Math.hypot(e.x-b.x,e.y-b.y);if(d<2.2&&b.z<=reach){const w=(e.p.sk[b.reb!=null?(e.t===b.reb?'orb':'drb'):'stl']||60)/60*(1+e.z*.3)*(2.3-d)*(e.t===b.reb?.7:1.25)*(.6+rnd()*.8)*(b.tgt===e?4:1);if(w>bs){bs=w;best=e}}});
   if(best&&(b.t>.12||b.z<7)){if(b.reb!=null){bx(best,best.t===b.reb?'orb':'drb');if(best.t===b.reb){G.shot=Math.max(feat('shotclk')?14:99,G.shot>14?G.shot:14)}G.ev.push('reb')}
    const k3=best.t,same=k3===G.poss;G.b={st:'held',h:best,x:best.x,y:best.y,z:3};G.lastTouch=k3;if(!same)changePoss(k3);else if(b.reb!=null&&feat('shotclk'))G.shot=14;setCtl();G.scrUsed=0}
   // jump for rebounds
