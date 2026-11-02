@@ -1,0 +1,35 @@
+'use strict';
+// Instant replay controls (pause, slow-mo, rewind, close-up cameras, a timeline) and a weekly Player of the Week
+// award for your team, with trophies on player pages and the roster. Each has its own switch.
+{const add=[['Presentation','rpc','Replay controls','During a replay: Space pauses, hold Left to rewind, hold Right to fast-forward, S changes the speed, C switches the camera, Esc exits. Or click the buttons.'],
+ ['Franchise','potw','Player of the week','After every game your best player gets a Player of the Week award: a news story, a home screen card and a trophy on his player page.']];
+ add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
+// ---------- replay controls ----------
+const RPS=[.25,.5,1],RPC=['Sideline','Close-up','Tight'],RPZ=[1,1.55,2.15];let RPB=[];
+{const _rd=rpDraw;rpDraw=function(dt,dr){const r=G.rp;if(!feat('rpc')||!r)return _rd(dt,dr);if(r.sp==null){r.sp=1;r.cam=0;r.pz=0;r.man=0}
+ const rf=r.P.rf,rw=keys['arrowleft'],ff=keys['arrowright'];let v=r.pz?0:RPS[r.sp];if(rw){v=-1;r.man=1}else if(ff){v=2;r.man=1}
+ // move the playhead ourselves, then let the original draw that frame (it advances by dt*.5, so we hand it 0)
+ r.t=clamp(r.t+dt*v,rf[0].t,rf[rf.length-1].t);while(r.i>0&&rf[r.i].t>r.t)r.i--;while(r.i<rf.length-1&&rf[r.i+1].t<=r.t)r.i++;
+ const atEnd=r.i>=rf.length-1;if(atEnd&&!r.man&&!r.pz){r.hold+=dt}else r.hold=0;const keep=r.hold;
+ let o=null;const z=RPZ[r.cam];if(z>1){const f=rf[r.i],bz=f.b.st=='air'||f.b.st=='kick'?2:1,s=P2(f.b.x,f.b.y,bz),fx=clamp(s[0],W*.2,W*.8),fy=clamp(s[1],TOP+40,H-60);o=X.setTransform;X.setTransform=function(a,b,c,d,e,g){X.setTransform=o;return o.call(X,a*z,b,c,d*z,e+a*fx*(1-z),g+d*fy*(1-z))}}
+ const t0=r.t,i0=r.i,L=r.P.rp||[],an=L.map(q=>q.an);L.forEach(q=>q.an=null);try{_rd(0,dr)}finally{if(o)X.setTransform=o;L.forEach((q,j)=>q.an=an[j])}if(!G.rp)return;r.t=t0;r.i=i0;r.hold=keep;if(r.hold>1.6)return rpEnd();rpUI()}}
+function rpUI(){const r=G.rp;if(!r)return;const ks=typeof KS=='number'?KS:1;X.setTransform(ks,0,0,ks,0,0);const rf=r.P.rf,t0=rf[0].t,t1=rf[rf.length-1].t,w=Math.min(520,W-40),x0=(W-w)/2,y0=H-64;
+ X.fillStyle='#000c';X.fillRect(x0-10,y0-10,w+20,56);X.fillStyle='#ffffff30';X.fillRect(x0,y0,w,6);X.fillStyle='#ef4444';X.fillRect(x0,y0,w*((r.t-t0)/Math.max(.01,t1-t0)),6);X.fillStyle='#fff';X.fillRect(x0+w*((r.t-t0)/Math.max(.01,t1-t0))-2,y0-3,4,12);
+ RPB=[];const bt=[['rw','◀◀ hold ←'],['pp',r.pz?'▶ Play (Space)':'❚❚ Pause (Space)'],['sp',`Speed ${RPS[r.sp]==1?'1x':RPS[r.sp]==.5?'½x':'¼x'} (S)`],['cam',`Camera: ${RPC[r.cam]} (C)`],['x','Exit (Esc)']];
+ const bw=(w-4*6)/5;X.font='bold 11px sans-serif';X.textAlign='center';bt.forEach(([k,t],i)=>{const bx=x0+i*(bw+6),by=y0+14;X.fillStyle=k=='x'?'#7f1d1d':'#1f2937';X.fillRect(bx,by,bw,24);X.fillStyle='#fff';X.fillText(t,bx+bw/2,by+16);RPB.push([k,bx,by,bw,24])});X.textAlign='left'}
+function rpAct(k){const r=G.rp;if(!r)return;r.sp=r.sp==null?1:r.sp;if(k=='pp'){r.pz=!r.pz;r.man=1;if(!r.pz&&r.i>=r.P.rf.length-1){r.t=r.P.rf[0].t;r.i=0}}else if(k=='sp'){r.sp=(r.sp+1)%RPS.length;r.man=1}else if(k=='cam'){r.cam=(r.cam+1)%RPC.length;r.man=1}else if(k=='x')rpEnd();else if(k=='rw'){r.t=Math.max(r.P.rf[0].t,r.t-1);r.man=1}}
+{const _h=hit;hit=function(k,...a){if(G&&G.phase=='replay'&&G.rp&&feat('rpc')&&$('modal').hidden){if(k==' ')return rpAct('pp');if(k=='s')return rpAct('sp');if(k=='c')return rpAct('cam');if(k=='arrowleft'||k=='arrowright'){G.rp.man=1;return}if(k=='escape'||k=='enter'||k=='p')return rpAct('x');return}return _h(k,...a)}}
+addEventListener('pointerdown',e=>{if(!G||G.phase!='replay'||!G.rp||!feat('rpc')||e.target!==C)return;const rc=C.getBoundingClientRect(),x=(e.clientX-rc.left)/rc.width*W,y=(e.clientY-rc.top)/rc.height*H;
+ const b=RPB.find(q=>x>=q[1]&&x<=q[1]+q[3]&&y>=q[2]-6&&y<=q[2]+q[4]+6);e.stopImmediatePropagation();e.preventDefault();if(b)rpAct(b[0]);else rpAct('pp')},true);
+// ---------- player of the week ----------
+const PW_K=['gp','pc','pa','py','ptd','pi','ra','ry','rtd','rc','ty','tt','tk','sk','in','fgm','fga'];
+function pwSnap(){R.pwS={s:R.season,ss:{}};teamPl(0).forEach(p=>{R.pwS.ss[p.id]=p.ss.slice()})}
+function pwScore(s){const v=k=>s[SI[k]]||0;return v('py')/25+v('ptd')*4-v('pi')*3+v('ry')/10+v('rtd')*6+v('ty')/10+v('tt')*6+v('tk')*.8+v('sk')*4+v('in')*5+v('fgm')*3}
+{const _wk=weekly;weekly=function(...a){let best=null;try{if(feat('potw')){const base=R.pwS&&R.pwS.s==R.season?R.pwS.ss:{};teamPl(0).forEach(p=>{const o=base[p.id]||[],d=p.ss.map((x,i)=>x-(o[i]||0));if(!(d[0]>0))return;const sc=pwScore(d);if(sc>(best?best.sc:4))best={p,d,sc}})}}catch(e){console.error(e)}
+ const r=_wk.apply(this,a);try{if(best){const p=best.p,line=boxLine(best.d);p.potw=(p.potw||[]).concat([[R.season,R.lg.wk+1,line]]);R.potwL={id:p.id,s:R.season,w:R.lg.wk+1,line};addNews(`Player of the week: ${p.g} ${p.n} (${line}).`)}if(feat('potw'))pwSnap()}catch(e){console.error(e)}return r}}
+{const _ns=newSeason;newSeason=function(...a){const r=_ns.apply(this,a);try{pwSnap()}catch(e){}return r}}
+{const _dh=dashHome;dashHome=function(...a){const r=_dh.apply(this,a);try{const L=R.potwL;if(feat('potw')&&L&&L.s==R.season){const p=R.pl.find(q=>q.id===L.id),d=$('modal').querySelector('.dash');if(p&&d){const sec=[...d.querySelectorAll('section.cardx')],at=sec[2]||sec[sec.length-1];
+ const html=card('Player of the week',`<div class="pcrd">${typeof pface=='function'?pface(p,38):''}<div class="nm">${plink(p,esc(p.n))}<span>${p.g} · week ${L.w}</span></div><b style="font-size:22px">&#127942;</b></div><p class="small">${esc(L.line)}</p>`);if(at)at.insertAdjacentHTML('afterend',html);else d.insertAdjacentHTML('beforeend',html)}}}catch(e){console.error(e)}return r}}
+{const _pp=pp;pp=function(id,...a){const r=_pp(id,...a);try{const p=R.pl.find(q=>q.id==id);if(feat('potw')&&p&&p.potw&&p.potw.length){const h=$('modal').querySelector('h1');if(h&&!h.querySelector('.pwt'))h.insertAdjacentHTML('beforeend',` <span class="pwt" title="Player of the week ${p.potw.length} time${p.potw.length==1?'':'s'}" style="font-size:20px;vertical-align:middle">&#127942;${p.potw.length>1?'<small style="font-size:13px">×'+p.potw.length+'</small>':''}</span>`);
+ const at=[...$('modal').querySelectorAll('h3')].find(x=>/^Stats/.test(x.textContent));if(at)at.insertAdjacentHTML('beforebegin',`<h3>Player of the week</h3><table>${p.potw.slice().reverse().slice(0,8).map(x=>`<tr><td>&#127942; Season ${x[0]}, week ${x[1]}</td><td class="small">${esc(x[2])}</td></tr>`).join('')}</table>`)}}catch(e){console.error(e)}return r}}
+{const _ru=rosterUI;rosterUI=function(...a){const r=_ru.apply(this,a);try{if(feat('potw'))$('modal').querySelectorAll('a[onclick^="pp("]').forEach(el=>{const id=+(el.getAttribute('onclick').match(/pp\((\d+)/)||[])[1],p=R.pl.find(q=>q.id===id);if(p&&p.potw&&p.potw.some(x=>x[0]==R.season)&&!el.nextElementSibling?.classList?.contains('pwt'))el.insertAdjacentHTML('afterend',' <span class="pwt" title="Player of the week this season">&#127942;</span>')})}catch(e){}return r}}
