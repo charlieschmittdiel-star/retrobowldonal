@@ -2,7 +2,7 @@
 // Play designer: a playbook-style editor (field drawn top-down like a real play sheet), with a play list, tools,
 // route presets, drag-able route points, undo, flip, an animated preview, and trick plays you can build into any play:
 // play action, flea flicker, halfback pass, RPO, read option, plus three new ones (reverse, double pass, hook and lateral).
-{const add=[['Playbook','ed2','New play designer','A cleaner play editor: playbook-style field, play list, drag-able route points, undo, flip, preview and trick play options.'],
+{const add=[['Playbook','ed2','New play designers','Cleaner offense and defense designers: playbook-style field, play list, drag-able points, undo, flip, preview, and trick play options.'],
  ['Playbook','trick2','More trick plays','Reverse, double pass and hook and lateral: in the stock playbook and buildable in your own plays.']];
  add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
 // ---------- stock trick plays ----------
@@ -212,7 +212,8 @@ let peCssOn=0;function peCss(){if(peCssOn)return;peCssOn=1;const s=document.crea
 /* defensive editor, tidied up */
 #ed #edt{background:#0b1410;border:1px solid #ffffff1f;border-radius:12px;padding:8px;gap:5px}#ed #edt button{border-radius:8px}#ed #edt button.on{background:#ffd84d;color:#0b1410}
 #ed #edt .de-g{display:flex;flex-wrap:wrap;gap:4px;align-items:center;width:100%;justify-content:center}#ed #edt .de-l{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#9fb5a8;margin-right:4px}
-#ed canvas{border-radius:10px;box-shadow:0 6px 24px #0008}`;document.head.appendChild(s)}
+#ed canvas{border-radius:10px;box-shadow:0 6px 24px #0008}
+#pe .pe-card p{font-size:12px;line-height:1.35;color:#9fb5a8;margin:6px 0 0}#pe .pe-pick input[type=range]{flex:1}`;s.textContent+=s.textContent.replace(/#pe/g,'#pd');document.head.appendChild(s)}
 // ---------- defensive editor: grouped toolbar and a cleaner field ----------
 {const _du=deUI;deUI=function(){_du();try{if(!feat('ed2'))return;peCss();const t=$('edt');if(!t)return;const bs=[...t.children].filter(e=>e.tagName=='BUTTON'),ex=[...t.querySelectorAll('.edx')];
  const g=(l,f)=>{const d=document.createElement('div');d.className='de-g';d.innerHTML=`<span class="de-l">${l}</span>`;bs.filter(f).forEach(b=>d.appendChild(b));return d};
