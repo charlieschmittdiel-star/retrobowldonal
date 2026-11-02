@@ -23,15 +23,16 @@ C.addEventListener('pointerdown',e=>{try{if(rpoWindow())rpoPull()}catch(err){}},
  }catch(e){console.error(e)}}}
 {const _sn=snap;snap=function(...a){const r=_sn.apply(this,a);try{if(P&&G.phase=='play'&&P.pf&&P.pf.rpo&&G.poss=='U'&&qbIsMe()&&!autoMode())G.msg=TOUCH()?'RPO: tap the field before the handoff to keep it and throw, or let him run.':'RPO: pull back on the field (or press 1-5) before the handoff to keep it and throw, or let him run.'}catch(e){}return r}}
 // Read option: the end on the running back's side is left unblocked and either crashes down on the back or stays wide.
-// The QB reads him: if he crashes, the QB keeps it and runs; if he stays wide, he hands off. On offense you can also
-// press Space before the handoff to keep it yourself.
+// When you're the QB the read is yours: press Space before the handoff to keep it, or do nothing to hand off.
+// The CPU QB reads him: if he crashes, it keeps it and runs; if he stays wide, it hands off.
 function roDE(){const D=P.def,rb=P.off[P.ho||5];return [D[0],D[3]].filter(Boolean).reduce((a,p)=>!a||dist(p,rb)<dist(a,rb)?p:a,null)}
 {const _sn=snap;snap=function(...a){const r=_sn.apply(this,a);try{if(P&&G.phase=='play'&&P.pf&&P.pf.opt&&P.run){const de=roDE();P.roDE=de;const iq=typeof IQ=='function'?IQ():.5;P.roCrash=rnd()<(G.poss=='U'?.5-.15*iq:.45);
-  if(G.poss=='U'&&qbIsMe()&&!autoMode())G.msg='Read option: the QB reads the end. Press Space before the handoff to keep it yourself.'}}catch(e){}return r}}
-{const _st=step;step=function(dt){let de=null,sv=null;try{if(P&&G.phase=='play'&&P.pf&&P.pf.opt&&!P.optDone&&P.b.st=='qb'&&P.roDE&&!(G.poss!='U'&&P.roDE===cd&&!autoMode())){de=P.roDE;if(de.eng){if(de.eng.eng===de)de.eng.eng=null;de.eng=null}sv=[de.x,de.y];de.bite=dt*1.01}}catch(e){}
+  if(G.poss=='U'&&qbIsMe()&&!autoMode())G.msg='Read option: watch the end. Press Space to keep it with the QB, or do nothing to hand off.'}}catch(e){}return r}}
+{const _st=step;step=function(dt){try{if(P&&G.phase=='play'&&P.pf&&P.pf.opt&&P.roUser&&!P.optDone&&P.b.st=='qb'&&P.t>=.46)P.optDone=1}catch(e){}let de=null,sv=null;try{if(P&&G.phase=='play'&&P.pf&&P.pf.opt&&!P.optDone&&P.b.st=='qb'&&P.roDE&&!(G.poss!='U'&&P.roDE===cd&&!autoMode())){de=P.roDE;if(de.eng){if(de.eng.eng===de)de.eng.eng=null;de.eng=null}sv=[de.x,de.y];de.bite=dt*1.01}}catch(e){}
  _st(dt);
  try{if(de&&sv&&G.phase=='play'){const d=G.dir,L=P.L,rb=P.off[P.ho||5],q=P.off[0];de.x=sv[0];de.y=sv[1];de.bite=0;
   if(P.roCrash)mv(de,rb.x+d*.6,rb.y,de.spd*.95,dt);else{const side=Math.sign(de.y-26.5)||1;mv(de,L-d*1.5,clamp(q.y+side*4.5,2,51),de.spd*.7,dt)}
-  if(P.t>=.44&&!P.optDone&&P.b.st=='qb'){const aw=(q.sk&&q.sk.awr)||65,right=rnd()<clamp(.72+(aw-60)/120,.6,.95),keep=right?P.roCrash:!P.roCrash;P.optDone=1;if(keep){roKeep();G.msg=G.poss=='U'?'The end crashed - QB keeps it!':'Read option: the QB keeps it!'}}}}catch(e){console.error(e)}}}
+  if(P.t>=.44&&!P.optDone&&P.b.st=='qb'&&G.poss=='U'&&qbIsMe()&&!autoMode()){P.roUser=1}
+  else if(P.t>=.44&&!P.optDone&&P.b.st=='qb'){const aw=(q.sk&&q.sk.awr)||65,right=rnd()<clamp(.72+(aw-60)/120,.6,.95),keep=right?P.roCrash:!P.roCrash;P.optDone=1;if(keep){roKeep();G.msg=G.poss=='U'?'The end crashed - QB keeps it!':'Read option: the QB keeps it!'}}}}catch(e){console.error(e)}}}
 function roKeep(){const b=P.b,q=P.off[0];P.optDone=1;b.st='carry';b.c=q;P.scr=1;P.rusher=q;sRec(q,'ra');G.msg='You kept it!'}
 {const _h=hit;hit=function(k,...a){try{if(k==' '&&G&&G.phase=='play'&&G.poss=='U'&&P&&P.pf&&P.pf.opt&&!P.optDone&&P.run&&P.b.st=='qb'&&qbIsMe()&&!autoMode()&&$('modal').hidden)return roKeep()}catch(e){}return _h(k,...a)}}
