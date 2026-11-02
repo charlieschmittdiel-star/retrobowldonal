@@ -20,11 +20,13 @@ function lwHide(p){if(!feat('lw2')||!p||!LW2.has(p.mv))return false;if(P&&P.b&&P
 {const _rm=rushMove;rushMove=function(m,...a){const p=cd,o=p&&p.eng;const r=_rm(m,...a);try{if(p&&p.ml>0&&p.mv==m){p.uRush=.8;if(o)o.uRush=.8}}catch(e){}return r}}
 {const _st=step;step=function(dt){_st(dt);try{if(P)P.off.concat(P.def).forEach(p=>{if(p.uRush>0)p.uRush-=dt})}catch(e){}}}
 // ---------- link to the basketball game (Hardwood Lab, in the hoops folder; it has its own saves) ----------
-{const add=[['Presentation','hoops','Basketball link','Shows a link to Hardwood Lab, the basketball game, at the bottom of the sidebar. The two games keep separate saves.']];
+{const add=[['Presentation','soccer','Soccer link','Shows a link to Pitch Lab, the soccer game, under the basketball link. It keeps its own saves.'],['Presentation','hoops','Basketball link','Shows a link to Hardwood Lab, the basketball game, at the bottom of the sidebar. The two games keep separate saves.']];
  add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
 // in the downloaded copy, pass this computer's device ID and code along so the basketball game never asks for a second one
 function hoopHref(){try{if(location.protocol==='file:'){const d=localStorage.getItem('gddev'),k=localStorage.getItem('gdlic');if(d&&k)return'hoops/index.html?d='+encodeURIComponent(d)+'&k='+encodeURIComponent(k)}}catch(e){}return'hoops/index.html'}
 const HOOPL='<a class="ni" href="hoops/index.html" onclick="this.href=hoopHref()" style="margin-top:auto;text-decoration:none;color:#fdba74">&#127936; Basketball</a>';
-{const _sh=shellHTML;shellHTML=function(...a){const r=_sh.apply(this,a);try{if(feat('hoops')&&typeof r=='string'&&r.includes('</aside>'))return r.replace('</aside>',HOOPL+'</aside>')}catch(e){}return r}}
+function socHref(){return hoopHref().replace('hoops/','soccer/')}
+const SOCL='<a class="ni" href="soccer/index.html" onclick="this.href=socHref()" style="text-decoration:none;color:#86efac">&#9917; Soccer</a>';
+{const _sh=shellHTML;shellHTML=function(...a){const r=_sh.apply(this,a);try{if(feat('hoops')&&typeof r=='string'&&r.includes('</aside>'))return r.replace('</aside>',HOOPL+(feat('soccer')?SOCL:'')+'</aside>')}catch(e){}return r}}
 // the first screen can be drawn before this file loads, so add the link to it once the page is ready
-addEventListener('load',()=>{try{if(!feat('hoops'))return;const s=document.querySelector('.side');if(s&&!s.querySelector('a[href="hoops/index.html"]'))s.insertAdjacentHTML('beforeend',HOOPL)}catch(e){}});
+addEventListener('load',()=>{try{if(!feat('hoops'))return;const s=document.querySelector('.side');if(s&&!s.querySelector('a[href="hoops/index.html"]'))s.insertAdjacentHTML('beforeend',HOOPL+(feat('soccer')?SOCL:''))}catch(e){}});

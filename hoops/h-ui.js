@@ -18,7 +18,7 @@ function shell(h){const me=R.t[0];$('ui').hidden=false;$('gamewrap').hidden=true
  const stage=R.stage?`<button class="ni hot" onclick="offUI()">${{draft:'The draft',resign:'Re-sign players',fa:'Free agency'}[R.stage]}</button>`:'';
  $('ui').innerHTML=`<div class="shell"><aside class="side"><div class="brand"><div class="logo" style="background:${me.col[0]};color:${me.col[1]}">${esc(me.ab.slice(0,3))}</div><div><b>${esc(me.n)}</b><span>${rec(0)} · Season ${R.season}</span></div></div>${stage}
  ${NAV.map(([k,n,f])=>(k=='po'&&!R.po&&!R.hist.length)||!navOK(k)?'':`<button class="ni ${PAGE==k?'on':''}" onclick="${f}">${n}</button>`).join('')}
- <a class="ni fb" href="../index.html">&#127944; Football</a></aside><main class="main" id="mainpg">${h}</main></div>`;window.scrollTo(0,0)}
+ <a class="ni fb" href="../index.html">&#127944; Football</a><a class="ni" href="../soccer/index.html" style="color:#86efac;text-decoration:none">&#9917; Soccer</a></aside><main class="main" id="mainpg">${h}</main></div>`;window.scrollTo(0,0)}
 function modal(h){const m=$('modal');m.innerHTML=`<div class="mbox">${h}<div class="mclose">${B("closeModal()",'Close')}</div></div>`;m.hidden=false;m.onclick=e=>{if(e.target===m)closeModal()}}
 function closeModal(){$('modal').hidden=true;$('modal').innerHTML=''}
 function toast(s){const d=document.createElement('div');d.className='toast';d.textContent=s;const n=document.querySelectorAll('.toast').length;d.style.bottom=(30+n*52)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),2600+n*400)}
