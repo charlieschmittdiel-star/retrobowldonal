@@ -2,7 +2,7 @@
 // 2.5D renderer: the game still simulates on a flat top-down field (x 0-120 yards, y 0-53.3 yards).
 // This file only changes how it is drawn: a tilted sideline camera, upright pixel players sorted
 // front to back, shadows, and a real arc for the ball. It replaces draw() and aimT() from game.js.
-const TOP=150,KY=6.85,FW=53.3,GZ=7;                 // far sideline screen y, px per yard of depth, px per yard of height
+const TOP=128,KY=6.55,FW=53.3,GZ=7;                 // far sideline screen y, px per yard of depth, px per yard of height
 const scY=y=>.8+.2*clamp(y,0,FW)/FW;                  // far side is slightly narrower (mild perspective)
 const camC=()=>camX+48;
 function P2(x,y,z){const s=S*scY(y);return[W/2+(x-camC())*s,TOP+y*KY-(z||0)*GZ*scY(y)]}

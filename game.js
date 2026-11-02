@@ -147,8 +147,8 @@ function step(dt){
   const t=o.eng||o.tg;if(!t)return;
   if(o.eng){t.mt-=dt;const tp=clamp((P.t-2.8)/2.5,0,1);let f=clamp(.11+(RR(t)-oo)/120+tp*.15+(t.i==1||t.i==2?.06:0),0,.8);if(t.ml>0&&t.mv=='bull')f=Math.min(.9,f+.2);if(t.helper)f*=.6;if(!P.run&&!P.scr&&P.t<.35)f=Math.max(f,.25);let hit=0;
    if(t.mt<=0){t.mt=1.1+rnd()*.6;t.mv=['bull','swim','rip','spin'][rnd()*4|0];o.mv=['anchor','punch','slide'][rnd()*3|0];t.ml=o.ml=.7;
-    hit=rnd()<clamp(.14+tp*.14+(t.i==0||t.i==3?.05:0)+(RR(t)-oo)/100-(t.helper?.1:0)-(t.mv=='bull'&&o.mv=='anchor'?.15:0)-(t.mv=='swim'&&o.mv=='punch'?.12:0)-(t.mv=='rip'&&o.mv=='slide'?.12:0)-(t.mv=='spin'?.06:0),.05,.7)}
-   if(hit){if(t.helper){t.helper.help=null;t.helper=null}o.eng=t.eng=null;t.cool=.8;o.cool=.5;o.rt=0;t.boost=.4;if(t.mv!='bull'){o.fa+=Math.PI*.8;o.stun=.3}}
+    hit=rnd()<clamp(.14+(FT('drop2')&&!P.run?.09:0)+tp*.14+(t.i==0||t.i==3?.05:0)+(RR(t)-oo)/100-(t.helper?.1:0)-(t.mv=='bull'&&o.mv=='anchor'?.15:0)-(t.mv=='swim'&&o.mv=='punch'?.12:0)-(t.mv=='rip'&&o.mv=='slide'?.12:0)-(t.mv=='spin'?.06:0),.05,.7)}
+   if(hit){if(t.helper){t.helper.help=null;t.helper=null}o.eng=t.eng=null;t.cool=.8;o.cool=FT('drop2')&&!P.run&&!P.scr?1.2:.5;o.rt=0;t.boost=.4;if(t.mv!='bull'){o.fa+=Math.PI*.8;o.stun=.3}}
    else if((P.run||P.scr)&&!P.kr){const adv=clamp(NF(.55,.68)+(oo-RS(t))/60+(P.t<.7?.35:0),-.25,1.2),hole=c?c.y:(O[P.ho]||qb).y,lat=Math.sign(t.y-hole)||0;
     t.x=clamp(t.x+d*adv*3.2*dt,.5,119.5);t.y=clamp(t.y+lat*Math.abs(adv)*1.6*dt,.4,52.6);o.x=t.x-d*1.1;o.y=t.y-lat*.4}
    else{mv(t,tg0.x,tg0.y,t.spd*f,dt);const k=Math.hypot(tg0.x-t.x,tg0.y-t.y)||1;o.x=t.x+(tg0.x-t.x)/k*1.2;o.y=t.y+(tg0.y-t.y)/k*1.2}}

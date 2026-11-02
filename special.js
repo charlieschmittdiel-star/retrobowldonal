@@ -41,6 +41,7 @@ function startKick(kind,kt,spot){G.run=false;const rt=kt=='U'?'C':'U',d=rt=='U'?
  if((lx-own)*d<=0){
   if(kind=='punt'&&rnd()<(pk.skl-55)/100){G.los=own+d*5;G.phase='pre';setup();G.msg=`${kt=='U'?'Your':'CPU'} punter pinned them: downed at the 5.`;return}
   G.los=own+d*(kind=='ko'?25:20);G.phase='pre';setup();
+  if(kind=='ko'&&typeof FT=='function'&&FT('ko2')){G.los=clamp(lx,11,109);setup();krSetup(lx,d,kind);P.koEZ=1;return}
   if(kind=='ko'&&rt=='U'){G.ch={k:'tb',lx,d,kind};G.msg='The kick sails into the end zone. Take the touchback or return it?';ui();return}
   if(kind=='ko'&&rt=='C'&&Math.abs(lx-own)<3&&rnd()<.5){G.ch=null;krSetup(lx,d,kind);return}
   G.msg=`${kt=='U'?'Your':'CPU'} ${kind=='ko'?'kickoff':'punt'}: touchback.`;return}
