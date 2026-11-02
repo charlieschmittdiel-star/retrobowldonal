@@ -17,7 +17,7 @@
 function koKneel(c){P.knl=1;endPlay('tackle',c.x);G.msg='Kneel in the end zone: touchback, ball at the 25.';if(typeof xLog=='function'&&feat('pbp'))xLog('Kneel in the end zone for a touchback.')}
 {const _kr=krSetup;krSetup=function(lx,d,kind,...a){const r=_kr.call(this,lx,d,kind,...a);try{if(P){P.koDec=0;if(kind=='ko'&&feat('ko2')&&(lx-(d>0?10:110))*d<0){P.koEZ=1;if(G.poss=='U')G.msg='Kickoff fielded in the end zone. Run it out, or back up to take a knee for a touchback.'}}}catch(e){}return r}}
 // with the deeper drop, a rusher who has beaten his man closes on the quarterback a little faster (keeps sack rates real)
-{const _st=step;step=function(dt){_st(dt);try{if(!feat('drop2')||!P||G.phase!='play'||P.run||P.kr||P.b.st!='qb')return;const q=P.off[0];P.def.forEach(p=>{if(!p.rush||p.eng||p.fall||p.bite>0||p.stun>0||(p.cool||0)>0)return;const dd=dist(p,q);if(dd<1||dd>12)return;const k=Math.min(dd-.9,p.spd*.35*dt);p.x+=(q.x-p.x)/dd*k;p.y+=(q.y-p.y)/dd*k})}catch(e){}}}
+{const _st=step;step=function(dt){_st(dt);try{if(!feat('drop2')||!P||G.phase!='play'||P.run||P.kr||P.b.st!='qb')return;const q=P.off[0];P.def.forEach(p=>{if(!p.rush||p.eng||p.fall||p.bite>0||p.stun>0||(p.cool||0)>0)return;const dd=dist(p,q);if(dd<1||dd>12)return;const k=Math.min(dd-.9,p.spd*0*dt);p.x+=(q.x-p.x)/dd*k;p.y+=(q.y-p.y)/dd*k})}catch(e){}}}
 // ---------- your defense's assignments drawn on the field before the snap ----------
 {const add=[['On the field','dshow','Show defensive assignments','Before the snap on defense, each defender\'s job is drawn on the field: zones, man coverage lines, rush and spy arrows. Choose all defenders or only yours.']];
  add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
@@ -69,3 +69,17 @@ function kfKick(lx,d){const O=P.off,D=P.def,ret=O[5],K=(d>0?110:10)-d*35,ly=ret.
  D.forEach((p,i)=>put(p,oO[i==5?0:i==0?5:i]));P.b.x=lx;P.b.y=ly;G.msg=G.poss=='U'?'Fielded! Run it back.':'He fields it. Chase him down!';ui()}catch(e){console.error(e)}return r}}
 
 function kfMv(p,tx,ty,sp,dt){const dx=tx-p.x,dy=ty-p.y,m=Math.hypot(dx,dy);if(m<.05)return;const k=Math.min(m,sp*dt)/m;p.x+=dx*k;p.y+=dy*k;p.vx=dx/m*sp;p.vy=dy/m*sp;p.fa=Math.atan2(dy,dx)}
+
+// ---------- CPU quarterbacks look before they throw ----------
+// A CPU quarterback (or your QB when the CPU is playing him) only throws to a receiver after his eyes (the vision cone)
+// have been on that receiver for a moment: longer for low-vision QBs, shorter under pressure. Throw-aways are allowed.
+{const add=[['On the field','look2','QBs look before throwing','CPU quarterbacks have to look at a receiver (keep him in the vision cone) for a moment before throwing to him.']];
+ add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
+const lkCpu=()=>G.poss=='C'||!qbIsMe()||(typeof autoMode=='function'&&autoMode());
+function lkNeed(q){const v=typeof fs=='function'&&DS2()?fs(q,'vis'):(q.sk?q.sk.awr:65),pr=P.def.some(p=>p.rush&&!p.eng&&dist(p,q)<2.8);return clamp(.34-(v-50)*.004,.14,.34)*(pr?.4:1)}
+{const _st=step;step=function(dt){_st(dt);try{if(!P||G.phase!='play'||P.b.st!='qb'||P.run){if(P)P.dw=null;return}const q=P.off[0];P.dw=P.dw||{};
+ P.off.forEach((r,i)=>{if(i==0)return;const ok=coneOff(q,r.x,r.y)<=.03;P.dw[i]=ok?(P.dw[i]||0)+dt:0})}catch(e){}}}
+{const _tt=throwTo;throwTo=function(r,...a){try{if(feat('look2')&&P&&G.phase=='play'&&P.b.st=='qb'&&!P.kr&&r&&lkCpu()){const i=P.off.indexOf(r),q=P.off[0];
+ if(i>0&&((P.dw&&P.dw[i])||0)<lkNeed(q)){P.look=r;return}}}catch(e){}return _tt.call(this,r,...a)}}
+// keep his eyes on the receiver he's waiting to throw to
+{const _sn=snap;snap=function(...a){const r=_sn.apply(this,a);try{if(P){P.dw=null;P.lkWant=null}}catch(e){}return r}}

@@ -92,7 +92,7 @@ function resolve(){const b=P.b,r=b.tgt,l={x:b.tx,y:b.ty};b.st='dead';let dd=null
  if(rd>2.4&&m>2.4)return endPlay('inc');
  const hk=dd.hawked?1:0,tight=Math.max(clamp(1-m/3,0,1),hk*.8),ro=r?r.o:55;
  const ic=m<2.4?clamp((NF(.006,.016)+tight*NF(.09,.12)+(BK(dd)-CR(r,tight))/320)*(m<=rd+.3||hk?1:.35)+hk*.25,0,.6):0;
- const cc=r&&rd<2.4?clamp(NF(.95,.93)+NF(0,Math.hypot(b.tx-b.sx,b.ty-b.sy)<16?.13:Math.hypot(b.tx-b.sx,b.ty-b.sy)>26?-.1:0)-tight*NF(.5,.72)-hk*.15+(CR(r,tight)-CV(dd))/200+(P.off[0].o-70)/300-(rd>1.2?.2:0)-(m<rd?.15:0),.05,.95):0,u=rnd();
+ const cc=r&&rd<2.4?clamp(NF(.95,.93)+NF(0,Math.hypot(b.tx-b.sx,b.ty-b.sy)<16?.2:Math.hypot(b.tx-b.sx,b.ty-b.sy)>26?-.1:0)-tight*NF(.5,.72)-hk*.15+(CR(r,tight)-CV(dd))/200+(P.off[0].o-70)/300-(rd>1.2?.2:0)-(m<rd?.15:0),.05,.95):0,u=rnd();
  if(u<ic)return intReturn(l,dd);
  if(u<ic+cc){b.st='carry';b.c=r;P.rec=r;sRec(P.passer,'pc');sRec(r,'rc')}else if(rnd()<(m<1.8?.4:rd<1.5?.22:.08))tip(l);else endPlay('inc')}
 function endPlay0(k,x){if(P.over)return;P.over=1;P.b.st='dead';P.off.concat(P.def).forEach(p=>{G.stm[p.t+p.s+p.i]=p.stm});const d=G.dir,u=G.poss=='U',gl=d>0?110:10;let msg='';x=x==null?P.L:x;
@@ -136,7 +136,7 @@ function step(dt){
   else if(P.sd&&b.st=='qb'&&i<6){r.ft-=dt;if(!(r.ft>0)&&FT('scrd')){r.ft=.25;r.fl=scrSpot(r,qb,L,d,D,O)}else if(!(r.ft>0)){r.ft=.3;let bs=-9,bt=null;for(const dx of[0,3,6])for(const dy of[-8,-4,0,4,8]){const x=clamp(r.x+d*dx,2,118),y=clamp(r.y+dy,2,51),f=(x-L)*d,dq=Math.hypot(x-qb.x,y-qb.y);if(f<3||dq<5||dq>32)continue;const sc=Math.min(10,...D.map(p=>Math.hypot(p.x-x,p.y-y)))-Math.abs(dq-14)*.1;if(sc>bs){bs=sc;bt=[x,y]}}r.fl=bt||[r.x+d*3,r.y]}mv(r,r.fl[0],r.fl[1],r.spd,dt)}
   else if(r.ri<r.route.length){const w=r.route[r.ri];mv(r,w[0],w[1],r.spd,dt);if(r.vx||r.vy){const mm=Math.hypot(r.vx,r.vy);r.ld=[r.vx/mm,r.vy/mm]}if(Math.hypot(w[0]-r.x,w[1]-r.y)<.4){r.ri++;r.brk=.55;if(r.pid!==R.me||!CAR())aiWrFake(r)}}
   else if(P.run&&i==P.ho&&b.st=='qb')mv(r,L-1*d,r.y,6,dt);
-  else if(i<6&&!P.run){let l=r.ld||[d,0];if((r.y<3&&l[1]<0)||(r.y>50&&l[1]>0))l=r.ld=[d,0];mv(r,r.x+l[0]*4,r.y+l[1]*4,r.spd*(FT('nfl')&&r.route.length&&Math.abs(r.route[r.route.length-1][0]-L)<15?.45:1),dt)}else r.vx=r.vy=0});
+  else if(i<6&&!P.run){let l=r.ld||[d,0];if((r.y<3&&l[1]<0)||(r.y>50&&l[1]>0))l=r.ld=[d,0];mv(r,r.x+l[0]*4,r.y+l[1]*4,r.spd*(FT('nfl')&&rSettle(r,d)?.4:1),dt)}else r.vx=r.vy=0});
  const tg0=c||qb;
  O.forEach((o,i)=>{if(o==c||!isBl(o,i))return;const oo=BR(o)-bPen(o);
   if(!o.eng){o.rt=(o.rt||0)-dt;if(o.rt<=0||!o.tg){o.rt=.15;let best=null,bs=1e9;
@@ -147,8 +147,8 @@ function step(dt){
   const t=o.eng||o.tg;if(!t)return;
   if(o.eng){t.mt-=dt;const tp=clamp((P.t-2.8)/2.5,0,1);let f=clamp(.11+(RR(t)-oo)/120+tp*.15+(t.i==1||t.i==2?.06:0),0,.8);if(t.ml>0&&t.mv=='bull')f=Math.min(.9,f+.2);if(t.helper)f*=.6;if(!P.run&&!P.scr&&P.t<.35)f=Math.max(f,.25);let hit=0;
    if(t.mt<=0){t.mt=1.1+rnd()*.6;t.mv=['bull','swim','rip','spin'][rnd()*4|0];o.mv=['anchor','punch','slide'][rnd()*3|0];t.ml=o.ml=.7;
-    hit=rnd()<clamp(.14+(FT('drop2')&&!P.run?.09:0)+tp*.14+(t.i==0||t.i==3?.05:0)+(RR(t)-oo)/100-(t.helper?.1:0)-(t.mv=='bull'&&o.mv=='anchor'?.15:0)-(t.mv=='swim'&&o.mv=='punch'?.12:0)-(t.mv=='rip'&&o.mv=='slide'?.12:0)-(t.mv=='spin'?.06:0),.05,.7)}
-   if(hit){if(t.helper){t.helper.help=null;t.helper=null}o.eng=t.eng=null;t.cool=.8;o.cool=FT('drop2')&&!P.run&&!P.scr?1.2:.5;o.rt=0;t.boost=.4;if(t.mv!='bull'){o.fa+=Math.PI*.8;o.stun=.3}}
+    hit=rnd()<clamp(.14+0+tp*.14+(t.i==0||t.i==3?.05:0)+(RR(t)-oo)/100-(t.helper?.1:0)-(t.mv=='bull'&&o.mv=='anchor'?.15:0)-(t.mv=='swim'&&o.mv=='punch'?.12:0)-(t.mv=='rip'&&o.mv=='slide'?.12:0)-(t.mv=='spin'?.06:0),.05,.7)}
+   if(hit){if(t.helper){t.helper.help=null;t.helper=null}o.eng=t.eng=null;t.cool=.8;o.cool=.5;o.rt=0;t.boost=.4;if(t.mv!='bull'){o.fa+=Math.PI*.8;o.stun=.3}}
    else if((P.run||P.scr)&&!P.kr){const adv=clamp(NF(.55,.68)+(oo-RS(t))/60+(P.t<.7?.35:0),-.25,1.2),hole=c?c.y:(O[P.ho]||qb).y,lat=Math.sign(t.y-hole)||0;
     t.x=clamp(t.x+d*adv*3.2*dt,.5,119.5);t.y=clamp(t.y+lat*Math.abs(adv)*1.6*dt,.4,52.6);o.x=t.x-d*1.1;o.y=t.y-lat*.4}
    else{mv(t,tg0.x,tg0.y,t.spd*f,dt);const k=Math.hypot(tg0.x-t.x,tg0.y-t.y)||1;o.x=t.x+(tg0.x-t.x)/k*1.2;o.y=t.y+(tg0.y-t.y)/k*1.2}}
