@@ -31,18 +31,19 @@ function slBuild(){const r=vSeed(11),a=[];[['U',33,57],['C',63,87]].forEach(([t,
   a.push({t,k:'co',x:(x0+x1)/2,y:-1.35,ph:r()*7,bx:(x0+x1)/2,sk:VSKIN[r()*5|0]})});a.push({t:'',k:'cam',x:60,y:-1.05,ph:0,sk:VSKIN[1]});a.sort((p,q)=>p.y-q.y);return a}
 function vFig(o,now,lift,arms){const s=P2(o.x,o.y),u=1.55,x=Math.round(s[0]),y=Math.round(s[1]-lift),T=TEAM[o.t]||{j:'#334155',j2:'#1e293b',h:'#111827',pt:'#cbd5e1',num:'#fff'},R_=(a,b,w,h,c)=>{X.fillStyle=c;X.fillRect(x+a*u,y+b*u,w*u,h*u)};
  if(o.k=='pl'){R_(-1.8,-4.6,1.4,4,T.pt);R_(.4,-4.6,1.4,4,T.pt);R_(-1.9,-.8,1.6,.8,'#111');R_(.3,-.8,1.6,.8,'#111');R_(-2,-9.6,4,5.2,T.j);R_(-2.7,-9.6,5.4,1.7,T.j);R_(-.5,-8,1,1.8,T.num||'#fff');
-  if(arms){R_(-3.6,-13.4,1.1,4.2,T.j);R_(2.5,-13.4,1.1,4.2,T.j);R_(-3.6,-14.2,1.1,.9,o.sk);R_(2.5,-14.2,1.1,.9,o.sk)}else{R_(-3.2,-9.2,1.1,4,T.j);R_(2.1,-9.2,1.1,4,T.j);R_(-3.2,-5.3,1.1,.9,o.sk);R_(2.1,-5.3,1.1,.9,o.sk)}
+  if(arms==='sad'){R_(-3,-12.2,1.1,3,T.j);R_(2,-12.2,1.1,3,T.j);R_(-2.2,-13,1.1,.9,o.sk);R_(1.2,-13,1.1,.9,o.sk)}else if(arms){R_(-3.6,-13.4,1.1,4.2,T.j);R_(2.5,-13.4,1.1,4.2,T.j);R_(-3.6,-14.2,1.1,.9,o.sk);R_(2.5,-14.2,1.1,.9,o.sk)}else{R_(-3.2,-9.2,1.1,4,T.j);R_(2.1,-9.2,1.1,4,T.j);R_(-3.2,-5.3,1.1,.9,o.sk);R_(2.1,-5.3,1.1,.9,o.sk)}
   if(o.hel){R_(-1.4,-12.6,2.8,3,T.h);R_(-1.2,-10.2,2.4,.5,'#9ca3af')}else{R_(-1.1,-12.3,2.2,2.7,o.sk);R_(-1.1,-12.5,2.2,.8,'#2b1d14');if(!arms)R_(2.1,-6.2,2,1.8,T.h)}}
  else if(o.k=='co'){R_(-1.7,-4.6,1.4,4.2,'#c8b48a');R_(.3,-4.6,1.4,4.2,'#c8b48a');R_(-1.8,-.6,1.6,.6,'#111');R_(.2,-.6,1.6,.6,'#111');R_(-2,-9.4,4,5,T.j2||T.j);
-  if(arms){R_(-3.2,-13,1.1,4,T.j2||T.j);R_(-3.2,-13.8,1.1,.9,o.sk)}else{R_(-3.1,-9,1.1,3.6,T.j2||T.j);R_(-3.4,-6,1.8,2.2,'#f8fafc')}R_(2.1,-9,1.1,3.6,T.j2||T.j);
+  if(arms==='sad'){R_(-2.8,-12.4,1.1,3.4,T.j2||T.j);R_(1.8,-12.4,1.1,3.4,T.j2||T.j);R_(-2,-13.2,1.1,.9,o.sk);R_(1,-13.2,1.1,.9,o.sk)}else{if(arms){R_(-3.2,-13,1.1,4,T.j2||T.j);R_(-3.2,-13.8,1.1,.9,o.sk)}else{R_(-3.1,-9,1.1,3.6,T.j2||T.j);R_(-3.4,-6,1.8,2.2,'#f8fafc')}R_(2.1,-9,1.1,3.6,T.j2||T.j)}
   R_(-1.1,-12,2.2,2.6,o.sk);R_(-1.3,-12.6,2.6,1,T.h||'#111');R_(1.2,-12,1.3,.4,T.h||'#111');R_(-1.5,-11.6,.4,1.8,'#111')}
  else if(o.k=='cam'){R_(-1.7,-4.6,1.4,4.2,'#1f2937');R_(.3,-4.6,1.4,4.2,'#1f2937');R_(-2,-9.4,4,5,'#374151');R_(-1.1,-12,2.2,2.6,o.sk);R_(-1.2,-12.5,2.4,.9,'#111');
   const fx=o.fx||1;R_(fx>0?-1.6:-2.6,-11.4,4.2,2.2,'#111827');R_(fx>0?2.6:-3.4,-11,.9,1.4,'#475569');R_(fx>0?-1.4:1.9,-11.2,.5,.5,'#ef4444');R_(-2.8,-9,1,3,'#374151')}
  else if(o.k=='crew'){R_(-1.6,-4.4,1.3,4,'#111');R_(.3,-4.4,1.3,4,'#111');for(let i=0;i<5;i++)R_(-1.9,-9.2+i,3.8,1,i%2?'#111':'#f8fafc');R_(-1,-11.8,2,2.6,o.sk);R_(-1.2,-12.2,2.4,.8,'#111');R_(1.9,-8.8,1,3.4,'#111')}}
 function vSideline(now){if(!XV.sl)XV.sl=slBuild();const b=P.b,dt=XV.dt;
  XV.sl.forEach(o=>{let lift=0,arms=0;const e=o.t?XV.ex[o.t]||0:0;
-  if(o.k=='pl'){if(e>.2){lift=Math.abs(Math.sin(now*8+o.ph))*6*e;arms=e>.4}else lift=Math.max(0,Math.sin(now*1.3+o.ph))*.6}
-  else if(o.k=='co'){o.x=o.bx+Math.sin(now*.35+o.ph)*3;arms=e>.35&&Math.sin(now*6+o.ph)>0}
+  const oe=o.t?XV.ex[o.t=='U'?'C':'U']||0:0,sad=typeof feat=='function'&&feat('side2')&&oe>.4&&e<.2;
+  if(o.k=='pl'){if(e>.2){lift=Math.abs(Math.sin(now*8+o.ph))*6*e;arms=e>.4}else if(sad){arms=(o.ph*10|0)%3?'sad':0;lift=0}else lift=Math.max(0,Math.sin(now*1.3+o.ph))*.6}
+  else if(o.k=='co'){o.x=o.bx+Math.sin(now*.35+o.ph)*(sad?.6:3);arms=sad?'sad':e>.35&&Math.sin(now*6+o.ph)>0}
   else if(o.k=='cam'){const tx=clamp(b?b.x:60,14,106),dx=tx-o.x;o.x+=clamp(dx,-7*dt,7*dt);o.fx=dx>.5?1:dx<-.5?-1:(o.fx||1)}
   vFig(o,now,lift,arms)})}
 // ---------- field details: midfield logo, chains, first-down glow ----------
