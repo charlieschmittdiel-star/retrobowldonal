@@ -65,7 +65,7 @@ const NFL_DEEP=['Go','Verts','Post Corner','PA Deep'];
 {const _cp=cpuPlay;cpuPlay=function(){let n=_cp();try{if(!FT('nfl'))return n;const all=allP(),cat=k=>{const v=all[k]||{};return v.flea||v.hbp?'trick':NFL_DEEP.includes(k)?'deep':'x'};
  const des=(G.q>=4&&G.clk<=240&&G.sc[1]<G.sc[0])||(G.q==2&&G.clk<=60)||(G.down>=3&&G.ytg>=10);
  for(let i=0;i<3;i++){const c=cat(n);if((c=='trick'&&rnd()<.88)||(c=='deep'&&!des&&rnd()<.5))n=_cp();else break}}catch(e){}return n}}
-{const _cd=cpuDef;cpuDef=function(){let n=_cd();try{if(!FT('nfl'))return n;const pass=G.down>=3&&G.ytg>=7;for(let i=0;i<3;i++){if((n=='All Out'&&rnd()<(pass?.35:.7))||(n=='Blitz'&&rnd()<.42))n=_cd();else break}}catch(e){}return n}}
+{const _cd=cpuDef;cpuDef=function(){let n=_cd();try{if(!FT('nfl'))return n;const pass=G.down>=3&&G.ytg>=7;const rush=k=>((DALL()[k]||{p:[]}).p.filter(q=>q[2]=='r').length);for(let i=0;i<3;i++){const r=rush(n);if((r>=6&&rnd()<(pass?.35:.7))||(r==5&&rnd()<.42))n=_cd();else break}}catch(e){}return n}}
 // running back check-release: on a pass play where he stayed in to block, he leaks into the flat once the rush is picked up
 {const _st=step;step=function(dt){_st(dt);try{if(!FT('nfl')||!P||G.phase!='play'||P.run||P.pf&&(P.pf.flea||P.pf.hbp)||P.rbRel||P.t<1.35||P.b.st!='qb')return;P.rbRel=1;
  const O=P.off,r=O[5],q=O[0],d=G.dir,L=P.L;if(!r||r.route.length||r.eng||P.kr)return;if(P.def.some(p=>p.rush&&!p.eng&&dist(p,q)<4))return;if(rnd()<.35)return;

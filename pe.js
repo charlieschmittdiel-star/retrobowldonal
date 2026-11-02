@@ -17,7 +17,7 @@ peStock();{const _ot=optT;optT=function(k){_ot(k);if(k=='trick2')peStock()}}
 {const _sn=snap;snap=function(...a){const r=_sn.apply(this,a);try{if(P&&G.phase=='play'){P.revDone=0;P.wrpDone=0;P.hklDone=0;P.hklT=0;peTrickSnap()}}catch(e){console.error(e)}return r}}
 function peTrickSnap(){const f=P.pf||{},O=P.off,d=G.dir,L=P.L;if(P.kr)return;
  if(f.rev&&O[f.rev]){const w=O[f.rev],side=Math.sign(w.sy-26.5)||1;w.route=[[L-d*3.5,26.5+side*3],[L-d*2.8,26.5-side*4],[L-d*1,clamp(26.5-side*15,3,50)],[L+d*6,clamp(26.5-side*18,2,51)]];w.ri=0}
- if(f.wrp&&O[f.wrp]){const w=O[f.wrp];w.route=[[L-d*3,clamp(w.sy+(26.5-w.sy)*.3,3,50)]];w.ri=0}}
+ if(f.wrp&&O[f.wrp]){const w=O[f.wrp];w.route=[[L-d*4.5,clamp(w.sy+(26.5-w.sy)*.3,3,50)]];w.ri=0}}
 {const _ta=throwAt;throwAt=function(...a){try{if(P)P.wrpDone=1}catch(e){}return _ta.apply(this,a)}}
 // the tricks themselves
 {const _st=step;step=function(dt){const f=P&&P.pf;let rb=null,sv=null,tl=null,tsv=null;
@@ -30,7 +30,7 @@ function peTrickSnap(){const f=P.pf||{},O=P.off,d=G.dir,L=P.L;if(P.kr)return;
    if(dist(rb,w)<1.8||P.t>2.4){P.revDone=1;if(dist(rb,w)<3.5&&(w.x-L)*d<0){b.c=w;P.rusher=w;w.route=[];w.ri=0;if(G.box&&rb.pid&&G.box[rb.pid])G.box[rb.pid][SI.ra]=Math.max(0,(G.box[rb.pid][SI.ra]||0)-1);sRec(w,'ra');
     P.def.forEach(p=>{if(!p.eng&&dist(p,rb)<14&&rnd()<.7)p.bite=.5});if(me)G.msg='REVERSE! He has it going the other way!'}}}}
   // double pass: the QB pitches to a receiver behind the line, who becomes the passer; the QB goes out on a route
-  if(f.wrp&&!P.wrpDone&&b.st=='qb'&&!P.run&&P.t>=.8){const k=f.wrp,w=O[k],q=O[0];P.wrpDone=1;
+  if(f.wrp&&!P.wrpDone&&b.st=='qb'&&!P.run&&P.t>=.7){const k=f.wrp,w=O[k],q=O[0];P.wrpDone=1;
    if(w&&(w.x-L)*d<-.3&&dist(w,q)<26&&!w.eng){O[k]=q;O[0]=w;const side=q.y<26.5?-1:1;q.route=[[q.x+d*8,clamp(q.y+side*7,2,51)],[q.x+d*30,clamp(q.y+side*9,2,51)]];q.ri=0;w.route=[];w.ri=0;w.fa=d>0?0:Math.PI;w.ha=null;
     b.x=w.x;b.y=w.y;P.sd=0;P.look=null;P.def.forEach(p=>{if(!p.rush&&rnd()<.45)p.bite=.4});if(me)G.msg='Double pass! Your receiver has it - throw it!'}}
   // CPU quarterbacks look for the hook man on a hook and lateral
@@ -93,7 +93,7 @@ function peUI(){if(!$('pe'))return;const pl=PE.pl,q=pl.p[PE.sel],all=allP(),tr=p
   const P2=pp.map(p=>[ox+p[0]*sc,oy+p[1]*sc]),l=P2[P2.length-1],o=P2[P2.length-2]||[l[0],l[1]+1],an=Math.atan2(l[1]-o[1],l[0]-o[0]),ah=[[l[0]-Math.cos(an-.5)*6,l[1]-Math.sin(an-.5)*6],[l[0]-Math.cos(an+.5)*6,l[1]-Math.sin(an+.5)*6]];
   return`<svg viewBox="0 0 40 40" width="32" height="32"><polyline points="${P2.map(p=>p.join(',')).join(' ')}" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>${P2.length>1?`<polyline points="${ah[0].join(',')} ${l.join(',')} ${ah[1].join(',')}" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`:''}<circle cx="${P2[0][0]}" cy="${P2[0][1]}" r="3.2" fill="currentColor"/></svg>`};
  const posN=i=>`${PO[i]}${i>0&&i<6?' '+i:''}`,skill=[1,2,3,4,5],pick=(k,v,lab,ex)=>`<label class="pe-pick">${lab}<select onchange="peSet('${k}',+this.value)">${skill.filter(i=>i!==ex).map(i=>`<option value="${i}" ${v==i?'selected':''}>${posN(i)}</option>`).join('')}</select></label>`;
- const T=PE_TR.filter(t=>!t.nw||feat('trick2')),tags=typeof TAGS!='undefined'&&feat('tags')?TAGS:[],tg=(typeof PTAG!='undefined'&&PTAG[PE.n])||[];
+ const T=PE_TR.filter(t=>!t.nw||feat('trick2')),tags=typeof TAGS!='undefined'&&feat('tags')?TAGS:[],tg=typeof offTags=='function'?offTags(PE.n):((typeof PTAG!='undefined'&&PTAG[PE.n])||[]);
  $('pe-side').innerHTML=`<div class="pe-card"><div class="pe-ct">Selected: <b>${q?posN(PE.sel):'nobody'}</b></div>
   ${q&&(PE.sel<6||pl.run)?`<div class="pe-rts">${Object.keys(PE_RT).map(k=>`<button onclick="peRoute('${k}')" title="${k}">${svg(PE_RT[k].map(([a,b])=>[a,b*(q[1]<26.5?1:-1)]))}<span>${k}</span></button>`).join('')}</div>`:'<p class="small dim">Linemen block. Use the Block tool to give him a defender, or leave him on his own.</p>'}
   <div class="pe-row">${q&&q[2].length?'<button onclick="peClr(2)">Clear route</button>':''}${q&&q[4]&&q[4].length?'<button onclick="peClr(4)">Clear motion</button>':''}${q&&q[3]>=0?'<button onclick="peClr(3)">Clear block</button>':''}</div></div>
@@ -121,7 +121,7 @@ function peSave(asNew){let n=peName();if(!n){PE.msg='Give the play a name first.
  if(asNew&&n==PE.n){let i=2;while(allP()[n+' '+i])i++;n=(n.slice(0,15)+' '+i).trim()}
  if(!CP[n]&&PRE[n]){PE.msg=`"${n}" is a stock play. Pick a different name (or use Save as new).`;return peUI()}
  if(PE.n!==n&&CP[PE.n]&&!asNew)delete CP[PE.n];
- CP[n]=clone(PE.pl);lsSet('gd2p',JSON.stringify(CP));if(typeof PTAG!='undefined'&&PTAG[PE.n]&&PE.n!==n){PTAG[n]=PTAG[n]||PTAG[PE.n].slice();lsSet('gdtags',JSON.stringify(PTAG))}
+ CP[n]=clone(PE.pl);lsSet('gd2p',JSON.stringify(CP));if(typeof PTAG!='undefined'&&PE.n!==n){const t0=typeof offTags=='function'?offTags(PE.n):PTAG[PE.n];if(t0&&t0.length&&!PTAG[n]){PTAG[n]=t0.slice();lsSet('gdtags',JSON.stringify(PTAG))}}
  PE.n=n;PE.nm=n;PE.dirty=0;PE.warned=0;PE.msg='';$('pe-nm').value=n;peUI();peToast('Saved "'+n+'"')}
 function peDel(){if(!CP[PE.n])return;if(PE.delAsk!==PE.n){PE.delAsk=PE.n;PE.msg='Click Delete again to remove "'+PE.n+'" for good.';return peUI()}delete CP[PE.n];lsSet('gd2p',JSON.stringify(CP));PE.delAsk=null;peLoad(PRE.Slants?'Slants':Object.keys(allP())[0]);$('pe-nm').value=PE.nm;peUI();peToast('Deleted')}
 function peDone(){if(PE.dirty){let n=peName()||PE.n;if(!CP[n]&&PRE[n])n=('My '+n).slice(0,18);let i=2;const b=n;while(PRE[n]&&!CP[n])n=b+' '+i++;CP[n]=clone(PE.pl);lsSet('gd2p',JSON.stringify(CP));PE.n=n;PE.nm=n;PE.dirty=0}
