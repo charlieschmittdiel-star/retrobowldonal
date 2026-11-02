@@ -12,7 +12,7 @@
  P.cTight=rd<2.4&&m<1.3;
  if(feat('jumpb')&&Math.hypot(b.tx-b.sx,b.ty-b.sy)>=20&&(b.arc||1)>=.9&&rd<1.6&&m<1.5&&!(G.poss!='U'&&dd===cd&&cd.swat>0)){
   const rs=r.sk||{skl:60,str:60,spd:60,awr:60},ds=dd.sk||{skl:60,str:60,spd:60,awr:60},hawk=G.poss!='U'&&dd===cd&&cd.hawk>0?12:0;
-  const sr=rs.skl*.45+rs.str*.25+rs.spd*.1+8+rnd()*30,sd=ds.awr*.3+ds.skl*.35+ds.str*.2+hawk+rnd()*30+(m<rd?3:0),df=sr-sd;
+  const sr=DS2()?fs(r,'cit')*.4+fs(r,'jmp')*.3+fs(r,'pow')*.1+fs(r,'spd')*.1+8+rnd()*30:rs.skl*.45+rs.str*.25+rs.spd*.1+8+rnd()*30,sd=(DS2()?fs(dd,'bsk')*.4+fs(dd,'jmp')*.3+fs(dd,'pow')*.15+fs(dd,'prc')*.1:ds.awr*.3+ds.skl*.35+ds.str*.2)+hawk+rnd()*30+(m<rd?3:0),df=sr-sd;
   r.an={k:'overtop',t:0,d:.65};dd.an={k:'overtop',t:0,d:.6};if(feat('slowmo')&&!(CAR()&&autoMode()))G.slow=.7;P.jb=1;
   if(df>2){const sv=[];P.def.forEach(p=>{if(dist(p,l)<2.6){sv.push([p,p.x,p.y]);p.x=-60;p.y=-60}});let res;try{res=_rs.apply(this,a)}finally{sv.forEach(([p,x,y])=>{p.x=x;p.y=y})}
    if(P.b.st=='carry'&&P.b.c===r){G.msg='JUMP BALL! He comes down with it! '+(G.msg||'');jbLog(`${jbN(r)} wins the jump ball over ${jbN(dd)}.`)}return res}
@@ -21,11 +21,11 @@
 const jbN=p=>typeof xNm=='function'?xNm(p):p.pos,jbLog=t=>{if(typeof xLog=='function'&&feat('pbp'))xLog(t)};
 // ---------- more penalties ----------
 {const _pr=penRoll;penRoll=function(k,x){const r0=_pr(k,x);if(r0||!feat('pen2'))return r0;const d=G.dir,r=rnd(),gain=Math.round(((x==null?P.L:x)-P.L)*d);
- if(k=='inc'&&P.ground&&G.down<4&&r<.7){P.ground=0;return{s:'O',n:'Intentional grounding',y:10,lod:1}}
- if(P.rtp&&(k=='inc'||k=='tackle'||k=='td')&&r<.3){P.rtp=0;return{s:'D',n:'Roughing the passer',y:15,first:1,from:k=='inc'?null:x}}
- if((k=='tackle'||k=='sack')&&P.tkl&&P.tkl.hs>0&&r<.05)return{s:'D',n:'Face mask',y:15,first:1,from:x};
+ if(k=='inc'&&P.ground&&G.down<4&&r<NF(.7,.3)){P.ground=0;return{s:'O',n:'Intentional grounding',y:10,lod:1}}
+ if(P.rtp&&(k=='inc'||k=='tackle'||k=='td')&&r<NF(.3,.05)){P.rtp=0;return{s:'D',n:'Roughing the passer',y:15,first:1,from:k=='inc'?null:x}}
+ if((k=='tackle'||k=='sack')&&P.tkl&&P.tkl.hs>0&&r<NF(.05,.03))return{s:'D',n:'Face mask',y:15,first:1,from:x};
  if(k=='tackle'&&P.oob&&P.tkl&&r<.05)return{s:'D',n:'Unnecessary roughness (late hit)',y:15,first:1,from:x};
- if((k=='tackle'||k=='td')&&P.rec&&P.cTight&&gain>=12&&r<.06)return{s:'O',n:'Offensive pass interference',y:10};
+ if((k=='tackle'||k=='td')&&P.rec&&P.cTight&&gain>=12&&r<NF(.06,.02))return{s:'O',n:'Offensive pass interference',y:10};
  return null}}
 {const _pa=penApply;penApply=function(pn,...a){const r=_pa(pn,...a);try{if(pn&&pn.lod&&G.down<4){G.down++;G.msg=G.msg.replace(/replay \w+ down/,`loss of down, ${ord(G.down)} down`)}}catch(e){}return r}}
 {const _ta=throwAt;throwAt=function(tx,ty,...a){try{if(P){P.thrT=P.t;const qb=P.off[0];P.ground=!P.sd&&!P.scr&&P.def.some(p=>p.rush&&!p.eng&&dist(p,qb)<2.2)&&Math.min(...P.off.slice(1,6).map(r=>Math.hypot(r.x-tx,r.y-ty)))>5}}catch(e){}return _ta.call(this,tx,ty,...a)}}

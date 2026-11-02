@@ -33,13 +33,13 @@ function kickStart(kind){
  if(!P.kk.u)kAuto();
  if(typeof xRecStart=='function')xRecStart();ui()}
 function kAuto(){const kk=P.kk,s=kk.k.sk;
- if(kk.kind=='punt'){kk.pow=clamp(.76+rnd()*.24,0,1);kk.acc=clamp(gauss()*.27,-1,1)}
- else{kk.pow=clamp(((kk.fd+8+rnd()*5)/Math.max(.1,1-3.78/kk.fd)/kMaxC(s)-.45)/.55,.3,1);kk.acc=clamp(gauss()*(.36-(s.skl-60)*.004),-1,1)}
+ if(kk.kind=='punt'){kk.pow=clamp(.76+rnd()*.24,0,1);kk.acc=clamp(gauss()*.27,-1,1);if(FT('nfl')){const d=G.dir,dg=((d>0?110:10)-P.L)*d,base=(64+(s.str-70)*.45)*kWx(),need=((dg-12+rnd()*13)+14)/base;if(dg<58)kk.pow=clamp(Math.min(kk.pow,(need-.62)/.45),.15,1)}}
+ else{kk.pow=clamp(((kk.fd+8+rnd()*5)/Math.max(.1,1-3.78/kk.fd)/kMaxC(s)-.45)/.55,.3,1);kk.acc=clamp(gauss()*(.36-(s.skl-60)*.004)*(kk.kind=='xp'?NF(1,1.1):NF(1,1.3)),-1,1)}
  kk.st='snap';kk.t=0}
 function kickTap(){const kk=P&&P.kk;if(G.phase!='kick'||!kk||!kk.u)return;
  if(kk.st=='pow'){kk.st='acc';kk.t=rnd()*6;kk.at=0}else if(kk.st=='acc'&&kk.at>.15){kk.st='snap';kk.t=0;if(typeof sfx=='function')sfx('hike')}}
 function kLaunch(){const kk=P.kk,d=G.dir,s=kk.k.sk,w=kWind(),tail=w.x*d,cross=w.y;
- if(kk.kind=='punt'){const g0=(56+(s.str-70)*.45)*(.62+.45*kk.pow)*kWx()+tail*.15,hang=clamp(2.3+2.6*kk.pow*(.8+(s.str-60)/200),2,5);
+ if(kk.kind=='punt'){const g0=(NF(56,64)+(s.str-70)*.45)*(.62+.45*kk.pow)*kWx()+tail*.15,hang=clamp(2.3+2.6*kk.pow*(.8+(s.str-60)/200),2,5);
   Object.assign(kk,{kx:P.L-d*14,G0:g0,hang,lat:kk.acc*g0*.12+cross*.1,T:.9+.42*hang,blk:rnd()<.008});
   const fo=kk.lat>0?(53.1-26.5)/kk.lat:kk.lat<0?(.2-26.5)/kk.lat:9;kk.fo=fo<1?fo:1;kk.lx=kk.kx+d*kk.G0*kk.fo;kk.ly=26.5+kk.lat*kk.fo;kk.T*=Math.max(.5,kk.fo)}
  else{const C=kMaxC(s)*(.45+.55*kk.pow)+tail*.12,lat=kk.acc*kk.fd*.11*kFac(s)+cross*.07*kk.fd/40;
@@ -75,7 +75,7 @@ function kEnd(){const kk=P.kk,d=G.dir,u=G.poss=='U',fd=kk.fd,side=u?tAbbr(R.lg.t
   else if((lx-recvGoal)*d>=0){G.nl=recvGoal-d*20;G.msg='Punt into the end zone: touchback.'}
   else{const yd=(recvGoal-lx)*d;
    if(yd<10&&kk.hang>3&&rnd()<.6){G.nl=clamp(lx,11,109);G.msg=`Punt downed at the ${yl(lx)}!`}
-   else if(kk.hang>=4.2&&rnd()<.3){G.nl=clamp(lx,11,109);G.msg=`Fair catch at the ${yl(lx)}.`}
+   else if(kk.hang>=NF(4.2,3.4)&&rnd()<NF(.3,.5)){G.nl=clamp(lx,11,109);G.msg=`Fair catch at the ${yl(lx)}.`}
    else{lg(`${side}: ${kname} punts ${Math.round(kk.G0*kk.fo-14)} yards.`);mo(u,-3);return kReturn(lx,kk.ly,kk.hang)}}
   lg(`${side}: ${kname} punts ${Math.round(kk.G0*kk.fo-14)} yards. ${G.msg}`);mo(u,-3);sx('whistle');G.phase='post';G.pt=2;save();ui();return}
  // field goal / extra point: did it clear the bar between the uprights?

@@ -12,14 +12,14 @@ function dvStart(p,h,user){const lead=.18,tx=h.x+(h.vx||0)*lead,ty=h.y+(h.vy||0)
 function dvAI(dt,h){const d=G.dir;P.def.forEach(p=>{p.dvcd=(p.dvcd||0)-dt;if(p.dv||p.dvd>0||p.eng||p.fall||p.gone||p.dvcd>0||(p.cool||0)>0||(p.stun||0)>0||p.bite>0)return;
  if(G.poss!='U'&&p===cd&&!autoMode())return;if(CAR()&&p.pid===R.me)return;const dd=dist(p,h);if(dd<1.4||dd>2.8)return;
  const ux=(h.x-p.x)/dd,uy=(h.y-p.y)/dd,away=(h.vx||0)*ux+(h.vy||0)*uy,gl=d>0?110:10,near=(gl-h.x)*d<7,side=h.y<3||h.y>50.3;
- if(!(away>p.spd*.75||near||side))return;const iq=p.t=='C'?.5+.5*IQ():.9;if(rnd()<dt*4.5*iq)dvStart(p,h,0)})}
+ if(!(away>p.spd*.75||near||side))return;const iq=p.t=='C'?.5+.5*IQ():.9;if(rnd()<dt*NF(4.5,1.6)*iq)dvStart(p,h,0)})}
 function dvPre(dt){P.def.forEach(p=>{if(p.dv||p.dvd>0){p.dvsv=[p.x,p.y,p.fa];p.bite=dt*1.01;p.cool=Math.max(p.cool||0,.15)}else p.dvsv=null})}
 function dvPost(dt){const d=G.dir;P.def.forEach(p=>{if(!p.dvsv)return;const sv=p.dvsv;p.dvsv=null;p.x=sv[0];p.y=sv[1];p.fa=sv[2];p.bite=0;
  if(p.dvd>0){p.dvd-=dt;const f=p.fall;if(f){f.t+=dt;const kk=Math.exp(-4.5*dt);f.vx*=kk;f.vy*=kk;p.x=clamp(p.x+f.vx*dt,.5,119.5);p.y=clamp(p.y+f.vy*dt,.4,52.9)}
   if(p.dvd<=0){p.fall=null;p.an=null;p.stun=.25;p.cool=.3}return}
  const v=p.dv;if(!v)return;v.t+=dt;p.x=clamp(p.x+v.ux*v.sp*dt,.5,119.5);p.y=clamp(p.y+v.uy*v.sp*dt,.4,52.9);p.vx=v.ux*v.sp;p.vy=v.uy*v.sp;
  const h=dvCarrier();if(G.phase=='play'&&!P.over&&h&&h===v.h&&!h.fall&&dist(p,h)<1.25){
-  let pr=clamp(.5+((p.o||70)-(h.o||70))/160,.25,.85);if(h.jk>0)pr*=.3;if(h.spin>0)pr*=.4;if(h.hrd>0)pr*=.12;if(typeof tackleMod=='function')pr*=tackleMod(p,h);p.dv=null;
+  let pr=clamp(NF(.5,.62)+(DS2()?TK(p)-BT(h):(p.o||70)-(h.o||70))/160,.25,.85);if(h.jk>0)pr*=.3;if(h.spin>0)pr*=.4;if(h.hrd>0)pr*=.12;if(typeof tackleMod=='function')pr*=tackleMod(p,h);p.dv=null;
   if(rnd()<pr){DV.hit++;P.tkl=p;p.cool=0;if(!(h.y<.8||h.y>52.2))ragTackle(p,h);const qb=h===P.off[0]&&P.b.st=='qb';endPlay(qb?'sack':'tackle',h.x);if(P.over){G.msg='Diving tackle! '+(G.msg||'');if(typeof xLog=='function'&&feat('pbp'))xLog(`${typeof xNm=='function'?xNm(p):p.pos} makes a diving tackle.`)}return}
   if(rnd()<.45){h.stun=Math.max(h.stun||0,.3);if(h.t=='U')G.msg='Stumbled! He got a hand on your ankle.'}else if(p.t=='U'||v.user)G.msg='Missed the dive!';dvFall(p,v);return}
  if(v.t>=v.dur){p.dv=null;dvFall(p,v)}})}

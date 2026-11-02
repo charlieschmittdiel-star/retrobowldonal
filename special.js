@@ -1,7 +1,7 @@
 'use strict';
 // Special teams, formation matching, motion and QB-vision helpers. Loaded before game.js: functions only.
 const kickerOf=t=>lineup(t=='U'?0:G.opp.i).K.sk,punterOf=t=>lineup(t=='U'?0:G.opp.i).P.sk;
-const coneHalf=q=>Math.max(.17,(q.sk.awr-20)*.45*Math.PI/180);
+const coneHalf=q=>typeof coneHalf2=='function'?coneHalf2(q):Math.max(.17,(q.sk.awr-20)*.45*Math.PI/180);
 function coneOff(q,tx,ty){const a=Math.atan2(ty-q.y,tx-q.x);return Math.max(0,Math.abs(Math.atan2(Math.sin(a-q.fa),Math.cos(a-q.fa)))-coneHalf(q))}
 function face(p,ang,rate,dt){let df=ang-p.fa;df=Math.atan2(Math.sin(df),Math.cos(df));p.fa+=Math.sign(df)*Math.min(Math.abs(df),rate*dt)}
 function fgDist(){return Math.round(((G.dir>0?110:10)-P.L)*G.dir+17)}

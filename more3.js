@@ -13,9 +13,9 @@ const eyeN=q=>clamp(((q.sk&&q.sk.awr||60)-50)/49,0,1),eyeRate=q=>2.7+1.3*eyeN(q)
  if(Math.abs(df)<.44)p.eyA=ang;else if(p.eyT>=eyeCd(p)){p.eyA=ang;p.eyT=0}return _f(p,p.eyA,eyeRate(p),dt)}}catch(e){}return _f(p,ang,rate,dt)}}
 {const _c=cpuQB;cpuQB=function(dt){const old=P.look;P.lkT=(P.lkT||0)+dt;const r=_c(dt);try{if(feat('qbeyes')&&P.b.st=='qb'&&P.look!==old){if(old&&P.look&&!old.eng&&P.lkT<eyeCd(P.off[0])*1.6)P.look=old;else P.lkT=0}}catch(e){}return r}}
 // ---------- the numbers behind each player ----------
-function gNums(p){const s=p.sk,g=p.g,o=ovr(p),rows=[],mph=v=>(v*2.045).toFixed(1),q={sk:s,o};
+function gNums(p){const s=p.sk,g=p.g,o=ovr(p),rows=[],mph=v=>(v*2.045).toFixed(1),q={sk:s,o,rp:p};
  const top=g=='OL'?4.6+s.spd*.012:(g=='DL'?.85:g=='CB'?1.08:1.15)*(5.6+s.spd*.03);rows.push(['Top speed',`${top.toFixed(1)} yd/s (${mph(top)} mph)`,top/9.6,'How fast he runs flat out.']);
- if(g=='QB'){const cw=coneHalf(q)*2*180/Math.PI,cl=Math.min(34+(s.str-60)*.7,45)*.8,er=eyeRate(q)*180/Math.PI,cd=eyeCd(q),mx=34+(o-60)*.7,bs=18+22*.5+(s.str-70)*.15,sc=1.2+Math.max(0,80-s.skl)*.08;
+ if(g=='QB'){const cw=coneHalf(q)*2*180/Math.PI,cl=coneLen(q),er=eyeRate(q)*180/Math.PI,cd=eyeCd(q),mx=thRange(q),bs=thrV(q,22),sc=1.2+Math.max(0,80-qbAcc(q,10))*.08;
   rows.push(['Vision cone width',`${Math.round(cw)}°`,cw/80,'How wide he sees. Throws outside the cone are much less accurate.'],['Vision cone length',`${Math.round(cl)} yd`,cl/36,'How far down the field the cone reaches.'],
    ['Eye speed',`${Math.round(er)}°/s`,er/210,'How fast his eyes (the cone) turn toward your aim.'],['Eye switch cooldown',`${cd.toFixed(2)} s`,1-(cd-.12)/.2,'How long before he can snap his eyes to a new target.'],
    ['Max throw',`${Math.round(mx)} yd`,mx/60,'The farthest you can aim.'],['Ball speed',`${bs.toFixed(1)} yd/s (${mph(bs)} mph)`,bs/34,'On a 22-yard throw. Faster balls are harder to jump.'],
@@ -47,7 +47,7 @@ function wbPost(dt){const c=wbOn(),d=G.dir,O=P.off,D=P.def;
   pairs.forEach(([,r,p])=>{if(ur.has(r)||up.has(p))return;ur.add(r);up.add(p);r.wbt=p})}
  O.forEach(r=>{if(!r.wbsv)return;const sv=r.wbsv;r.wbsv=null;if(r.eng)return;const t=r.wbt;if(!t||t.eng||t.fall){return}
   r.x=sv[0];r.y=sv[1];r.fa=sv[2];const k=Math.hypot(c.x-t.x,c.y-t.y)||1;mv(r,t.x+(c.x-t.x)/k*.7,t.y+(c.y-t.y)/k*.7,r.spd,dt);
-  if(!c.pre&&dist(r,t)<2.4&&!t.eng&&(r.cool||0)<=0&&(t.cool||0)<=0){r.eng=t;t.eng=r;t.mt=9;r.wb={t:0,hold:clamp(.7+(((r.sk&&r.sk.str)||60)-((t.sk&&t.sk.str)||60))/40+rnd()*.5,.35,1.8)}}})}
+  if(!c.pre&&dist(r,t)<NF(2.4,1.5)&&!t.eng&&(r.cool||0)<=0&&(t.cool||0)<=0){if(rnd()<NF(0,.55)){r.cool=.8;return}r.eng=t;t.eng=r;t.mt=9;const bs=DS2()?fs(r,'rbk')*.5+fs(r,'pow')*.5:((r.sk&&r.sk.str)||60),ss=DS2()?fs(t,'bsh')*.5+fs(t,'pow')*.5:((t.sk&&t.sk.str)||60);r.wb={t:0,hold:clamp(NF(.7,.3)+(bs-ss)/40+rnd()*NF(.5,.35),NF(.35,.15),NF(1.8,.8))}}})}
 {const _st=step;step=function(dt){const on=G.phase=='play'&&P&&!P.over;if(on)try{wbPre()}catch(e){console.error(e)}_st(dt);if(G.phase=='play'&&P)try{wbPost(dt)}catch(e){console.error(e)}}}
 {const _sn=snap;snap=function(...a){const r=_sn.apply(this,a);try{if(P){P.wbT=0;P.lkT=0;P.off.forEach(o=>{o.wb=null;o.wbt=null;o.eyA=null;o.eyT=9})}}catch(e){}return r}}
 // ---------- the in-game lobby ----------

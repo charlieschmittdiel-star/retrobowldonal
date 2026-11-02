@@ -79,7 +79,7 @@ function cpuQB(dt){const iq=P.off[0].t=='C'?IQ():.8,d=G.dir,L=P.L,O=P.off,D=P.de
    let sep=99,lane=99,nv=99;D.forEach(p=>{if(p.rush&&!p.eng)return;nv=Math.min(nv,dist(p,r));sep=Math.min(sep,Math.hypot(p.x-cx,p.y-cy)-p.spd*Math.max(0,t-.35)*.8);
     const ax=cx-qb.x,ay=cy-qb.y,l2=ax*ax+ay*ay||1,w=clamp(((p.x-qb.x)*ax+(p.y-qb.y)*ay)/l2,.2,.92);lane=Math.min(lane,Math.hypot(qb.x+ax*w-p.x,qb.y+ay*w-p.y))});
    const open=iq*Math.min(sep+.4,lane*1.2)+(1-iq)*(nv-.5),prog=(cx-L)*d;
-   return{r,open,prog,sc:(CAR()&&r.pid===R.me?.7:0)+open+(need&&prog>=need?1.5*iq:0)+prog*.04*(late?2.5:1)-(dd>32?2:0)-coneOff(qb,cx,cy)*3*iq}});
+   return{r,open,prog,sc:(CAR()&&r.pid===R.me?.7:0)+open+(need&&prog>=need?1.5*iq:0)+prog*NF(.04,.012)*(late?2.5:1)-(dd>32?2:0)-NF(0,Math.max(0,prog-14)*.07)+NF(0,prog<9?.9:0)-coneOff(qb,cx,cy)*3*iq}});
  const nr=Math.max(1,Math.min(reads.length,1+Math.floor((P.t-.9)*(.8+iq*3.2))));
  const avail=reads.sort((a,b)=>O.indexOf(a.r)-O.indexOf(b.r)).slice(0,nr),best=avail.reduce((a,b)=>!a||b.sc>a.sc?b:a,null);
  P.look=best?best.r:null;const want=1.1+iq*1.2-Math.max(0,P.t-2.4)*.8;
@@ -107,4 +107,4 @@ function cpuGoFor2(){const iq=IQ(),lead=G.sc[1]-G.sc[0];if(rnd()>iq)return G.q>=
  return(G.q>=4||(G.q==3&&G.clk<120))&&[-2,-5,-10,1,5,-9,-12].includes(lead)}
 
 // After a receiver's cut, his defender keeps going the old way for a beat; better awareness reacts sooner.
-function cutLag(p,v){if(!v||!(v.brk>0))return false;const lag=clamp(.5-((p.sk?p.sk.awr:p.o)-60)*.006,.12,.5);return .55-v.brk<lag}
+function cutLag(p,v){if(!v||!(v.brk>0))return false;const lag=DS2()?clamp(.5-(fs(p,p.cover?'man':'zon')-60)*.006+(fs(v,'rte')-60)*.004,.1,.6):clamp(.5-((p.sk?p.sk.awr:p.o)-60)*.006,.12,.5);return .55-v.brk<lag}

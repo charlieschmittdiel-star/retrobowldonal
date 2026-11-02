@@ -7,7 +7,7 @@ const scY=y=>.8+.2*clamp(y,0,FW)/FW;                  // far side is slightly na
 const camC=()=>camX+48;
 function P2(x,y,z){const s=S*scY(y);return[W/2+(x-camC())*s,TOP+y*KY-(z||0)*GZ*scY(y)]}
 function unproj(sx,sy){const y=clamp((sy-TOP)/KY,-2,FW+2);return[camC()+(sx-W/2)/(S*scY(y)),y]}
-function aimT(){const a=P.aim,q=P.off[0];let x=(a.a[0]-a.c[0])/S*3,y=(a.a[1]-a.c[1])/KY*3;const m=Math.hypot(x,y),rg=34+(q.o-60)*.7;if(m>rg){x*=rg/m;y*=rg/m}return[clamp(q.x+x,1,119),clamp(q.y+y,1,52)]}
+function aimT(){const a=P.aim,q=P.off[0];let x=(a.a[0]-a.c[0])/S*3,y=(a.a[1]-a.c[1])/KY*3;const m=Math.hypot(x,y),rg=thRange(q);if(m>rg){x*=rg/m;y*=rg/m}return[clamp(q.x+x,1,119),clamp(q.y+y,1,52)]}
 // ---------- static art, drawn once ----------
 let STANDS=null;
 function buildStands(){const c=document.createElement('canvas');c.width=1600;c.height=TOP;const g=c.getContext('2d');if(!g||!g.fillRect)return null;
@@ -98,8 +98,8 @@ function draw(){const L=P.L,d=G.dir,b=P.b,now=performance.now()/1000;ragTick();c
  if(!P.kr&&!G.rp){X.lineWidth=3;X.strokeStyle='#4aa3ff';gline(L,0,L,FW);if(!P.kk){X.strokeStyle='#ffd84d';gline(L+G.ytg*d,0,L+G.ytg*d,FW)}}
  if(G.poss=='U'&&G.phase=='pre'){P.off.slice(1).forEach((p,k)=>{if(!p.route.length)return;X.strokeStyle=sel==k+1?'#ffd84d':'#ffffffb0';X.lineWidth=2;X.setLineDash([6,4]);const s0=p.mo&&p.mo.length?p.mo[p.mo.length-1]:[p.sx,p.sy];gpath([s0,...p.route]);X.setLineDash([])});
   P.off.forEach(p=>{if(p.mo&&p.mo.length){X.strokeStyle='#ff9f43';X.lineWidth=2;X.setLineDash([2,4]);gpath([[p.sx,p.sy],...p.mo]);X.setLineDash([])}})}
- if((b.st=='qb'||b.st=='pre')&&!P.run&&(G.phase=='play'||G.phase=='pre'||G.phase=='motion')){const q=P.off[0],hf=coneHalf(q),rad=Math.min(34+(q.sk.str-60)*.7,45)*.8,pts=[[q.x,q.y]];
-  for(let i=0;i<=16;i++){const a=q.fa-hf+2*hf*i/16;pts.push([clamp(q.x+Math.cos(a)*rad,0,120),clamp(q.y+Math.sin(a)*rad,0,FW)])}
+ if((b.st=='qb'||b.st=='pre')&&!P.run&&(G.phase=='play'||G.phase=='pre'||G.phase=='motion')){const q=P.off[0],hf=coneHalf(q),rad=coneLen(q),pts=[[q.x,q.y]];
+  for(let i=0;i<=16;i++){const a=qLook(q)-hf+2*hf*i/16;pts.push([clamp(q.x+Math.cos(a)*rad,0,120),clamp(q.y+Math.sin(a)*rad,0,FW)])}
   X.fillStyle='rgba(255,255,255,.12)';X.strokeStyle='rgba(255,255,255,.55)';X.lineWidth=1.5;X.beginPath();pts.forEach((p,i)=>{const s=P2(p[0],p[1]);i?X.lineTo(s[0],s[1]):X.moveTo(s[0],s[1])});X.closePath();X.fill();X.stroke()}
  const ctl=CAR()?careerCtl():G.poss=='U'?(b.st=='carry'?b.c:(b.st=='qb'||b.st=='pre'?P.off[0]:null)):cd;
  if(ctl){gring(ctl.x,ctl.y,1.6,'#ffd84d',3);gring(ctl.x,ctl.y,1.95,'#ffffff',1.5)}

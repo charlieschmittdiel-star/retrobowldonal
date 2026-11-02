@@ -9,7 +9,7 @@ function cmove(c,m){if(!c||(c.mc||0)>0)return;const s=c.stm==null?100:c.stm;if(s
  c.mc=1.3;c.ml=.6;c.mv=m;
  if(m=='spin'){c.spin=.55;c.stm=s-14;const n=P.def.reduce((a,p)=>dist(p,c)<dist(a,c)?p:a),fx=Math.cos(c.fa),fy=Math.sin(c.fa),qx=-fy,qy=fx,side=((n.x-c.x)*qx+(n.y-c.y)*qy)>0?-1:1;
   c.jm={t:0,d:.45,x:fx*.9+qx*side*1.4,y:fy*.9+qy*side*1.4,tr:[],k:'spin'};
-  P.def.forEach(p=>{if(!p.eng&&dist(p,c)<2.6&&rnd()<clamp(.5+((r.spd+r.awr)/2-RK(p).awr)/120,.2,.88)){p.bite=.45;p.cool=Math.max(p.cool,.45)}});say(c,'Spin move!')}
+  P.def.forEach(p=>{if(!p.eng&&dist(p,c)<2.6&&rnd()<clamp(.5+(DS2()?fs(c,'elu')-PRC(p):(r.spd+r.awr)/2-RK(p).awr)/120,.2,.88)){p.bite=.45;p.cool=Math.max(p.cool,.45)}});say(c,'Spin move!')}
  if(m=='truck'){c.trk=.65;c.stm=s-12;say(c,'Truck!')}
  if(m=='hurdle'){c.hrd=.45;c.stm=s-12;say(c,'Hurdle!')}}
 // How much a move changes a tackle attempt on the ball carrier h by defender p.

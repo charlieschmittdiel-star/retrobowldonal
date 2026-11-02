@@ -54,10 +54,10 @@ function sfx(n){if(!AC||!feat('sound'))return;try{
 // ---------- penalties ----------
 function penRoll(k,x){const d=G.dir,O=P.off,D=P.def,gain=Math.round(((x==null?P.L:x)-P.L)*d),r=rnd();
  if((k=='tackle'||k=='td')&&gain>0&&O.slice(6).some(o=>o.eng)&&r<.022)return{s:'O',n:'Holding',y:10};
- if(k=='inc'&&P.lastTgt&&P.lastTgt.r){const l=P.lastTgt.l,t=P.lastTgt.r,dd=D.reduce((a,p)=>dist(p,l)<dist(a,l)?p:a);if(dist(dd,l)<1.6&&dist(t,l)<2.6&&r<.16)return{s:'D',n:'Pass interference',spot:l.x,first:1}}
+ if(k=='inc'&&P.lastTgt&&P.lastTgt.r){const l=P.lastTgt.l,t=P.lastTgt.r,dd=D.reduce((a,p)=>dist(p,l)<dist(a,l)?p:a);if(dist(dd,l)<1.6&&dist(t,l)<2.6&&r<NF(.16,.12))return{s:'D',n:'Pass interference',spot:l.x,first:1}}
  if((k=='inc'||k=='sack')&&r>.985)return{s:'D',n:'Defensive holding',y:5,first:1};
- if(k=='inc'&&P.passer&&r>.975&&r<=.985)return{s:'D',n:'Roughing the passer',y:15,first:1};
- if(k=='tackle'&&P.tkl&&r>.993)return{s:'D',n:'Facemask',y:15,first:1,from:x};
+ if(k=='inc'&&P.passer&&r>.975&&r<=NF(.985,.978))return{s:'D',n:'Roughing the passer',y:15,first:1};
+ if(k=='tackle'&&P.tkl&&r>NF(.993,.997))return{s:'D',n:'Facemask',y:15,first:1,from:x};
  return null}
 function penApply(pn,k,x){const d=G.dir,L=P.L,own=d>0?10:110,gl=d>0?110:10,u=G.poss=='U',fx=P.b.x||L,fy=P.b.y||26.5;
  if(pn.from!=null&&k)recordPlay(k,x);
@@ -69,7 +69,7 @@ function penApply(pn,k,x){const d=G.dir,L=P.L,own=d>0?10:110,gl=d>0?110:10,u=G.p
  G.next='same';G.msg='FLAG: '+txt;G.flag={x:fx,y:fy,t:0};G.phase='post';G.pt=2.4;P.rEnd=P.rT||0;
  xLog(`Flag: ${pn.n} on ${pn.s=='O'?(u?'your offense':G.opp.n):(u?G.opp.n:'your defense')}.`);xMom(pn.s=='O'?u:!u,-5);sfx('flag');save();ui()}
 // ---------- live fumbles ----------
-function xFumRoll(k){const c=k=='sack'?P.off[0]:P.b.c;if(!c||P.dv)return false;let p=.009-((c.sk&&c.sk.str||60)-60)*.00012+(feat('weather')?(G.wx=='rain'?.012:G.wx=='snow'?.006:0):0);if(k=='sack')p+=.03;return rnd()<Math.max(.003,p)}
+function xFumRoll(k){const c=k=='sack'?P.off[0]:P.b.c;if(!c||P.dv)return false;let p=NF(.009,.013)-((DS2()?fs(c,'bsc'):c.sk&&c.sk.str||60)-60)*.00012+(feat('weather')?(G.wx=='rain'?.012:G.wx=='snow'?.006:0):0);if(k=='sack')p+=.03;return rnd()<Math.max(.003,p)}
 function looseStart(c,k){const a=rnd()*Math.PI*2,s=3+rnd()*4;P.b={st:'loose',x:c.x,y:c.y,vx:Math.cos(a)*s+(c.vx||0)*.3,vy:Math.sin(a)*s*.7+(c.vy||0)*.3,t:0,z:.8,fum:c};P.lt=0;P.sackFum=k=='sack'?1:0;
  G.msg='FUMBLE! The ball is loose!';sfx('roar');xLog(`${xNm(c)} fumbles! The ball is loose!`);
  const b=P.b;P.lctl=P.off.filter(p=>!p.gone&&!p.fall).reduce((a,p)=>!a||dist(p,b)<dist(a,b)?p:a,null);

@@ -61,10 +61,10 @@ function simScore(a,b){const e=(teamR(a)-teamR(b))/7,td=x=>Math.max(0,Math.round
 function simStats(tid,pts,opp,won){const L=lineup(tid),Lo=lineup(opp),add=(p,k,n)=>{if(p&&n)p.ss[SI[k]]+=n};
  new Set([...L.O,...L.D,L.K,L.P].filter(Boolean)).forEach(p=>p.ss[0]++);
  const qb=L.O[0],acc=qb.sk.skl,tds=Math.round(pts/7.4),fgm=Math.max(0,Math.round((pts-tds*7)/3));
- const att=25+(rnd()*14|0)+(won?0:4),cmp=Math.round(att*clamp(.5+(acc-65)*.006+(rnd()-.5)*.14,.35,.8)),py=Math.round(cmp*(9.5+rnd()*3+(acc-65)*.05));
+ const att=25+(rnd()*14|0)+(won?0:4),cmp=Math.round(att*clamp(NF(.5,.63)+(acc-65)*.006+(rnd()-.5)*.14,.35,.8)),py=Math.round(cmp*(9.5+rnd()*3+(acc-65)*.05));
  const ptd=clamp(Math.round(tds*.66+(rnd()-.5)),0,tds),rtd=tds-ptd,qrt=rtd&&rnd()<.15?1:0,pi=rnd()<.45?0:rnd()<.7?1:2;
  add(qb,'pa',att);add(qb,'pc',cmp);add(qb,'py',py);add(qb,'ptd',ptd);add(qb,'pi',pi);add(qb,'ra',2+(rnd()*3|0));add(qb,'ry',Math.round(rnd()*14));add(qb,'rtd',qrt);
- const rb=L.O[5],ra=13+(rnd()*9|0)+(won?3:0);add(rb,'ra',ra);add(rb,'ry',Math.round(ra*(3.3+rnd()*1.8+(ovr(rb)-65)*.04)));add(rb,'rtd',rtd-qrt);
+ const rb=L.O[5],ra=13+(rnd()*9|0)+(won?3:0);add(rb,'ra',ra);add(rb,'ry',Math.round(ra*(NF(3.3,3.65)+rnd()*1.8+(ovr(rb)-65)*.04)));add(rb,'rtd',rtd-qrt);
  const tg=[[L.O[1],.3],[L.O[2],.22],[L.O[3],.16],[L.O[4],.17],[L.O[5],.15]];let lc=cmp,ly=py;
  tg.forEach(([p,s],i)=>{const c=i==4?lc:Math.min(lc,Math.round(cmp*s*(.7+rnd()*.6))),y=i==4?ly:Math.min(ly,Math.round(py*s*(.7+rnd()*.6)));lc-=c;ly-=y;add(p,'rc',c);add(p,'ty',y)});
  for(let i=0;i<ptd;i++)add(tg[rnd()<.85?(rnd()*4|0):4][0],'tt',1);

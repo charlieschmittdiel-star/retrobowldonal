@@ -57,7 +57,7 @@ function mLoud(){if(!G||!G.live)return false;return!!(R.lg.po||(R.riv&&(R.riv[G.
 // ---------- momentum running, ball security ----------
 {const _mv=mv;mv=function(p,tx,ty,sp,dt){if(!G||!P)return _mv(p,tx,ty,sp,dt);const b=P.b,car=b&&b.st=='carry'&&b.c===p;
  if(car&&mSecure(p))sp*=.9;
- if(feat('accel')&&car&&G.phase=='play'){const acc=7+((p.sk?p.sk.spd:60)-50)*.15,dx=tx-p.x,dy=ty-p.y,m=Math.hypot(dx,dy)||1;let cs=p.cs==null?Math.hypot(p.vx||0,p.vy||0):p.cs;
+ if(feat('accel')&&car&&G.phase=='play'){const acc=7+((DS2()?fs(p,'acc'):p.sk?p.sk.spd:60)-50)*.15,dx=tx-p.x,dy=ty-p.y,m=Math.hypot(dx,dy)||1;let cs=p.cs==null?Math.hypot(p.vx||0,p.vy||0):p.cs;
   const v=Math.hypot(p.vx||0,p.vy||0);if(v>.5){const dot=((p.vx||0)*dx+(p.vy||0)*dy)/(v*m);if(dot<.5)cs*=Math.pow(.25,dt*(1-dot))}
   cs=Math.min(sp,cs+acc*dt);p.cs=cs;return _mv(p,tx,ty,Math.max(1.5,cs),dt)}
  if(!car)p.cs=null;return _mv(p,tx,ty,sp,dt)}}
