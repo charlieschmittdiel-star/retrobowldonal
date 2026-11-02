@@ -90,8 +90,9 @@ function faceSVG(p,sz){const L=look(p),t=p.tid>=0&&R.t[p.tid]?R.t[p.tid].col:['#
    if(e.dk){const d=e.dk;d.t+=dt;const T=.32;if(d.t<T){const k=d.t/T;e.x=d.x0+(d.tx-d.x0)*k;e.y=d.y0+(d.ty-d.y0)*k;e.z=Math.max(e.z,Math.sin(k*Math.PI/2)*(RIM-ftOf(e.p)*1.15));e.vz=0}
     else if(d.hang>0){d.hang-=dt;e.z=RIM-ftOf(e.p)*1.15;e.vz=0;e.act={k:'dunk',t:.1}}else e.dk=null;if(d.t>1.2)e.dk=null}})}}
 // ---------- the court: arena variety, playoff lighting, benches, coaches and referees ----------
+function floorFor(t){return FLOORS[t%FLOORS.length]}
 const FLOORS=[['#d6a565','#7c4a1c'],['#c99a5b','#6b3f17'],['#e0b97f','#8a5a2b'],['#b98a52','#5b3615'],['#d9b38c','#8b6b4a'],['#c4975f','#4a2c12']];
-{const _dc=drawCourt;drawCourt=function(){if(!G||!feat('stad2'))return _dc();const t=G.home,T=R.t[t],fl=FLOORS[t%FLOORS.length];
+{const _dc=drawCourt;drawCourt=function(){if(!G||!feat('stad2'))return _dc();const t=G.home,T=R.t[t],fl=floorFor(t);
   // draw the normal court, then recolor: we repaint the floor first and let the lines and paint go on top
   poly([[-4,-3],[CW+4,-3],[CW+4,CH+3],[-4,CH+3]],shade(T.col[0],.55));poly([[0,0],[CW,0],[CW,CH],[0,CH]],fl[0]);CX.globalAlpha=.13;for(let y=1.2;y<CH;y+=1.2)line([[0,y],[CW,y]],fl[1],1);CX.globalAlpha=1;
   const save=poly;poly=function(pts,fill,stroke,lw){if(fill==='#7a4a2a'||fill==='#d6a565')return;return save(pts,fill,stroke,lw)};const sl=line;line=function(pts,col,lw){if(col==='#7c4a1c')return;return sl(pts,col,lw)};

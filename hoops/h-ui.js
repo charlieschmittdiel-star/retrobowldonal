@@ -13,14 +13,15 @@ function tlink(t){return`<a href="#" onclick="teamUI(${t});return false">${esc(R
 function plink(p){return`<a href="#" onclick="playerUI(${p.id});return false">${esc(p.n)}</a>`}
 // ---------- the shell ----------
 const NAV=[['home','Home','homeUI()'],['roster','Roster','rosterUI()'],['sched','Schedule','schedUI()'],['stand','Standings','standUI()'],['lead','League leaders','leadUI()'],['po','Playoffs','poUI()'],['trade','Trade','tradeUI()'],['fa','Free agents','faUI()'],['hl','Highlights','hlUI()'],['hist','History','histUI()'],['feat','Game features','featUI()'],['set','Settings','setUI()'],['keys','Controls','keysUI()']];
+function navOK(k){return true}
 function shell(h){const me=R.t[0];$('ui').hidden=false;$('gamewrap').hidden=true;
  const stage=R.stage?`<button class="ni hot" onclick="offUI()">${{draft:'The draft',resign:'Re-sign players',fa:'Free agency'}[R.stage]}</button>`:'';
  $('ui').innerHTML=`<div class="shell"><aside class="side"><div class="brand"><div class="logo" style="background:${me.col[0]};color:${me.col[1]}">${esc(me.ab.slice(0,3))}</div><div><b>${esc(me.n)}</b><span>${rec(0)} · Season ${R.season}</span></div></div>${stage}
- ${NAV.map(([k,n,f])=>k=='po'&&!R.po&&!R.hist.length?'':`<button class="ni ${PAGE==k?'on':''}" onclick="${f}">${n}</button>`).join('')}
+ ${NAV.map(([k,n,f])=>(k=='po'&&!R.po&&!R.hist.length)||!navOK(k)?'':`<button class="ni ${PAGE==k?'on':''}" onclick="${f}">${n}</button>`).join('')}
  <a class="ni fb" href="../index.html">&#127944; Football</a></aside><main class="main" id="mainpg">${h}</main></div>`;window.scrollTo(0,0)}
 function modal(h){const m=$('modal');m.innerHTML=`<div class="mbox">${h}<div class="mclose">${B("closeModal()",'Close')}</div></div>`;m.hidden=false;m.onclick=e=>{if(e.target===m)closeModal()}}
 function closeModal(){$('modal').hidden=true;$('modal').innerHTML=''}
-function toast(s){const d=document.createElement('div');d.className='toast';d.textContent=s;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+function toast(s){const d=document.createElement('div');d.className='toast';d.textContent=s;const n=document.querySelectorAll('.toast').length;d.style.bottom=(30+n*52)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),2600+n*400)}
 // ---------- start ----------
 function startUI(){$('ui').hidden=false;$('gamewrap').hidden=true;const col=TCOL.map((c,i)=>`<label class="sw"><input type="radio" name="col" value="${i}" ${i==0?'checked':''}><i style="background:${c[0]};border-color:${c[1]}"></i></label>`).join('');
  $('ui').innerHTML=`<div class="start"><div class="hero"><div class="ball"></div><h1>Hardwood Lab</h1><p>Basketball: run a team, coach it, and play the games yourself.</p></div>
@@ -122,8 +123,9 @@ function poUI(){PAGE='po';if(!R.po){const h=R.hist[R.hist.length-1];shell(`<div 
  shell(`<div class="head"><h1>Playoffs</h1><p>${P.champ!=null?`Champions: <b>${esc(R.t[P.champ].n)}</b>`:`${RDN[P.rd]} · best of ${P.best}`}</p></div><div class="card"><div class="bracket">${ser}</div></div>`)}
 // ---------- the offseason ----------
 function offUI(){PAGE='off';if(R.stage=='draft')return draftUI();if(R.stage=='resign')return resignUI();if(R.stage=='fa')return faUI();homeUI()}
+function draftKey(p){return pot(p)*.6+ovr(p)*.4}
 function draftUI(){const D=R.dr;if(!D){R.stage='resign';return resignUI()}const pk=D.picks[D.i],mine=pk&&pk.t===0,my=D.picks.map((x,i)=>x.t===0&&i>=D.i?`#${x.no} (round ${x.rd})`:'').filter(Boolean);
- const av=R.pl.filter(p=>p.tid===-2).sort((a,b)=>(pot(b)*.6+ovr(b)*.4)-(pot(a)*.6+ovr(a)*.4)).slice(0,40);
+ const av=R.pl.filter(p=>p.tid===-2).sort((a,b)=>draftKey(b)-draftKey(a)).slice(0,40);
  const done=D.picks.slice(0,D.i).slice(-8).reverse().map((x,i)=>{const p=R.pl.find(q=>q.draft&&q.draft.s===R.season&&q.draft.no===x.no&&q.draft.rd===x.rd);return p?`<li>${x.rd}-${x.no} ${esc(R.t[x.t].ab)}: ${esc(p.n)} (${p.pos})</li>`:''}).join('');
  shell(`<div class="head"><h1>The draft</h1><p>${pk?`Pick ${pk.no} of round ${pk.rd}: ${esc(R.t[pk.t].n)}${mine?' — <b>your pick!</b>':''}`:'The draft is over.'} Your picks: ${my.join(', ')||'none left'}.</p>
  <div class="row">${mine?'':B('cpuDraftUntilUser();draftUI()','Go to my next pick','big')}${B('autoDraft()','Auto-draft for me')}</div></div>

@@ -2,12 +2,14 @@
 // Simulated games (possession by possession, tuned to NBA averages), the season calendar, playoffs, awards,
 // player development, the draft, re-signing, free agency and the new season.
 const MINS=[34,33,33,32,31,24,20,16,12,5];
+// hooks for staff, chemistry, game plans and home court (h-fran.js); the defaults change nothing
+function simAdj(t,d){return 0}function simPace(a,b){return 0}function simUse(t,p){return 1}
 const avgBy=(ps,ms,k)=>{let a=0,t=0;ps.forEach((p,i)=>{a+=p.sk[k]*ms[i];t+=ms[i]});return t?a/t:60};
 function simGame(a,b,opt){opt=opt||{};const T=[a,b].map(t=>{const ps=rotation(t).slice(0,10),ms=ps.map((p,i)=>MINS[i]||0);
   // fatigue: tired or injured stars play a little less; heavy minutes spread to the bench
   return{t,ps,ms,box:ps.map(()=>newSS()),fouls:0}});
- const pace=Math.round(100+gauss()*4),sc=[0,0],r=feat('realism');
- const usage=(S)=>S.ps.map((p,i)=>S.ms[i]*Math.pow(ovr(p)/60,2.2)*(1+(Math.max(p.sk.lay,p.sk.mid,p.sk.thr)-62)/80));
+ const pace=Math.round(100+gauss()*4+simPace(a,b)),sc=[0,0],r=feat('realism');
+ const usage=(S)=>S.ps.map((p,i)=>S.ms[i]*Math.pow(ovr(p)/60,2.2)*(1+(Math.max(p.sk.lay,p.sk.mid,p.sk.thr)-62)/80)*simUse(S.t,p));
  const pickW=(w)=>{let s=w.reduce((x,y)=>x+y,0),q=rnd()*s;for(let i=0;i<w.length;i++){q-=w[i];if(q<=0)return i}return w.length-1};
  const poss=(o,d,mult)=>{const O=T[o],D=T[d];let shots=0;const han=avgBy(O.ps,O.ms,'han'),stl=avgBy(D.ps,D.ms,'stl'),orb=avgBy(O.ps,O.ms,'orb'),drb=avgBy(D.ps,D.ms,'drb'),pd=avgBy(D.ps,D.ms,'pd'),idf=avgBy(D.ps,D.ms,'id'),blk=avgBy(D.ps,D.ms,'blk');
   const iq=o==0?1:(1+(R.diff-1)*.03);
@@ -17,7 +19,7 @@ function simGame(a,b,opt){opt=opt||{};const T=[a,b].map(t=>{const ps=rotation(t)
   for(let tries=0;tries<4;tries++){const i=pickW(usage(O)),p=O.ps[i],s=p.sk,bx=O.box[i];
    const r3=clamp(.17+(s.thr-45)*.012,.01,.66),rr=clamp(.27+(s.lay+s.dnk-124)*.004+(p.pos=='C'?.12:p.pos=='PF'?.06:0),.12,.7),typ=rnd()<r3?3:rnd()<rr/(1-r3)?1:2;
    const foulP=typ==1?.19:typ==2?.06:.018;let mk=typ==1?.645+(s.lay-64)*.006+(s.dnk-62)*.002-(idf-58)*.0025-(blk-55)*.0015:typ==2?.43+(s.mid-64)*.0055-(pd-60)*.002:.365+(s.thr-66)*.0055-(pd-60)*.0015;
-   mk=clamp(mk*(r?1:1.04),.15,.8);if(rnd()<foulP){const j=pickW(D.ps.map((q,k)=>D.ms[k]*(1+(70-q.sk.pd)/60)));D.box[j][SI.pf]++;D.fouls++;const made=rnd()<mk*.45;let fts=typ==3?3:2;
+   mk=clamp(mk*(r?1:1.04)+simAdj(O.t,D.t),.15,.8);if(rnd()<foulP){const j=pickW(D.ps.map((q,k)=>D.ms[k]*(1+(70-q.sk.pd)/60)));D.box[j][SI.pf]++;D.fouls++;const made=rnd()<mk*.45;let fts=typ==3?3:2;
      if(made){bx[SI.fgm]++;bx[SI.fga]++;if(typ==3){bx[SI.tpm]++;bx[SI.tpa]++}bx[SI.pts]+=typ==3?3:2;sc[o]+=typ==3?3:2;fts=1;astr(O,i)}
      for(let f=0;f<fts;f++){bx[SI.fta]++;if(rnd()<clamp(.81+(s.ft-62)*.006,.45,.95)){bx[SI.ftm]++;bx[SI.pts]++;sc[o]++}}return}
    bx[SI.fga]++;if(typ==3)bx[SI.tpa]++;

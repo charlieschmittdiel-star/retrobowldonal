@@ -7,7 +7,7 @@
 <div id="ui"></div>
 <div id="gamewrap" hidden><canvas id="cv"></canvas><div id="gtop"><button onclick="gameMenu()">Menu</button></div></div>
 <div id="modal" hidden></div>
-<script src="h-core.js"></script><script src="h-sim.js"></script><script src="h-game.js"></script><script src="h-play.js"></script><script src="h-draw.js"></script><script src="h-ui.js"></script><script src="h-court.js"></script><script src="h-fx.js"></script><script src="h-lock.js"></script>
-<script>if(typeof hInit!="function"||typeof hDraw!="function"||typeof hStep!="function"||typeof simGame!="function"||typeof newLeague!="function"||typeof userControls!="function"||typeof lkGate!="function"||typeof coachSug!="function"||typeof faceSVG!="function"){document.body.innerHTML='<div style="font:16px sans-serif;color:#fff;padding:30px">Some game files are missing. Re-download the whole folder and open hoops/index.html again.</div>'}else hInit();
+<script src="h-core.js"></script><script src="h-sim.js"></script><script src="h-game.js"></script><script src="h-play.js"></script><script src="h-draw.js"></script><script src="h-ui.js"></script><script src="h-court.js"></script><script src="h-fx.js"></script><script src="h-fran.js"></script><script src="h-lock.js"></script>
+<script>if(typeof hInit!="function"||typeof hDraw!="function"||typeof hStep!="function"||typeof simGame!="function"||typeof newLeague!="function"||typeof userControls!="function"||typeof lkGate!="function"||typeof coachSug!="function"||typeof faceSVG!="function"||typeof ensureR!="function"){document.body.innerHTML='<div style="font:16px sans-serif;color:#fff;padding:30px">Some game files are missing. Re-download the whole folder and open hoops/index.html again.</div>'}else hInit();
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('../sw.js').catch(()=>{});</script>
 </body></html>
