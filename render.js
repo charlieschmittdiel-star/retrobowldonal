@@ -120,7 +120,7 @@ function draw(){const L=P.L,d=G.dir,b=P.b,now=performance.now()/1000;ragTick();c
  DUST.forEach(q=>{const s=P2(q.x,q.y),a=1-q.t/q.life,k=scY(q.y);X.fillStyle=`rgba(214,196,150,${(a*.55).toFixed(2)})`;X.beginPath();X.ellipse(s[0],s[1]-2*k,(q.r+q.t*1.4)*S*k,(q.r+q.t*1.4)*KY*.55,0,0,7);X.fill()});
  // labels above heads: line moves, stamina
  X.textAlign='center';X.font='bold 9px sans-serif';
- heads.forEach((hy,p)=>{const s=P2(p.x,p.y);if(p.ml>0&&G.phase=='play'){X.fillStyle='#ffd84d';X.fillText(p.mv,s[0],hy-4)}});
+ heads.forEach((hy,p)=>{const s=P2(p.x,p.y);if(p.ml>0&&G.phase=='play'&&!(typeof lwHide=='function'&&lwHide(p))){X.fillStyle='#ffd84d';X.fillText(p.mv,s[0],hy-4)}});
  [ctl,b.st=='carry'?b.c:null].forEach((p,i)=>{if(!p||(i==1&&p==ctl)||!heads.has(p))return;const s=P2(p.x,p.y),hy=heads.get(p),v=(p.stm==null?100:p.stm)/100;X.fillStyle='#000a';X.fillRect(s[0]-14,hy-14,28,5);X.fillStyle=v>.3?'#4ade80':v>.1?'#fbbf24':'#ef4444';X.fillRect(s[0]-13,hy-13,26*v,3)});
  if(P.look&&G.poss!='U'&&b.st=='qb'){const s=P2(P.look.x,P.look.y);X.fillStyle='#ff4d4d';X.fillText('QB EYES',s[0],s[1]-30)}
  if(ctl&&G.phase=='play'){const v=(ctl.stm==null?100:ctl.stm)/100;X.fillStyle='#000a';X.fillRect(W-170,6,160,20);X.fillStyle=v>.3?'#4ade80':v>.1?'#fbbf24':'#ef4444';X.fillRect(W-168,8,156*v,16);X.fillStyle='#fff';X.font='bold 11px sans-serif';X.textAlign='right';X.fillText('STAMINA',W-14,20)}
