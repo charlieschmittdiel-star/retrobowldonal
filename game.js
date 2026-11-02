@@ -92,7 +92,7 @@ function resolve(){const b=P.b,r=b.tgt,l={x:b.tx,y:b.ty};b.st='dead';let dd=null
  if(rd>2.4&&m>2.4)return endPlay('inc');
  const hk=dd.hawked?1:0,tight=Math.max(clamp(1-m/3,0,1),hk*.8),ro=r?r.o:55;
  const ic=m<2.4?clamp((NF(.006,.016)+tight*NF(.09,.12)+(BK(dd)-CR(r,tight))/320)*(m<=rd+.3||hk?1:.35)+hk*.25,0,.6):0;
- const cc=r&&rd<2.4?clamp(NF(.95,.93)+NF(0,Math.hypot(b.tx-b.sx,b.ty-b.sy)<16?.1:Math.hypot(b.tx-b.sx,b.ty-b.sy)>26?-.1:0)-tight*NF(.5,.72)-hk*.15+(CR(r,tight)-CV(dd))/200+(P.off[0].o-70)/300-(rd>1.2?.2:0)-(m<rd?.15:0),.05,.95):0,u=rnd();
+ const cc=r&&rd<2.4?clamp(NF(.95,.93)+NF(0,Math.hypot(b.tx-b.sx,b.ty-b.sy)<16?.13:Math.hypot(b.tx-b.sx,b.ty-b.sy)>26?-.1:0)-tight*NF(.5,.72)-hk*.15+(CR(r,tight)-CV(dd))/200+(P.off[0].o-70)/300-(rd>1.2?.2:0)-(m<rd?.15:0),.05,.95):0,u=rnd();
  if(u<ic)return intReturn(l,dd);
  if(u<ic+cc){b.st='carry';b.c=r;P.rec=r;sRec(P.passer,'pc');sRec(r,'rc')}else if(rnd()<(m<1.8?.4:rd<1.5?.22:.08))tip(l);else endPlay('inc')}
 function endPlay0(k,x){if(P.over)return;P.over=1;P.b.st='dead';P.off.concat(P.def).forEach(p=>{G.stm[p.t+p.s+p.i]=p.stm});const d=G.dir,u=G.poss=='U',gl=d>0?110:10;let msg='';x=x==null?P.L:x;
@@ -133,7 +133,7 @@ function step(dt){
  O.forEach((r,i)=>{if(i==0||r==c||r.eng||isBl(r,i))return;
   if((b.st=='air'&&b.tgt==r)||(b.st=='tip'&&Math.hypot(r.x-b.tx,r.y-b.ty)<9))mv(r,b.tx,b.ty,r.spd,dt);
   else if(u&&CAR()&&r.pid===R.me&&im&&!autoMode())mv(r,r.x+ix*5,r.y+iy*5,r.spd,dt);
-  else if(P.sd&&b.st=='qb'&&i<6){r.ft-=dt;if(!(r.ft>0)){r.ft=.3;let bs=-9,bt=null;for(const dx of[0,3,6])for(const dy of[-8,-4,0,4,8]){const x=clamp(r.x+d*dx,2,118),y=clamp(r.y+dy,2,51),f=(x-L)*d,dq=Math.hypot(x-qb.x,y-qb.y);if(f<3||dq<5||dq>32)continue;const sc=Math.min(10,...D.map(p=>Math.hypot(p.x-x,p.y-y)))-Math.abs(dq-14)*.1;if(sc>bs){bs=sc;bt=[x,y]}}r.fl=bt||[r.x+d*3,r.y]}mv(r,r.fl[0],r.fl[1],r.spd,dt)}
+  else if(P.sd&&b.st=='qb'&&i<6){r.ft-=dt;if(!(r.ft>0)&&FT('scrd')){r.ft=.25;r.fl=scrSpot(r,qb,L,d,D,O)}else if(!(r.ft>0)){r.ft=.3;let bs=-9,bt=null;for(const dx of[0,3,6])for(const dy of[-8,-4,0,4,8]){const x=clamp(r.x+d*dx,2,118),y=clamp(r.y+dy,2,51),f=(x-L)*d,dq=Math.hypot(x-qb.x,y-qb.y);if(f<3||dq<5||dq>32)continue;const sc=Math.min(10,...D.map(p=>Math.hypot(p.x-x,p.y-y)))-Math.abs(dq-14)*.1;if(sc>bs){bs=sc;bt=[x,y]}}r.fl=bt||[r.x+d*3,r.y]}mv(r,r.fl[0],r.fl[1],r.spd,dt)}
   else if(r.ri<r.route.length){const w=r.route[r.ri];mv(r,w[0],w[1],r.spd,dt);if(r.vx||r.vy){const mm=Math.hypot(r.vx,r.vy);r.ld=[r.vx/mm,r.vy/mm]}if(Math.hypot(w[0]-r.x,w[1]-r.y)<.4){r.ri++;r.brk=.55;if(r.pid!==R.me||!CAR())aiWrFake(r)}}
   else if(P.run&&i==P.ho&&b.st=='qb')mv(r,L-1*d,r.y,6,dt);
   else if(i<6&&!P.run){let l=r.ld||[d,0];if((r.y<3&&l[1]<0)||(r.y>50&&l[1]>0))l=r.ld=[d,0];mv(r,r.x+l[0]*4,r.y+l[1]*4,r.spd*(FT('nfl')&&r.route.length&&Math.abs(r.route[r.route.length-1][0]-L)<15?.45:1),dt)}else r.vx=r.vy=0});

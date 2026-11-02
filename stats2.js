@@ -8,6 +8,8 @@
 {const add=[['On the field','ds2','Detailed ratings','Players have detailed stats (throw power, deep accuracy, catching in traffic, pass blocking, tackling, man coverage...) that drive the game. Upgrades go to a group and give random boosts inside it.'],
  ['On the field','cone2','Cone reaches throw range','The QB\'s vision cone is as long as the farthest he can throw.'],
  ['On the field','nfl','Realistic NFL numbers','Completion rates, yards per carry, sacks, interceptions, tackling, blitz rates, penalties and kicking are tuned to land close to real NFL averages.'],
+ ['On the field','scrd','Scramble drill','When your QB leaves the pocket, receivers work toward the side he is rolling to and find open grass in his throwing range.'],
+ ['On the field','zhunt','Zone defenders hunt','Underneath zone defenders whose zone is empty, with every receiver covered, come after the QB.'],
  ['On the field','qbhead','Look while running','A QB on the move can turn his head about 90 degrees to either side and throw. Throws on the run are less accurate.']];
  add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
 // ---------- wiring: new players, saves, game setup ----------
@@ -71,3 +73,11 @@ const NFL_DEEP=['Go','Verts','Post Corner','PA Deep'];
 {const _sn=snap;snap=function(...a){const r=_sn.apply(this,a);try{if(P)P.rbRel=0}catch(e){}return r}}
 // CPU-called stock pass plays: routes break a little shorter, like real timing routes (your own designed plays are never changed)
 {const _ap=applyPlay;applyPlay=function(n,...a){const r=_ap.call(this,n,...a);try{if(FT('nfl')&&P&&PRE[n]&&!CP[n]&&(G.poss=='C'||(CAR()&&!qbIsMe()))){const L=P.L;P.off.forEach((o,i)=>{if(i<1||i>5||!o.route)return;o.route.forEach(w=>{w[0]=L+(w[0]-L)*.78})})}}catch(e){}return r}}
+// ---------- zone defenders hunt the QB ----------
+// A short (flat / hook) zone defender with nobody in his zone, while every receiver already has someone on him, comes after the quarterback.
+{const _st=step;step=function(dt){_st(dt);try{if(!FT('zhunt')||!P||G.phase!='play'||P.over||P.run||P.kr||P.b.st!='qb'||P.t<1.5)return;const L=P.L,O=P.off,D=P.def,q=O[0];
+ const el=O.filter((r,i)=>i>0&&i<6&&r.route&&r.route.length&&!r.eng);if(!el.length)return;
+ D.forEach(p=>{if(p.rush||p.eng||p.fall||p.gone||!p.zone||p.zt||p.zf||p.sw||p.bite>0)return;if(G.poss!='U'&&p===cd&&!autoMode())return;if(CAR()&&p.pid===R.me)return;
+  if(Math.abs(p.zone[0]-L)>=12)return;
+  const guarded=el.every(r=>D.some(o=>o!==p&&!(o.rush&&!o.hunt)&&(o.on===r||o.cover===r||dist(o,r)<3.2)));if(!guarded)return;
+  if(dist(p,q)>(P.sd?22:16))return;p.rush=true;p.hunt=1;p.zone=null;p.cool=Math.max(p.cool||0,.1)})}catch(e){}}}

@@ -68,8 +68,8 @@ function qbAcc(q,dd){if(!DS2())return q.sk?q.sk.skl:q.o;const a=fs(q,'sac'),b=fs
 const qLook=q=>q.ha!=null&&FT('qbhead')?q.ha:q.fa;
 const qTwist=q=>{if(q.ha==null||!FT('qbhead'))return 0;const d=q.ha-q.fa;return Math.abs(Math.atan2(Math.sin(d),Math.cos(d)))};
 function accSc(q,dd,tx,ty,pr){const sp=q._rs!=null&&DS2()?q._rs:Math.hypot(q.vx||0,q.vy||0),cf=1+coneOff(q,tx,ty)*4,dp=Math.min(NF(99,2.9),Math.pow(dd/22,dd>22?NF(1.5,2.4):1.5));
- if(!DS2())return(1.2+Math.max(0,80-q.sk.skl)*.08)*(1+pr)*(1+sp*.15+(P.sd?.4:0))*dp*cf;
- const tor=fs(q,'tor'),pk=fs(q,'pkt'),base=1.2+Math.max(0,80-qbAcc(q,dd))*.08,run=1+sp*(.05+.16*(1-tor/99))+(P.sd?.4*(1-tor/160):0),tw=1+qTwist(q)/(Math.PI/2)*(.5-.3*tor/99);
+ if(!DS2())return(1.2+Math.max(0,80-q.sk.skl)*.08)*(1+pr)*(1+sp*.24+(P.sd?.6:0))*dp*cf*(1+qTwist(q)/(Math.PI/2)*.7);
+ const tor=fs(q,'tor'),pk=fs(q,'pkt'),base=1.2+Math.max(0,80-qbAcc(q,dd))*.08,run=1+sp*(.1+.24*(1-tor/99))+(P.sd?.6*(1-tor/200):0),tw=1+qTwist(q)/(Math.PI/2)*(.9-.4*tor/99);
  return base*(1+pr*(1.2-.5*pk/99))*run*tw*dp*cf}
 function coneHalf2(q){return Math.max(.17,((DS2()?fs(q,'vis'):(q.sk?q.sk.awr:q.o))-20)*.45*Math.PI/180)}
 // blocking and rushing
@@ -87,3 +87,11 @@ function CV(p){if(!DS2())return p.o;return fs(p,p.cover?'man':'zon')*.6+fs(p,'bs
 function BK(p){if(!DS2())return p.o;return fs(p,'bsk')*.6+fs(p,p.cover?'man':'zon')*.4}
 function MC(p){return DS2()?fs(p,'man'):p.o}
 function PRC(p){return DS2()?fs(p,'prc'):p.o}
+
+// Scramble drill: when the QB breaks the pocket, receivers work toward the side he's rolling to, come back toward him if they're
+// deep, stay in his throwing range and vision, and look for grass away from defenders and from each other.
+function scrSpot(r,qb,L,d,D,O){const yq=clamp(qb.y+(qb.vy||0)*.9,4,49),rg=thRange(qb)-3,cov=D.filter(p=>!(p.rush&&!p.eng)),mates=O.filter((o,i)=>i>0&&i<6&&o!==r&&o.fl);let bs=-1e9,bt=null;
+ for(const dx of[-8,-4,0,4,8])for(const dy of[-14,-9,-5,0,5,9,14]){const x=clamp(r.x+d*dx,2,118),y=clamp(r.y+dy,2,51),f=(x-L)*d,dq=Math.hypot(x-qb.x,y-qb.y);if(f<2||dq<5||dq>rg)continue;
+  const open=Math.min(6,...cov.map(p=>Math.hypot(p.x-x,p.y-y))),crowd=mates.reduce((a,o)=>a+Math.max(0,6-Math.hypot(o.fl[0]-x,o.fl[1]-y)),0),
+   sc=open-Math.abs(y-yq)*.26-Math.hypot(x-r.x,y-r.y)*.05-Math.max(0,f-16)*.15-Math.abs(dq-13)*.04-crowd*.35+(coneOff(qb,x,y)<=0?1.4:0);if(sc>bs){bs=sc;bt=[x,y]}}
+ return bt||[r.x+d*2,clamp(r.y+(yq-r.y)*.3,2,51)]}
