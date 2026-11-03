@@ -5,7 +5,8 @@ let HIDEHELP=false,CV,CX,VW=0,VH=0,S=10,OX=0,OY=0;const KY=.6,HZ=.82;
 const SKIN=['#f1c27d','#e0ac69','#c68642','#8d5524','#5c3a1e','#ffdbac','#a0662f','#3d2314'];
 function hResize(){CV=$('cv');if(!CV)return;const dpr=Math.min(2,window.devicePixelRatio||1);VW=CV.clientWidth;VH=CV.clientHeight;CV.width=VW*dpr;CV.height=VH*dpr;CX=CV.getContext('2d');CX.setTransform(dpr,0,0,dpr,0,0);
  const top=78,bot=44;S=Math.min((VW-24)/100,(VH-top-bot-60)/(CH*KY+8));OX=(VW-CW*S)/2;OY=top+((VH-top-bot)-(CH*KY*S))/2+12;CROWD=null}
-const P=(x,y,z)=>[OX+x*S,OY+y*S*KY-(z||0)*S*HZ];
+// PROJ can swap in a perspective view (h-view.js); otherwise the court is drawn flat
+let PROJ=null;const P=(x,y,z)=>PROJ?PROJ(x,y,z||0):[OX+x*S,OY+y*S*KY-(z||0)*S*HZ];
 function poly(pts,fill,stroke,lw){CX.beginPath();pts.forEach(([x,y,z],i)=>{const q=P(x,y,z);i?CX.lineTo(q[0],q[1]):CX.moveTo(q[0],q[1])});CX.closePath();if(fill){CX.fillStyle=fill;CX.fill()}if(stroke){CX.strokeStyle=stroke;CX.lineWidth=lw||1.5;CX.stroke()}}
 function line(pts,col,lw){CX.beginPath();pts.forEach(([x,y,z],i)=>{const q=P(x,y,z||0);i?CX.lineTo(q[0],q[1]):CX.moveTo(q[0],q[1])});CX.strokeStyle=col;CX.lineWidth=lw||1.5;CX.stroke()}
 const arcPts=(cx,cy,r,a0,a1,n)=>{const o=[];n=n||32;for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;o.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r])}return o};
@@ -45,7 +46,7 @@ function drawPlayer(e){const p=e.p,home=G.tm[e.t]===G.home,col=R.t[G.tm[e.t]].co
  if(e===G.ctl){CX.strokeStyle='#facc15';CX.lineWidth=2.5;CX.beginPath();CX.ellipse(gx,gy,w*1.05,w*.42,0,0,Math.PI*2);CX.stroke()}
  const y0=gy-z*S*HZ,leg=h*.42,swing=sp>1&&z<=0?Math.sin(e.ph)*w*.35:0,face=Math.cos(e.fa)>=0?1:-1;
  drawBody(e,gx,gy,y0,h,w,sp,swing,face,jer,trim);CX.textAlign='center';CX.textBaseline='middle';
- if(feat('labels')&&(e.t===0||e===G.ctl)){CX.font=`700 ${Math.max(9,Math.round(S*.85))}px system-ui,sans-serif`;CX.fillStyle=e===G.ctl?'#fde047':'rgba(255,255,255,.85)';CX.fillText(p.ln,gx,y0-h-w*.35)}
+ if(feat('labels')&&(e.t===0||e===G.ctl)){CX.font=`700 ${Math.min(15,Math.max(9,Math.round(S*.85)))}px system-ui,sans-serif`;CX.fillStyle=e===G.ctl?'#fde047':'rgba(255,255,255,.85)';CX.fillText(p.ln,gx,y0-h-w*.35)}
  // pass numbers over your teammates while you have the ball
  if(e.t===0&&G.phase=='live'&&G.poss===0&&G.b.st=='held'&&G.b.h===G.ctl&&e!==G.ctl&&!G.auto){const n=POS.indexOf(p.pos)+1;if(n>0){CX.fillStyle='rgba(15,23,42,.8)';CX.beginPath();CX.arc(gx,y0-h-w*1.2,w*.42,0,Math.PI*2);CX.fill();CX.fillStyle='#fff';CX.font=`800 ${Math.round(w*.5)}px system-ui`;CX.fillText(n,gx,y0-h-w*1.2)}}}
 // the figure itself (the detailed model in h-fx.js can replace this)

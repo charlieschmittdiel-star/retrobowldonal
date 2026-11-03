@@ -186,5 +186,5 @@ addEventListener('keydown',e=>{if(!G||$('gamewrap').hidden)return;if(e.target&&/
 addEventListener('keyup',e=>{KEYS[e.code]=0;if(G&&!$('gamewrap').hidden)hKey(e.code,false)});
 addEventListener('blur',()=>{for(const k in KEYS)KEYS[k]=0});
 addEventListener('resize',()=>{if(G)hResize()});
-function hInit(){$('cv').addEventListener('mousedown',e=>{const r=$('cv').getBoundingClientRect(),x=(e.clientX-r.left-OX)/S,y=(e.clientY-r.top-OY)/(S*KY);hClick(x,y)});
+function hInit(){$('cv').addEventListener('mousedown',e=>{const r=$('cv').getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,q=PROJ&&PROJ.inv?PROJ.inv(mx,my):[(mx-OX)/S,(my-OY)/(S*KY)];hClick(q[0],q[1])});
  if(hLoad()&&R&&R.t)homeUI();else startUI()}
