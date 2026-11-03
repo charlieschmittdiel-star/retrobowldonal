@@ -165,7 +165,7 @@ function histUI(){PAGE='hist';const nm=id=>{const p=R.pl.find(q=>q.id===id);retu
 // ---------- features, settings, controls ----------
 function featUI(){PAGE='feat';const gs=[...new Set(HFEATS.map(f=>f[0]))];
  shell(`<div class="head"><h1>Game features</h1><p>Turn any feature on or off.</p><div class="row">${B('featAll(1)','All on')}${B('featAll(0)','All off')}</div></div>${gs.map(g=>`<div class="card"><h3>${g}</h3>${HFEATS.filter(f=>f[0]==g).map(([_,k,n,d])=>`<label class="ft"><input type="checkbox" ${feat(k)?'checked':''} onchange="OPT['${k}']=this.checked?1:0;optSave()"><span><b>${n}</b><small>${esc(d)}</small></span></label>`).join('')}</div>`).join('')}`)}
-function featAll(v){HFEATS.forEach(f=>OPT[f[1]]=v);optSave();featUI()}
+function featAll(v){HFEATS.forEach(f=>OPT[f[1]]=v&&HDEFOFF.has(f[1])?0:v);optSave();featUI()}
 function setUI(){PAGE='set';shell(`<div class="head"><h1>Settings</h1></div><div class="card">
  <label>Difficulty <select onchange="R.diff=+this.value;hSave()">${DIFFN.map((d,i)=>`<option value="${i}" ${R.diff==i?'selected':''}>${d}</option>`).join('')}</select></label><p class="small">Difficulty only changes how smart the other team plays.</p>
  <label>Quarter length <select onchange="R.qlen=+this.value;hSave()">${[2,3,4,6,8,12].map(q=>`<option value="${q}" ${R.qlen==q?'selected':''}>${q} minutes</option>`).join('')}</select></label>

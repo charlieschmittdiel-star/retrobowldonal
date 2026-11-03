@@ -7,6 +7,8 @@ let G=null;
 const IQ=k=>(k===1||(G&&G.auto))?([.45,.7,.88,.98][G&&G.diff!=null?G.diff:(R?R.diff:1)]||.7):.82;
 const goalX=s=>s>0?PL:0;                         // the goal a team attacking in direction s shoots at
 const onT=k=>G.ent.filter(e=>e.t===k&&!e.off);
+// hooks for tactics, momentum and the like (other files fill these in); the defaults change nothing
+const TM0={line:0,width:1,press:0,direct:0,shoot:1,tempo:1};function tacMod(k){return TM0}function shotAdj(e,q){return 0}
 const opp=k=>1-k;
 function say(s,t){G.msg=s;G.msgT=t||1.8}
 function bx(e,k,n){const a=G.bx[e.p.id];if(a)a[SI[k]]+=n==null?1:n}
@@ -19,7 +21,7 @@ const gkOf=k=>G.ent.find(e=>e.t===k&&e.pos=='GK'&&!e.off);
 // where each player wants to be: his formation spot, pushed up or dropped back with the play and shifted toward the ball
 function homeSpot(e){const k=e.t,s=G.dir[k],own=goalX(-s),b=G.b,att=G.lastTeam===k,bx0=(b.x-own)*s;let X,Y;
  if(e.pos=='GK')return[own+s*clamp(bx0*.06+1.5,1.5,8),34+(b.y-34)*.12];
- const line=att?8+e.hx*86:5+e.hx*58,shift=(bx0-(att?55:45))*(att?.35:.42);X=clamp(line+shift,4,att?100:92);Y=4+e.hy*60;Y+=(b.y-34)*(att?.18:.32);
+ const TMk=tacMod(k),line=(att?8+e.hx*86:5+e.hx*58)+TMk.line,shift=(bx0-(att?55:45))*(att?.35:.42);X=clamp(line+shift,4,att?100:92);Y=34+(e.hy-.5)*60*TMk.width;Y+=(b.y-34)*(att?.18:.32);
  return[own+s*X,clamp(Y,2,PW-2)]}
 // ---------- restarts ----------
 function kickoff(k){G.ent.forEach(e=>{const [x,y]=homeSpot(e),s=G.dir[e.t],own=goalX(-s);e.x=own+s*Math.min(Math.abs(x-own),48);e.y=y;e.vx=e.vy=0});G.lastTeam=k;
@@ -46,7 +48,7 @@ function passTo(e,r,lead,kind){const b=G.b;if(b.own!==e)return;lead=lead==null?.
 function shotQuality(e){const s=G.dir[e.t],gx=goalX(s),d=Math.hypot(gx-e.x,34-e.y),ang=Math.abs(Math.atan2(GW/2,d))*2,pres=onT(opp(e.t)).filter(o=>o.pos!='GK'&&dist(o,e)<2.5).length;
  let xg=clamp(.95*Math.pow(ang/1.2,1.1)*Math.exp(-d/16),.01,.85);xg*=Math.pow((d>20?e.p.sk.lng:e.p.sk.fin)/65,1.4);xg*=1-pres*.22;return{xg,d,pres}}
 function shoot(e,power,aimY){const b=G.b;if(b.own!==e)return;const s=G.dir[e.t],gx=goalX(s),q=shotQuality(e),gk=gkOf(opp(e.t));power=power==null?.75:power;
- let pG=q.xg*1.55*(.75+power*.4)*(feat('realism')?1:1.12),pOn=clamp(.32+q.xg*1.1+(e.p.sk.fin-60)/250-(power>.95?.18:0),.12,.9);if(feat('fatigue'))pOn*=.92+.08*(G.st[e.p.id]||100)/100;
+ let pG=(q.xg*1.55*(.75+power*.4)+shotAdj(e,q))*(feat('realism')?1:1.12),pOn=clamp(.32+q.xg*1.1+(e.p.sk.fin-60)/250-(power>.95?.18:0),.12,.9);if(feat('fatigue'))pOn*=.92+.08*(G.st[e.p.id]||100)/100;
  if(gk)pG*=Math.pow(72/Math.max(35,(gk.p.sk.div+gk.p.sk.pos)/2),1.2);pG=clamp(pG,.005,.9);
  // a defender in the way can block it
  const blk=onT(opp(e.t)).find(o=>o.pos!='GK'&&Math.abs((o.x-e.x)*s)<5&&(o.x-e.x)*s>0&&Math.abs(o.y-(e.y+(34-e.y)*Math.abs(o.x-e.x)/Math.max(1,q.d)))<1.1);
@@ -104,9 +106,9 @@ function teamAI(e,dt){const b=G.b,k=e.t,s=G.dir[k],has=b.own&&b.own.t===k,iq=IQ(
   if(e.pos=='FB'&&(c.x-goalX(-s))*s>60&&rnd()<dt*.15)e.run=1.2;
   if(dist(e,c)<8){hy+=e.y<c.y?-6:6}seek(e,hx,hy,.75);return}
  // defending: press the ball, cover, mark
- const c=b.own;if(c){const D=onT(k).filter(x=>x.pos!='GK').sort((a,x)=>dist(a,c)-dist(x,c)),press=feat('press')||(k===0&&G.press2>0)?2:1;
+ const c=b.own;if(c){const D=onT(k).filter(x=>x.pos!='GK').sort((a,x)=>dist(a,c)-dist(x,c)),press=(feat('press')||(k===0&&G.press2>0)?2:1)+tacMod(k).press;
   if(D[0]===e){const own=goalX(-s),ux=own-c.x,uy=34-c.y,l=Math.hypot(ux,uy)||1;seek(e,c.x+ux/l*1.2,c.y+uy/l*1.2,1);if(dist(e,c)<1.9&&rnd()<dt*1.6*(.5+iq*.5))tackle(e,false);return}
-  if(press>1&&D[1]===e&&dist(e,c)<14&&iq>.6){const own=goalX(-s);seek(e,c.x+(own-c.x)*.18,c.y+(34-c.y)*.18,.95);return}
+  if(press>1&&(D[1]===e||(press>2&&D[2]===e))&&dist(e,c)<14+tacMod(k).press*4&&iq>.6){const own=goalX(-s);seek(e,c.x+(own-c.x)*.18,c.y+(34-c.y)*.18,.95);return}
   // mark the nearest attacker in my area
   const m=onT(opp(k)).filter(x=>x!==c&&x.pos!='GK').sort((a,x)=>Math.hypot(a.x-hx,a.y-hy)-Math.hypot(x.x-hx,x.y-hy))[0];if(m&&Math.hypot(m.x-hx,m.y-hy)<12){const own=goalX(-s);hx=m.x+(own-m.x)*.08*(e.p.sk.mrk/60);hy=m.y+(34-m.y)*.1}
   // cut out passing lanes
@@ -116,11 +118,11 @@ function bt(e){const b=G.b,v=topSpd(e);return dist(e,b)/v}
 function carrierAI(e,dt){const b=G.b,k=e.t,s=G.dir[k],gx=goalX(s),iq=IQ(k);e.cd.dec=(e.cd.dec||0)-dt;const fwd=(e.x-goalX(-s))*s;
  const pres=onT(opp(k)).filter(o=>dist(o,e)<3).length,space=!onT(opp(k)).some(o=>{const u=(o.x-e.x)*s;return u>-1&&u<7&&Math.abs(o.y-e.y)<4.5});
  if(e.cd.dec>0&&!(pres&&e.cd.dec>.15)){dribble(e,dt,fwd);return}
- e.cd.dec=(space?.45:.25)+(1-iq)*.2+rnd()*.15;
+ e.cd.dec=((space?.45:.25)+(1-iq)*.2+rnd()*.15)/tacMod(k).tempo;
  // set pieces
  if(e.set){const set=e.set;e.set=null;if(set=='corner'){return crossBox(e)}if(set=='fk'&&Math.hypot(gx-e.x,34-e.y)<27&&rnd()<.6)return shoot(e,.85);if(set=='gk'||set=='throw'){const t=bestPass(e,true);if(t)return passTo(e,t.r,.4,t.long&&set=='gk'?'long':null)}}
  const q=shotQuality(e),dGoal=q.d;
- if(dGoal<30&&q.xg>(.062-(iq-.7)*.02)*(dGoal>20?.7:1)*(space&&dGoal>16?1.25:1))return shoot(e,.72+rnd()*.25);
+ if(dGoal<30&&q.xg>(.062-(iq-.7)*.02)/tacMod(k).shoot*(dGoal>20?.7:1)*(space&&dGoal>16?1.25:1))return shoot(e,.72+rnd()*.25);
  // cross from wide areas in the final third
  if(fwd>70&&(e.y<16||e.y>52)&&rnd()<.55+iq*.25)return crossBox(e);
  const t=bestPass(e);
@@ -132,7 +134,7 @@ function dribble(e,dt,fwd){const k=e.t,s=G.dir[k],gx=goalX(s);let ty=34+(e.y-34)
  seek(e,e.x+s*8,clamp(ty,3,PW-3),fwd>55?.95:.85);if(ahead.length&&dist(ahead[0],e)<2.2&&rnd()<dt*1.2)skill(e)}
 function bestPass(e,safe){const k=e.t,s=G.dir[k],iq=IQ(k);let best=null;
  onT(k).forEach(r=>{if(r===e||r.pos=='GK'&&!safe)return;const d=dist(e,r);if(d<5||d>45)return;const prog=((r.x-e.x)*s)/25,open=Math.min(...onT(opp(k)).map(o=>dist(o,r))),risk=laneRisk(e,r),q=shotQuality(r).xg;
-  let sc=prog*1.1+Math.min(open,8)/8*.5-risk*1.8*iq+q*4-(d>32?.25:0)-(prog<0?.25:0)+(rnd()-.5)*(1-iq)*.8;const off=feat('offside')&&isOff(r);if(off)sc-=1.5*iq;
+  const TMp=tacMod(k);let sc=prog*(1.1+TMp.direct*.4)+Math.min(open,8)/8*.5-risk*1.8*iq+q*4-(d>32?.25-TMp.direct*.3:0)-(prog<0?.25+TMp.direct*.15:0)+(rnd()-.5)*(1-iq)*.8;const off=feat('offside')&&isOff(r);if(off)sc-=1.5*iq;
   const kind=d>32?'long':r.run>0&&(r.x-e.x)*s>4&&open>3?'through':null;if(!best||sc>best.sc)best={r,sc,kind,long:d>32}});return best}
 function isOff(r){const s=G.dir[r.t],D=onT(opp(r.t)).map(x=>x.x*s).sort((a,c)=>c-a),second=D[1]!=null?D[1]:D[0];return r.x*s>second+.3&&(r.x-52.5)*s>0&&r.x*s>G.b.x*s}
 function laneRisk(e,r){let risk=0;onT(opp(e.t)).forEach(d=>{const ax=r.x-e.x,ay=r.y-e.y,l2=ax*ax+ay*ay||1,u=clamp(((d.x-e.x)*ax+(d.y-e.y)*ay)/l2,0,1),px=e.x+ax*u,py=e.y+ay*u,dd=Math.hypot(d.x-px,d.y-py);if(dd<2.5)risk+=(2.5-dd)/2.5*(.5+d.p.sk.int/200)});return risk}

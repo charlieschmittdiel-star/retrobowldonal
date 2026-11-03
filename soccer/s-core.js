@@ -66,7 +66,7 @@ function teamOvr(t){const L=lineup(t).xi;return L.length?Math.round(L.reduce((a,
 function newLeague(o){o=o||{};R={ver:1,sport:'soccer',uid:0,season:1,pl:[],t:[],sched:[],day:0,rounds:o.rounds||2,hlen:o.hlen||4,diff:o.diff==null?1:o.diff,news:[],hist:[],box:[],pts:3,xi:{},stage:null,cup:null,me:0,cash:o.cash||40};
  const cities=CITIES.slice().sort(()=>rnd()-.5),suff=SUFF.slice().sort(()=>rnd()-.5);
  for(let i=0;i<20;i++){const n=cities[i]+' '+suff[i];R.t.push({n,ab:cities[i].slice(0,3).toUpperCase(),col:TCOL[i%TCOL.length],form:pick(['4-4-2','4-3-3','4-2-3-1','4-4-2','3-5-2']),w:0,d:0,l:0,gf:0,ga:0,form5:[],bud:20+rnd()*40})}
- if(o.name){R.t[0].n=o.name;R.t[0].ab=o.name.replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase()||'YOU'}
+ if(o.name){R.t[0].n=o.name;R.t[0].ab=o.name.replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase()||'YOU'}uniqAb();
  const lvls=[...Array(20).keys()].map(i=>58+gauss()*2.4+(i<3?3:i>16?-2:0)).sort(()=>rnd()-.5);
  for(let t=0;t<20;t++)mkSquad(t,lvls[t]);
  for(let i=0;i<30;i++){const p=mkPlayer(pick(POS),ri(22,32),46+rnd()*10,5,-1);p.sal=.4;R.pl.push(p)}
@@ -82,7 +82,9 @@ function nextGame(){const d=R.sched[R.day];if(!d)return null;return d.find(g=>g[
 const HKEY='soccer_save',OKEY='soccer_opt';
 function slotKey(){return OPT.slot>1?HKEY+'_'+OPT.slot:HKEY}
 function hSave(){if(!R)return;R.saved=Date.now();const k=slotKey(),s=JSON.stringify(R);if(!lsSet(k,s)){try{R.box=R.box.slice(-20);lsSet(k,JSON.stringify(R))}catch(e){}}const old=lsGet(k+'_b1');if(old)lsSet(k+'_b2',old);lsSet(k+'_b1',s)}
-function hLoad(){try{const s=lsGet(slotKey());if(s){R=JSON.parse(s);return true}}catch(e){}return false}
+function hLoad(){try{const s=lsGet(slotKey());if(s){R=JSON.parse(s);uniqAb();return true}}catch(e){}return false}
+// two clubs from towns that start the same way get different short names
+function uniqAb(){if(!R||!R.t)return;const used=new Set();R.t.forEach(T=>{let a=T.ab;if(used.has(a)){const w=T.n.replace(/[^A-Za-z ]/g,'').split(' ').filter(Boolean),c=[(w[0]||'X')[0]+(w[0]||'XX')[1]+(w[1]||'X')[0],(w[0]||'X')[0]+(w[1]||'XX').slice(0,2),(w[0]||'XXX').slice(0,2)+(w[0]||'XXX').slice(-1)].map(x=>x.toUpperCase());a=c.find(x=>!used.has(x))||a+R.t.indexOf(T);T.ab=a}used.add(a)})}
 let OPT={};try{OPT=JSON.parse(lsGet(OKEY))||{}}catch(e){}
 const optSave=()=>lsSet(OKEY,JSON.stringify(OPT));
 const HFEATS=[['On the pitch','meter','Shot power','Hold Shoot for more power; let go in the green for the best shot. Off: one tap, average power.'],

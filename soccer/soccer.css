@@ -58,3 +58,5 @@ kbd{background:#334155;border-radius:5px;padding:1px 6px;font-family:inherit;fon
 .sball:after{content:"";position:absolute;left:28px;top:24px;width:20px;height:20px;background:#111;clip-path:polygon(50% 0,100% 38%,82% 100%,18% 100%,0 38%)}
 .fm{display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;font-style:normal;font-size:11px;font-weight:800;border-radius:4px;margin:0 1px;color:#0b1020}.fm.W{background:#4ade80}.fm.D{background:#cbd5e1}.fm.L{background:#f87171}
 .t td.sec{color:#fdba74;font-weight:700;background:#ffffff08}.t tr.cutr td{border-bottom:2px dashed #ef4444}.ni.fb2{color:#fdba74}.ni.fb{margin-top:auto}
+.bar{height:8px;background:#1e293b;border-radius:4px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%}
+@media (min-width:761px) and (max-height:920px){.side{gap:1px}.ni{padding:5px 10px;font-size:14px}}
