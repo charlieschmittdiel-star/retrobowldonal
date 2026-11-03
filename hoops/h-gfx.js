@@ -16,12 +16,13 @@ function camFrame(close){const now=performance.now(),dt=Math.min(.1,(now-(CAM.la
  const base=Math.min((VW-24)/100,(VH-182)/(CH*KY+8)),z=close?1.75:VW<800?1.2:1.42;S=base*z;
  const b=G.b;let tx=47,ty=25;if(b&&!G.rp){const h=b.st=='held'&&b.h?b.h:null;tx=h?h.x+h.vx*.35:(b.x||47)+(b.vx||0)*.25;ty=h?h.y:(b.y||25);
   // lean toward the basket being attacked
-  if(G.phase=='live'&&b.st=='held'&&G.poss!=null){const s=G.dir[G.poss];tx+=s*6}}
+  if(G.phase=='live'&&b.st=='held'&&G.poss!=null){const s=G.dir[G.poss];if(s)tx+=s*6}}
  if(G.rp&&G.ent.length){const h=G.b&&G.b.h;tx=h?h.x:(G.b.x||47);ty=h?h.y:(G.b.y||25)}
+ if(!isFinite(tx))tx=47;if(!isFinite(ty))ty=25;if(!isFinite(CAM.x)||!isFinite(CAM.y))CAM.on=0;
  const hw=VW/(2*S),hh=VH/(2*S*KY);tx=hw*2>=CW+28?47:clamp(tx,hw-14,CW+14-hw);ty=hh*2>=CH+30?25:clamp(25+(ty-25)*.45,hh-16,CH+12-hh);
  if(!CAM.on){CAM.x=tx;CAM.y=ty;CAM.on=1}const f=1-Math.exp(-dt*2.6);CAM.x+=(tx-CAM.x)*f;CAM.y+=(ty-CAM.y)*f;
  OX=VW/2-CAM.x*S;OY=VH/2+16-CAM.y*S*KY}
-{const _hd=hDraw;hDraw=function(){if(!CX||!G)return _hd();if(!GFX()){if(G.gfxOn){G.gfxOn=0;CAM.on=0;hResize()}return _hd()}G.gfxOn=1;const c2=OPT.cam2;OPT.cam2=0;try{camFrame(c2&&c2!==0);_hd()}finally{OPT.cam2=c2}}}
+{const _hd=hDraw;hDraw=function(){if(!CX||!G)return _hd();if(!GFX()){if(G.gfxOn){G.gfxOn=0;CAM.on=0;hResize()}return _hd()}G.gfxOn=1;const c2=OPT.cam2;OPT.cam2=0;try{camFrame(c2&&c2!==0);_hd()}catch(err){if(!G.gfxErr){G.gfxErr=1;console.warn('graphics',err)}try{hResize();OPT.cam2=c2;_hd()}catch(e2){}}finally{OPT.cam2=c2}}}
 // ---------- textures: the floor and the stands are painted once per arena ----------
 const PXF=22,PXC=9,FX0=-6,FY0=-4.6,FW=106,FH=59.2,AX0=-30,AY0=-30,AW=154,AH=112;let TEX={};
 function hexA(c,a){const n=parseInt(c.slice(1),16);return`rgba(${n>>16},${n>>8&255},${n&255},${a})`}
@@ -116,16 +117,16 @@ function drawHoop2(sd){const hx=HX[sd],dir=sd?1:-1,bx0=sd?CW-4:4,post=sd?CW+5.5:
 {const _db=drawBall;drawBall=function(){if(!GFX()||!G)return _db();const b=G.b;if(!b||b.st=='dead')return;let x=b.x,y=b.y,z=b.z||0;
   if(b.st=='held'){const h=b.h,face=Math.cos(h.fa)>=0?1:-1;x=h.x+face*.7;y=h.y+.25;z=h.act&&(h.act.k=='shot'||h.act.k=='gather'||h.act.k=='lay'||h.act.k=='dunk')?ftOf(h.p)+1.1+h.z:Math.abs(Math.sin(performance.now()/150))*2.6+.3+h.z*.3}
   if(feat('ballfx')&&b.st=='shot'){b.trail=b.trail||[];b.trail.push([b.x,b.y,b.z]);if(b.trail.length>14)b.trail.shift();b.trail.forEach(([tx,ty,tz],i)=>{const q=P(tx,ty,tz);CX.fillStyle=`rgba(251,146,60,${i/b.trail.length*.3})`;CX.beginPath();CX.arc(q[0],q[1],Math.max(2,S*.36)*i/b.trail.length,0,7);CX.fill()})}
-  const [sx,sy]=P(x,y,0),[bx2,by2]=P(x,y,z),r=Math.max(3.5,S*.42),sh=clamp(1-z/16,.25,1);
+  const [sx,sy]=P(x,y,0),[bx2,by2]=P(x,y,z),r=Math.max(3.5,S*.42),sh=clamp(1-z/16,.25,1);if(![sx,sy,bx2,by2].every(isFinite))return;
   const sg=CX.createRadialGradient(sx,sy,0,sx,sy,r*1.6);sg.addColorStop(0,`rgba(0,0,0,${.4*sh})`);sg.addColorStop(1,'rgba(0,0,0,0)');CX.fillStyle=sg;CX.beginPath();CX.ellipse(sx,sy,r*1.6,r*.6,0,0,7);CX.fill();
   const g=CX.createRadialGradient(bx2-r*.35,by2-r*.4,r*.1,bx2,by2,r);g.addColorStop(0,'#fdba74');g.addColorStop(.55,'#ea580c');g.addColorStop(1,'#9a3412');CX.fillStyle=g;CX.beginPath();CX.arc(bx2,by2,r,0,7);CX.fill();
   const rot=(b.st=='held'?performance.now()/200:performance.now()/90)%(Math.PI*2);CX.strokeStyle='rgba(40,12,4,.85)';CX.lineWidth=Math.max(.8,r*.12);CX.beginPath();CX.arc(bx2,by2,r,0,7);CX.stroke();
   CX.save();CX.beginPath();CX.arc(bx2,by2,r,0,7);CX.clip();CX.beginPath();CX.ellipse(bx2,by2,r,r*Math.abs(Math.cos(rot))*.9+.5,0,0,7);CX.moveTo(bx2-r,by2);CX.lineTo(bx2+r,by2);CX.moveTo(bx2+r*.55*Math.sin(rot),by2-r);CX.quadraticCurveTo(bx2+r*.9*Math.sin(rot),by2,bx2+r*.55*Math.sin(rot),by2+r);CX.stroke();CX.restore()}}
 // ---------- players: soft shadows and reflections in the varnish ----------
-{const _dp=drawPlayer;drawPlayer=function(e){if(!GFX()||!G||G.refl||!e||!e.p)return _dp(e);try{const [gx,gy]=P(e.x,e.y,0),w=S*1.3;const sg=CX.createRadialGradient(gx,gy,0,gx,gy,w*1.4);sg.addColorStop(0,'rgba(0,0,0,.32)');sg.addColorStop(1,'rgba(0,0,0,0)');CX.fillStyle=sg;CX.beginPath();CX.ellipse(gx,gy,w*1.4,w*.55,0,0,7);CX.fill();
+{const _dp=drawPlayer;drawPlayer=function(e){if(!GFX()||!G||G.refl||!e||!e.p)return _dp(e);try{const [gx,gy]=P(e.x,e.y,0),w=S*1.3;if(!isFinite(gx)||!isFinite(gy))return _dp(e);const sg=CX.createRadialGradient(gx,gy,0,gx,gy,w*1.4);sg.addColorStop(0,'rgba(0,0,0,.32)');sg.addColorStop(1,'rgba(0,0,0,0)');CX.fillStyle=sg;CX.beginPath();CX.ellipse(gx,gy,w*1.4,w*.55,0,0,7);CX.fill();
   if(e.x>-1&&e.x<CW+1&&e.y>-1&&e.y<CH+1){const lab=OPT.labels,ctl=G.ctl,ctl2=G.ctl2,k=.42;G.refl=1;OPT.labels=0;G.ctl=null;G.ctl2=null;CX.save();CX.globalAlpha=.12;CX.transform(1,0,0,-k,0,gy*(1+k));try{_dp(e)}finally{CX.restore();G.refl=0;OPT.labels=lab;G.ctl=ctl;G.ctl2=ctl2}}}catch(x){}return _dp(e)}}
 // ---------- lighting over everything ----------
-{const _dh=drawHUD;drawHUD=function(){if(GFX()&&G){const v=CX.createRadialGradient(VW/2,VH*.55,Math.min(VW,VH)*.35,VW/2,VH*.55,Math.max(VW,VH)*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.5)');CX.fillStyle=v;CX.fillRect(0,0,VW,VH)}
+{const _dh=drawHUD;drawHUD=function(){if(GFX()&&G&&isFinite(VW)&&VW>0){const v=CX.createRadialGradient(VW/2,VH*.55,Math.min(VW,VH)*.35,VW/2,VH*.55,Math.max(VW,VH)*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.5)');CX.fillStyle=v;CX.fillRect(0,0,VW,VH)}
   _dh();if(G&&G.meter&&feat('openmt')&&G.meter.e===G.ctl&&!G.rp){const e=G.meter.e,[gx,gy]=P(e.x,e.y,0),f=G.mwF||1,t=f>=1.3?'Wide open':f>=.95?'Open':f>=.65?'Contested':'Smothered';const h=ftOf(e.p)*S*HZ;CX.font='800 12px system-ui';CX.textAlign='left';CX.textBaseline='middle';const tx=gx+S*1.8+16,ty=gy-h*.55,tw=CX.measureText(t).width;CX.fillStyle='rgba(15,23,42,.8)';CX.fillRect(tx-4,ty-9,tw+8,18);CX.fillStyle=f>=.95?'#4ade80':f>=.65?'#fbbf24':'#f87171';CX.fillText(t,tx,ty)}}}
 // ---------- smoother, slower movement ----------
 {const _ts=topSpd;topSpd=function(e){const v=_ts(e);return feat('smooth')?v*.9:v}}
