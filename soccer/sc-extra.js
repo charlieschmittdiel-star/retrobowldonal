@@ -48,3 +48,12 @@ function tutMenu(){G.paused=true;modal(`<h2>Training ground</h2><p>Step ${G.tut.
 {const _dh=drawHUD;drawHUD=function(){_dh();if(!G||!G.tut)return;try{const T=G.tut,s=TUT[Math.min(T.i,TUT.length-1)];CX.fillStyle='rgba(15,23,42,.9)';const w=Math.min(VW-40,640);CX.fillRect(VW/2-w/2,104,w,62);CX.textAlign='center';CX.textBaseline='middle';CX.fillStyle='#4ade80';CX.font='800 16px system-ui';CX.fillText(`Training ${T.i+1}/${TUT.length}: ${s[0]}`,VW/2,122);CX.fillStyle='#e2e8f0';CX.font='500 13px system-ui';CX.fillText(s[1],VW/2,146)}catch(x){}}}
 {const _ku=keysUI;keysUI=function(){_ku();if(!feat('tut2')||(typeof CAREER=='function'&&CAREER()))return;try{const h=document.querySelector('.main .head');if(h)h.insertAdjacentHTML('beforeend',`<div class="row">${B('tutStart()','Try the training ground','big')}</div>`)}catch(e){}}}
 {const _hu=homeUI;homeUI=function(){_hu();if(!feat('tut2')||!R||R.season!==1||R.day>2||(typeof CAREER=='function'&&CAREER()))return;try{const h=document.querySelector('.main .head');if(h&&PAGE=='home')h.insertAdjacentHTML('beforeend',`<p class="small">New to the game? ${B('tutStart()','Training ground','xs')}</p>`)}catch(e){}}}
+// ---------- a shorter left menu: less-used pages sit in groups that open with a click ----------
+{const add=[["Help","navg","Grouped menu","Stats, club and history pages sit in groups in the left menu, so the menu fits on a laptop screen."]];
+ add.forEach(a=>{if(HFEATS.some(f=>f[1]==a[1]))return;let i=-1;HFEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});HFEATS.splice(i<0?HFEATS.length:i+1,0,a)})}
+const NAVOPEN={};
+function groupNav(){if(!feat("navg")||innerWidth<=760)return;const side=document.querySelector(".side");if(!side)return;const byF={};NAV.forEach(n=>byF[n[2]]=n[0]);
+ NAVG.forEach(([g,keys])=>{const btns=[...side.querySelectorAll(":scope > button.ni")].filter(b=>keys.includes(byF[b.getAttribute("onclick")]));if(btns.length<2)return;
+  const d=document.createElement("details");d.className="ng";d.innerHTML=`<summary class="ni">${g}</summary>`;const last=[...side.querySelectorAll(":scope > button.ni, :scope > details.ng")].filter(x=>!btns.includes(x)).pop();(last||btns[0]).after(d);btns.forEach(b=>d.appendChild(b));d.open=!!NAVOPEN[g]||btns.some(b=>b.classList.contains("on"));d.ontoggle=()=>{NAVOPEN[g]=d.open}})}
+{const _sh=shell;shell=function(...a){const r=_sh.apply(this,a);try{groupNav()}catch(e){}return r}}
+const NAVG=[["Stats",["results","lead","tstats","power"]],["Club",["staff","fin"]],["Honors",["hist","ach","hof","hl"]],["Options",["feat","set","keys"]]];

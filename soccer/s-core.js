@@ -74,7 +74,7 @@ function newLeague(o){o=o||{};R={ver:1,sport:'soccer',uid:0,season:1,pl:[],t:[],
 function mkSquad(t,lvl){const plan=[['GK',1],['GK',.4],['CB',1],['CB',1],['CB',.5],['FB',1],['FB',1],['FB',.5],['CM',1],['CM',1],['CM',.8],['CM',.5],['WG',1],['WG',1],['WG',.5],['ST',1],['ST',.9],['ST',.5],['CM',.3],['CB',.3],['WG',.3],['GK',.2]];
  plan.forEach(([pos,q],i)=>{const star=q==1&&rnd()<.08?ri(5,10):0,age=ri(18,33),base=lvl+(q==1?2:q>=.8?0:q>=.5?-4:-8)+star+gauss()*2.5;R.pl.push(mkPlayer(pos,age,base,ri(4,16),t))})}
 // a double round robin: every team plays every other twice (home and away), one match per team per round
-function mkSchedule(rounds){const n=20;let arr=[...Array(n).keys()].sort(()=>rnd()-.5);const first=[];
+function mkSchedule(rounds,ids){ids=ids||[...Array(20).keys()];const n=ids.length;let arr=ids.slice().sort(()=>rnd()-.5);const first=[];
  for(let d=0;d<n-1;d++){const g=[];for(let i=0;i<n/2;i++){const a=arr[i],b=arr[n-1-i];g.push((d+i)%2?[a,b]:[b,a])}first.push(g);arr=[arr[0]].concat([arr[n-1]],arr.slice(1,n-1))}
  const days=[];for(let leg=0;leg<rounds;leg++)first.forEach(g=>days.push(leg%2?g.map(([a,b])=>[b,a]):g.map(x=>x.slice())));return days}
 function nextGame(){const d=R.sched[R.day];if(!d)return null;return d.find(g=>g[0]===0||g[1]===0)||null}

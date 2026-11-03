@@ -25,18 +25,18 @@ function careerGo(){const pos=$('cpos').value,arch=$('carch').value,fn=$('cfn').
  newLeague({rounds:2,hlen:+$('nq').value,diff:+$('nd').value});const p=mkPlayer(pos,17,50,0,0);p.fn=fn;p.ln=ln;p.n=fn+' '+ln;p.num=clamp(+$('cnum').value||9,1,99);const pr=ARCH[arch][2];
  SK.forEach(k=>{let v=p.sk[k]+(pr[k]||0)*.8+gauss()*1.5;p.sk[k]=clamp(Math.round(v),25,74);p.mx[k]=clamp(Math.round(p.sk[k]+28+(pr[k]||0)*.5),p.sk[k],99)});
  teamPl(0).filter(q=>q.num===p.num).forEach(q=>fixNum(q,0));p.sal=.3;p.exp=R.season+3;p.acad=1;p.mor=75;p.s0=ovr(p);R.pl.push(p);
- R.car={id:p.id,xp:0,lvl:1,pts:2,xf:[],fans:20,trust:42,arch,log:[],evd:0};R.camp=null;
- addNews(`${p.n} (17) signs his first professional contract with ${R.t[0].n}.`,1);hSave();careerHome();setTimeout(()=>modal(`<h2>Welcome to ${esc(R.t[0].n)}</h2><p><b>${esc(p.n)}</b> has come up through the academy. You start as a ${ovr(p)} overall.</p><p>Play well to earn XP and the manager's trust. If he does not start you, you come on as a substitute at half time.</p>`),60)}
+ R.car={id:p.id,xp:0,lvl:1,pts:1,xf:[],fans:20,trust:30,arch,log:[],evd:0};R.camp=null;
+ addNews(`${p.n} (17) signs his first professional contract with ${R.t[0].n}.`,1);hSave();careerHome();setTimeout(()=>modal(`<h2>Welcome to ${esc(R.t[0].n)}</h2><p><b>${esc(p.n)}</b> has come up through the academy. You start as a ${ovr(p)} overall.</p><p>You start on the bench: play well when you come on to earn XP and the manager's trust, and you will win a place in the team.</p>`),60)}
 // ---------- the career home page ----------
 const NAVC=['home','roster','table','fix','results','lead','power','tstats','hist','ach','hof','hl','feat','set','keys'];
 {const i=NAV.findIndex(n=>n[0]=='squad');if(!NAV.some(n=>n[0]=='roster'))NAV.splice(i<0?1:i,0,['roster','Team','teamUI(0)'])}
 {const _ok=navOK;navOK=function(k){if(CAREER())return NAVC.includes(k)&&(k=='roster'||_ok(k));if(k=='roster')return false;return _ok(k)}}
 {const _hu=homeUI;homeUI=function(){if(CAREER()&&R&&R.car)return careerHome();return _hu()}}
-function lvlNeed(l){return 120+l*45}
+function lvlNeed(l){return 160+l*60}
 function starter(){const p=me();if(!p||p.inj||p.ban>0)return false;const lu=lineup(0);return lu.xi.includes(p)}
 function careerHome(){PAGE='home';const p=me();if(!p){OPT.mode='franchise';optSave();return startUI()}const C=R.car,T=R.t[0],tb=table(),pos=tb.indexOf(0)+1;let next='';
  if(R.stage)next=`<div class="card hot"><h3>The season is over</h3><p>The club sorts out contracts and the transfer window.</p>${B('careerOff()','Start the next season','big')}</div>`;
- else if(feat('cup')&&R.cup&&R.cup.pend&&cupDue()){const t=cupMine(),o=t[0]===0?t[1]:t[0];next=`<div class="card hot"><h3>Cup: ${CUPN[R.cup.rd]}</h3><p>${t[0]===0?'vs':'at'} ${tlink(o)}</p><div class="row">${B('cupPlay()','Play the cup match','big')}${B('cupSimMine()','Sim it')}</div></div>`}
+ else if(feat('cup')&&R.cup&&R.cup.pend&&cupDue()){const t=cupMine(),o=t[0]===0?t[1]:t[0];next=`<div class="card hot"><h3>Cup: ${cupName(R.cup.rd)}</h3><p>${t[0]===0?'vs':'at'} ${tlink(o)}</p><div class="row">${B('cupPlay()','Play the cup match','big')}${B('cupSimMine()','Sim it')}</div></div>`}
  else{const g=nextGame();if(g){const o=g[0]===0?g[1]:g[0];next=`<div class="card hot"><h3>Matchday ${R.day+1} of ${R.sched.length}</h3><p>${g[0]===0?'vs':'at'} ${tlink(o)} (${tb.indexOf(o)+1}${ord(tb.indexOf(o)+1)})${feat('riv')&&rival(0)===o?' · <b>Derby</b>':''}</p><div class="row">${B('playGame()','Play the match','big')}${B('simGameUI()','Sim the match')}${B('simDaysUI(5)','Sim 5 matches')}</div></div>`}}
  const role=p.inj?`Injured (${p.inj} matches)`:p.ban>0?'Suspended':starter()?'Starting':'On the bench',need=lvlNeed(C.lvl);
  shell(`<div class="head ph" style="display:flex;gap:14px;align-items:center"><div>${feat('faces')&&typeof faceSVG=='function'?faceSVG(p,72):''}</div><div style="flex:1"><h1>${esc(p.n)} <small>#${p.num}</small></h1><p>${CPOS[p.pos]||p.pos} · ${esc(T.n)} (${pos}${ord(pos)}) · ${p.age} years · ${role} · ${money(p.sal)} a season through ${p.exp}</p></div><div class="ov">${ovrPill(ovr(p))}<small> overall</small></div></div>
@@ -48,7 +48,7 @@ function careerHome(){PAGE='home';const p=me();if(!p){OPT.mode='franchise';optSa
 // ---------- upgrades, XP, X-factors ----------
 function carUpUI(){const p=me(),C=R.car;modal(`<h2>Upgrade ${esc(p.n)}</h2><p>${C.pts} upgrade points. Each point gives a few random boosts inside one group, up to your potential.</p><div class="row">${Object.keys(SG).filter(g=>g!='gk').map(g=>B(`carUp('${g}')`,`${SG[g][0]}<br><small>${hRoom(p,g)?'room to grow':'maxed'}</small>`,C.pts&&hRoom(p,g)?'':'off')).join('')}</div>`)}
 function carUp(gk){const p=me(),C=R.car;if(C.pts<1||!hRoom(p,gk))return;C.pts--;const b=ovr(p),g=hUp(p,gk,3);hSave();carUpUI();toast(`${gotTxt(g)||'no change'}${ovr(p)>b?` · now ${ovr(p)} overall`:''}`)}
-function addXP(n){const C=R.car;if(!C)return;C.xp+=n;while(C.xp>=lvlNeed(C.lvl)){C.xp-=lvlNeed(C.lvl);C.lvl++;C.pts+=2;addNews(`${me().n} reaches level ${C.lvl}.`,1);if(feat('xf')&&C.lvl%4==0&&C.xf.length<Object.keys(XF).length)C.pendingXF=1}}
+function addXP(n){const C=R.car;if(!C)return;C.xp+=n;while(C.xp>=lvlNeed(C.lvl)){C.xp-=lvlNeed(C.lvl);C.lvl++;C.pts+=1;addNews(`${me().n} reaches level ${C.lvl}.`,1);if(feat('xf')&&C.lvl%4==0&&C.xf.length<Object.keys(XF).length)C.pendingXF=1}}
 function xfPick(){const C=R.car;if(!C.pendingXF)return;const opts=Object.keys(XF).filter(k=>!C.xf.includes(k));modal(`<h2>New X-factor</h2><p>Pick one ability.</p>${opts.map(k=>`<p>${B(`xfTake('${k}')`,`<b>${XF[k][0]}</b><br><small>${XF[k][1]}</small>`)}</p>`).join('')}`);$('modal').onclick=null}
 function xfTake(k){const C=R.car;C.xf.push(k);C.pendingXF=0;hSave();closeModal();addNews(`${me().n} unlocked ${XF[k][0]}.`,1);careerHome()}
 {const _sa=shotAdj;shotAdj=function(e,q){let a=_sa(e,q);if(CAREER()&&hasXF('fin')&&me()&&e.p.id===me().id)a+=.05;return a}}
@@ -68,7 +68,7 @@ function callForBall(){const e=myEnt(),b=G&&G.b;if(!e||!b||!b.own||b.own.t!==0||
   if(hasXF('eng')){const e=myEnt();if(e&&G.st[e.p.id]!=null)G.st[e.p.id]=Math.min(100,G.st[e.p.id]+dt*.6*45/G.hl)}
   // on the bench: watch the first half go by quickly, then come on at half time
   if(G.waitSub&&G.half===2&&G.phase!='over'){const p=me(),out=onT(0).filter(e=>e.pos!='GK').sort((a,b)=>(a.pos===p.pos?0:1)-(b.pos===p.pos?0:1)||(G.st[a.p.id]||100)-(G.st[b.p.id]||100))[0];
-   G.waitSub=0;if(out&&subOn(0,out,p)){G.auto=0;G.ctl=myEnt();say(`${p.ln} comes on!`,2)}}}}
+   G.waitSub=0;if(out&&subOn(0,out,p)){if(!G.simAll){G.auto=0;G.ctl=myEnt()}say(`${p.ln} comes on!`,2)}}}}
 {const _ng=newGame;newGame=function(...a){const g=_ng.apply(this,a);if(CAREER()&&R.car&&!g.auto){const p=me();if(p&&!g.ent.some(e=>e.p.id===p.id)){if(!p.inj&&!(p.ban>0)&&g.bench[0].includes(p.id)){g.waitSub=1;g.auto=1;g.ctl=null}else g.noMe=1}else setTimeout(()=>{if(G===g)G.ctl=myEnt()},0)}return g}}
 {const _rl=runLoop;runLoop=function(){_rl();if(CAREER()&&G&&G.noMe){G.paused=true;modal(`<h2>You are not playing today</h2><p>${me()&&me().inj?'You are injured.':'You are suspended.'} The match will be simmed.</p>${B('closeModal();simRest()','OK','big')}`)}}}
 {const _hk=hKey;hKey=function(code,down){if(CAREER()&&G&&G.waitSub&&down&&!G.paused){if(code=='Space'){G.ff=!G.ff;return}}return _hk(code,down)}}
@@ -79,7 +79,7 @@ function callForBall(){const e=myEnt(),b=G&&G.b;if(!e||!b||!b.own||b.own.t!==0||
 // ---------- after each match: XP, trust, the press ----------
 function matchXP(b,won,drew){return b[SI.g]*30+b[SI.a]*20+b[SI.sot]*4+b[SI.pac]*.25+b[SI.tkl]*4+b[SI.int]*3+(b[SI.rat]-6)*20+(won?15:drew?6:2)}
 {const _rg=recGame;recGame=function(a,b,res,played){_rg(a,b,res,played);if(!CAREER()||!R.car||!(a===0||b===0))return;try{const p=me(),m=res.T.findIndex(S=>S.t===0),S=res.T[m],i=S.ps.findIndex(q=>q.id===p.id);if(i<0||!S.box[i][SI.gp]){R.car.trust=clamp(R.car.trust-1,0,100);return}
- const bx=S.box[i],won=res.sc[m]>res.sc[1-m],drew=res.sc[m]===res.sc[1-m],xp=Math.max(12,matchXP(bx,won,drew))*(played?1:.6);addXP(xp);const mins=bx[SI.min]||90;R.car.trust=clamp(R.car.trust+(mins>=45?(bx[SI.rat]-6.3)*4:Math.max(0,bx[SI.rat]-6.3)*4+1),0,100);R.car.fans=clamp(R.car.fans+bx[SI.g]*2+(won?1:0),0,100);
+ const bx=S.box[i],won=res.sc[m]>res.sc[1-m],drew=res.sc[m]===res.sc[1-m],xp=Math.max(12,matchXP(bx,won,drew))*(played?1:.6);addXP(xp);const mins=bx[SI.min]||90;R.car.trust=clamp(R.car.trust+(mins>=45?(bx[SI.rat]-6.6)*3:Math.max(0,bx[SI.rat]-6.6)*3+.8),0,100);R.car.fans=clamp(R.car.fans+bx[SI.g]*2+(won?1:0),0,100);
  R.car.log.unshift({s:R.season,d:R.day,o:R.t[a===0?b:a].ab,r:`${res.sc[m]}-${res.sc[1-m]}`,g:bx[SI.g],a:bx[SI.a],rat:bx[SI.rat],xp:Math.round(xp)});if(R.car.log.length>40)R.car.log.length=40;
  if(played&&feat('pressc')&&(bx[SI.g]>=2||bx[SI.rat]>=8||res.sc[m]-res.sc[1-m]<=-3||res.cup))R.car.pendingPress=1;if(feat('events')&&++R.car.evd>=5){R.car.evd=0;R.car.pendingEv=1}}catch(e){console.error(e)}}}
 const PRESSQ=[['You were the star today. What made the difference?',[['The whole team worked hard.',{trust:3,team:2}],['I was the best player on the pitch.',{fans:5,trust:-3,team:-3}],['We still have a lot to improve.',{trust:4}]]],
@@ -94,7 +94,7 @@ function evUI(){const C=R.car;C.pendingEv=0;const ev=pick(EVENTS);modal(`<h2>Bet
 function evAns(ei,oi){const e=EVENTS[ei][1][oi][1],C=R.car,p=me();if(e.xp)addXP(e.xp);C.fans=clamp(C.fans+(e.fans||0),0,100);C.trust=clamp(C.trust+(e.trust||0),0,100);if(e.team&&feat('morale'))teamPl(0).forEach(q=>setMor(q,e.team));if(e.cash)p.sal=Math.round((p.sal+e.cash)*10)/10;hSave();closeModal();careerHome()}
 // the manager picks the team: trust decides whether you start
 {const _lu=lineup;lineup=function(t){const L=_lu(t);if(t!==0||!CAREER()||!R.car)return L;const p=me();if(!p||p.inj||p.ban>0)return L;const inXI=L.xi.includes(p);
- const want=R.car.trust>=40||ovr(p)>=L.xi.filter(q=>q.pos===p.pos).reduce((m,q)=>Math.min(m,ovr(q)),99);if(want&&!inXI){let j=L.slots.findIndex((s,i)=>s[0]===p.pos);if(j<0)j=L.slots.findIndex(s=>s[0]!='GK');const out=L.xi[j];L.xi[j]=p;L.bench=[out].concat(L.bench.filter(q=>q!==p)).slice(0,7)}
+ const want=R.car.trust>=50||ovr(p)>=L.xi.filter(q=>q.pos===p.pos).reduce((m,q)=>Math.min(m,ovr(q)),99);if(want&&!inXI){let j=L.slots.findIndex((s,i)=>s[0]===p.pos);if(j<0)j=L.slots.findIndex(s=>s[0]!='GK');const out=L.xi[j];L.xi[j]=p;L.bench=[out].concat(L.bench.filter(q=>q!==p)).slice(0,7)}
  else if(!want&&inXI){}else if(!inXI&&!L.bench.includes(p)){L.bench=[p].concat(L.bench).slice(0,7)}return L}}
 // ---------- the offseason: the club runs itself ----------
 function careerOff(){const p=me();if(R.stage=='renew'){if(p&&p.exp<=R.season){p.sal=Math.max(p.sal,Math.round(salFor(p)*(1+R.car.fans/300)*10)/10);p.exp=R.season+3;p.keep=1;addNews(`${p.n} signs a new contract: ${money(p.sal)} a season.`,1)}
@@ -110,3 +110,4 @@ function retireGo(){const p=me();try{const H=JSON.parse(lsGet('soccer_chof')||'[
 {const _fd=franDay;franDay=function(){_fd();if(CAREER())R.camp=null}}
 {const _tu=teamUI;teamUI=function(t){_tu(t);if(CAREER()&&t===0)PAGE='roster'}}
 {const _su=setUI;setUI=function(){_su();try{const m=document.querySelector('.main');if(m)m.insertAdjacentHTML('beforeend',`<div class="card"><h3>Game mode</h3><p>${CAREER()?'You are playing career mode (one player).':'You are the manager. Career mode lets you play as one player instead.'} Each mode has its own save.</p>${CAREER()?B("OPT.mode='franchise';optSave();location.reload()",'Switch to manager mode'):B("OPT.mode='career';optSave();location.reload()",'Switch to career mode')}</div>`);if(CAREER()){const sl=[...m.querySelectorAll('.card h3')].find(h=>h.textContent=='Save slots');if(sl)sl.parentElement.remove()}}catch(e){}}}
+{const _sr=simRest;simRest=function(){if(G)G.simAll=1;return _sr()}}

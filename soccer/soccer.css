@@ -60,3 +60,4 @@ kbd{background:#334155;border-radius:5px;padding:1px 6px;font-family:inherit;fon
 .t td.sec{color:#fdba74;font-weight:700;background:#ffffff08}.t tr.cutr td{border-bottom:2px dashed #ef4444}.ni.fb2{color:#fdba74}.ni.fb{margin-top:auto}
 .bar{height:8px;background:#1e293b;border-radius:4px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%}
 @media (min-width:761px) and (max-height:920px){.side{gap:1px}.ni{padding:5px 10px;font-size:14px}}
+.ng summary{list-style:none;cursor:pointer;user-select:none}.ng summary::-webkit-details-marker{display:none}.ng summary::after{content:" \25B8";color:#64748b}.ng[open] summary::after{content:" \25BE"}.ng>button.ni{padding-left:24px;font-weight:500}@media (max-width:760px){.ng{display:contents}.ng summary{display:none}}

@@ -92,3 +92,12 @@ const deadline=()=>R&&!R.po&&!R.stage&&R.day>R.sched.length*.65;
 {const _ok=navOK;navOK=function(k){if(k=='recs'||k=='hof')return feat('hof');return _ok(k)}}
 if(typeof NAVC!='undefined')NAVC.push('recs','hof');
 {const _st=standUI;standUI=function(){_st();try{if(feat('playin')){const p=$('mainpg').querySelector('.head p');if(p)p.textContent='Seeds 1-6 go straight to the playoffs; 7-10 play in for the last two spots.';$('mainpg').querySelectorAll('table.t').forEach(t=>{const rows=t.querySelectorAll('tr');[7,8,9,10].forEach(i=>{if(rows[i])rows[i].style.background='#f9731612'});if(rows[6])rows[6].classList.add('cut')})}}catch(e){}}}
+// ---------- a shorter left menu: less-used pages sit in groups that open with a click ----------
+{const add=[["Help","navg","Grouped menu","Stats, club and history pages sit in groups in the left menu, so the menu fits on a laptop screen."]];
+ add.forEach(a=>{if(HFEATS.some(f=>f[1]==a[1]))return;let i=-1;HFEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});HFEATS.splice(i<0?HFEATS.length:i+1,0,a)})}
+const NAVOPEN={};
+function groupNav(){if(!feat("navg")||innerWidth<=760)return;const side=document.querySelector(".side");if(!side)return;const byF={};NAV.forEach(n=>byF[n[2]]=n[0]);
+ NAVG.forEach(([g,keys])=>{const btns=[...side.querySelectorAll(":scope > button.ni")].filter(b=>keys.includes(byF[b.getAttribute("onclick")]));if(btns.length<2)return;
+  const d=document.createElement("details");d.className="ng";d.innerHTML=`<summary class="ni">${g}</summary>`;const last=[...side.querySelectorAll(":scope > button.ni, :scope > details.ng")].filter(x=>!btns.includes(x)).pop();(last||btns[0]).after(d);btns.forEach(b=>d.appendChild(b));d.open=!!NAVOPEN[g]||btns.some(b=>b.classList.contains("on"));d.ontoggle=()=>{NAVOPEN[g]=d.open}})}
+{const _sh=shell;shell=function(...a){const r=_sh.apply(this,a);try{groupNav()}catch(e){}return r}}
+const NAVG=[["Stats",["tstats","box","pr","lead"]],["Club",["offers","picks","staff","fin","owner","uni"]],["Honors",["hl","hist","recs","hof","ach"]],["Options",["feat","set","keys"]]];
