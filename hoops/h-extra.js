@@ -16,6 +16,9 @@ function tutDone(k){if(!G||!G.tut)return;const T=G.tut,step=TUT[T.i];if(!step||s
 {const _s=shoot;shoot=function(e,q){const b=G&&G.b;const was=b&&b.st;_s(e,q);if(G&&G.tut&&e===G.ctl&&G.b.st=='shot'&&was=='held'){if(G.b.typ=='rim'||G.b.typ=='dunk')tutDone('rim');else tutDone('shot')}}}
 {const _p=passTo;passTo=function(e,r,l){_p(e,r,l);if(G&&G.tut&&e===G.ctl&&G.b.st=='pass')tutDone('pass')}}
 {const _st=hStep;hStep=function(dt){_st(dt);const T=G&&G.tut;if(!T)return;T.t+=dt;const e=G.ctl;if(e&&TUT[T.i]&&TUT[T.i][1]=='move'){T.mv+=Math.hypot(e.vx,e.vy)*dt*(G.ctlInput?1:0);if(T.mv>20)tutDone('move')}
+  // steps that need the ball: if the other team has it for a few seconds, hand it back so nobody waits around
+  if(TUT[T.i]&&['shot','pass','rim'].includes(TUT[T.i][1])&&G.phase=='live'){const b=G.b;if(b.st=='held'&&b.h.t===1||b.st=='loose'){T.nb=(T.nb||0)+dt;if(T.nb>3){T.nb=0;try{giveBall(0,'top')}catch(x){}}}else if(b.st=='held'&&b.h.t===0&&b.h!==G.ctl){T.nb=(T.nb||0)+dt;if(T.nb>2){T.nb=0;G.ctl=b.h}}else T.nb=0}
+  if(TUT[T.i]&&TUT[T.i][1]=='def'&&G.phase=='live'){if(G.poss===0){T.nd=(T.nd||0)+dt;if(T.nd>3){T.nd=0;try{giveBall(1,'top')}catch(x){}}}else T.nd=0}
   if(TUT[T.i]&&TUT[T.i][1]=='done'&&T.t>4){G.tut=null;G.paused=true;modal(`<h2>Tutorial complete</h2><p>You know the basics. Play a real game from the home page whenever you're ready.</p>${B('tutQuit()','Back to the menu','big')}`)}}}
 function tutQuit(){G=null;if(LOOP)cancelAnimationFrame(LOOP);LOOP=null;closeModal();homeUI()}
 {const _dh=drawHUD;drawHUD=function(){_dh();const T=G&&G.tut;if(!T||!TUT[T.i]||G.rp)return;try{const t=TUT[T.i][0],cx=VW/2;CX.font='700 16px system-ui';const w=Math.min(VW-40,CX.measureText(t).width+40);CX.fillStyle='rgba(194,65,12,.95)';CX.fillRect(cx-w/2,110,w,40);CX.fillStyle='#fff';CX.textAlign='center';CX.textBaseline='middle';CX.fillText(t,cx,130);
