@@ -25,7 +25,7 @@ function advHTML(p){if(!p.ss[SI.gp])return'';const f=v=>v.toFixed(2),conv=p.ss[S
 {const _lu=leadUI;leadUI=function(){_lu();if(!feat('adv'))return;try{const el=R.pl.filter(p=>p.tid>=0&&(p.ss[SI.min]||0)>=Math.max(90,R.day*30)),g=document.querySelector('.main .grid3');if(!g)return;const L=(n,f,fmt)=>`<div class="card"><h3>${n}</h3><table class="t">${el.slice().sort((a,b)=>f(b)-f(a)).slice(0,10).map((p,i)=>`<tr class="${p.tid===0?'me':''}"><td>${i+1}</td><td>${plink(p)}</td><td>${esc(R.t[p.tid].ab)}</td><td><b>${fmt(f(p))}</b></td></tr>`).join('')}</table></div>`;
  g.insertAdjacentHTML('beforeend',L('Goals per 90 minutes',p=>per90(p,'g'),v=>v.toFixed(2))+L('Goal involvements (goals + assists)',p=>p.ss[SI.g]+p.ss[SI.a],v=>v)+L('Shot conversion (8+ shots)',p=>p.ss[SI.sh]>=8?p.ss[SI.g]/p.ss[SI.sh]:0,v=>Math.round(v*100)+'%'))}catch(e){}}}
 // ---------- the training ground ----------
-const TUT=[['Move','Use W A S D (or the arrow keys) to run with the ball. Run a few steps.'],['Sprint','Hold Shift while you move to sprint. It tires you out, so use it in bursts.'],['Pass','Press E to pass to a teammate. Push a direction at the same time to choose who gets it.'],
+const TUT=[['Move','Use W A S D to run with the ball (the arrow keys do moves). Run a few steps.'],['Sprint','Hold Shift while you move to sprint. It tires you out, so use it in bursts.'],['Pass','Press E to pass to a teammate. Push a direction at the same time to choose who gets it.'],
  ['Through ball','Press Q to play the ball into space ahead of a teammate who is running forward.'],['Shoot','Get near the goal, hold Space and let go when the bar is in the green. Hold W or S to aim for a corner.'],['Win it back','The other team has the ball. Get close and press E to tackle, or Space to slide. Q or Tab switches player.']];
 function tutStart(){if(!R||(typeof CAREER=='function'&&CAREER()))return;closeModal();newGame(0,1,{hlen:R.hlen});G.tut={i:0,t:0,x:0,y:0,ok:0};G.diff=0;G.lt=null;G.intro=0;G.night=0;$('ui').hidden=true;$('gamewrap').hidden=false;hResize();tutStep(0);runLoop()}
 function tutStep(i){const T=G.tut;T.i=i;T.t=0;T.ok=0;T.pas=null;if(i>=TUT.length)return tutDone();const e=onT(0).filter(x=>x.pos=='ST'||x.pos=='CM')[0]||onT(0)[9];G.phase='live';G.dead=null;
@@ -57,3 +57,26 @@ function groupNav(){if(!feat("navg")||innerWidth<=760)return;const side=document
   const d=document.createElement("details");d.className="ng";d.innerHTML=`<summary class="ni">${g}</summary>`;const last=[...side.querySelectorAll(":scope > button.ni, :scope > details.ng")].filter(x=>!btns.includes(x)).pop();(last||btns[0]).after(d);btns.forEach(b=>d.appendChild(b));d.open=!!NAVOPEN[g]||btns.some(b=>b.classList.contains("on"));d.ontoggle=()=>{NAVOPEN[g]=d.open}})}
 {const _sh=shell;shell=function(...a){const r=_sh.apply(this,a);try{groupNav()}catch(e){}return r}}
 const NAVG=[["Stats",["results","lead","tstats","power"]],["Club",["staff","fin"]],["Honors",["hist","ach","hof","hl"]],["Options",["feat","set","keys"]]];
+// ---------- arrow-key moves: WASD moves your player, the arrow keys are moves ----------
+// With the ball: the arrow toward the goal you attack knocks the ball ahead and sprints after it, the arrow away
+// from it drags the ball back, and up or down is a body feint that way. Without the ball it is a quick step that way.
+// In 2-player mode the arrow keys belong to player 2.
+{const add=[['Controls','arrows','Arrow-key moves','WASD moves. Arrow keys with the ball: toward goal = knock it on and sprint, away = drag back, up/down = feint. Without the ball: a quick step.']];
+ add.forEach(a=>{if(HFEATS.some(f=>f[1]==a[1]))return;let i=-1;HFEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});HFEATS.splice(i<0?HFEATS.length:i+1,0,a)})}
+const ARK={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
+const arrowsOn=()=>feat('arrows')&&!(G&&G.ctl2);
+{const _mv=moveVec;moveVec=function(){if(!arrowsOn())return _mv();const sv={};for(const k in ARK){sv[k]=KEYS[k];KEYS[k]=0}try{return _mv()}finally{Object.assign(KEYS,sv)}}}
+function arrowMove(code){const e=G.ctl,d=ARK[code],b=G.b;if(!e||!d||G.phase!='live'||(e.cd.am||0)>0||e.stun>0||G.meter)return;const v=topSpd(e),s=G.dir[0],sk=e.p.sk;
+ const D=onT(1).filter(o=>o.pos!='GK'&&dist(o,e)<3.2).sort((a,c)=>dist(a,e)-dist(c,e))[0];
+ if(b.own===e){
+  if(d[0]&&d[0]===s){// knock it on and run onto it
+   b.own=null;b.lt=e;b.from=e;b.to=null;b.t=-.2;b.kind=null;b.vx=s*(10+sk.spd*.03);b.vy=e.vy*.3;b.vz=0;e.dash={x:s*v*1.2,y:0,t:.55};e.cd.am=1.2;e.act={k:'kick',t:0};G.ev.push('kick');
+   if(D&&rnd()<clamp(.3+(sk.spd-D.p.sk.spd)/60,.1,.7)){D.stun=.5;say('Knocked it past him!',.9)}}
+  else if(d[0]){// drag back
+   e.dash={x:-s*7,y:0,t:.25};e.cd.am=1;e.act={k:'skill',t:0};if(D&&rnd()<clamp(.3+(sk.dri+sk.ctl-D.p.sk.tkl*2)/120,.08,.6)){D.stun=.45;say('Drag back!',.9)}}
+  else{// body feint up or down the pitch
+   e.dash={x:e.vx*.35,y:d[1]*v*1.05,t:.3};e.cd.am=.8;e.act={k:'skill',t:0};if(D&&rnd()<clamp(.28+(sk.dri+sk.agi-D.p.sk.tkl*2)/110,.08,.6)){D.stun=.5;say('Sold him the dummy!',.9)}}}
+ else{e.dash={x:d[0]*v*1.2,y:d[1]*v*1.2,t:b.own&&b.own.t===0?.4:.22};e.cd.am=b.own&&b.own.t===0?.8:.45}}
+{const _uc=userControls;userControls=function(e,dt){if(e.dash&&e.dash.t>0&&G&&!G.auto&&!(G.meter&&G.meter.e===e)){if(!e.dash.go){e.dash.go=1;e.vx=e.dash.x;e.vy=e.dash.y}e.dash.t-=dt;e.tx=e.dash.x;e.ty=e.dash.y;return true}return _uc(e,dt)}}
+{const _hk=hKey;hKey=function(code,down){if(ARK[code]&&arrowsOn()&&G&&G.live&&!G.paused&&G.phase=='live'&&!G.tut){if(down)arrowMove(code);return}return _hk(code,down)}}
+{const _kh=keysHTML;keysHTML=function(){const h=_kh();if(!feat('arrows'))return h;const r=(a,b)=>`<tr><td>${a}</td><td><kbd>${b}</kbd></td></tr>`;return h+`<table class="t"><tr><th colspan="2">Arrow-key moves</th></tr>${r('Knock the ball on and sprint after it','Arrow toward the goal you attack')}${r('Drag back','Arrow away from that goal')}${r('Body feint up or down','↑ or ↓')}${r('Quick step (without the ball)','Any arrow')}</table>`}}

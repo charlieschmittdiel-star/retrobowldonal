@@ -48,7 +48,7 @@ function cupNR(){return R.cup&&R.cup.names?R.cup.names.length:5}
 function cupName(rd){return(R.cup&&R.cup.names||CUPN)[rd]||''}
 function cupDays(nr){nr=nr||5;const L=R.sched.length;return[...Array(nr).keys()].map(i=>Math.max(1,Math.round(L*(.1+.8*i/(nr-1)))))}
 function cupNew(){if(!feat('cup'))return;const t=R.t.map((_,i)=>i).sort(()=>rnd()-.5),pl=cupPlan(t.length);R.cup={s:R.season,rd:0,alive:t,names:pl.names,size:pl.t,days:cupDays(pl.names.length),ties:null,res:[],win:null,pend:false}}
-function cupDraw(){const C=R.cup,a=C.alive.slice().sort(()=>rnd()-.5);let ties=[];if(C.rd===0&&a.length>(C.size||16)){const n=a.length-(C.size||16),bye=a.slice(0,a.length-n*2),pl=a.slice(a.length-n*2);for(let i=0;i<pl.length;i+=2)ties.push([pl[i],pl[i+1]]);C.bye=bye}else{for(let i=0;i<a.length;i+=2)ties.push([a[i],a[i+1]])}C.ties=ties;C.pend=ties.some(t=>t[0]===0||t[1]===0)}
+function cupDraw(){const C=R.cup,a=C.alive.slice().sort(()=>rnd()-.5);if(a.length<2){C.win=a[0]!=null?a[0]:null;C.rd=cupNR();C.ties=[];C.pend=false;return}let ties=[];if(C.rd===0&&a.length>(C.size||16)){const n=a.length-(C.size||16),bye=a.slice(0,a.length-n*2),pl=a.slice(a.length-n*2);for(let i=0;i<pl.length;i+=2)ties.push([pl[i],pl[i+1]]);C.bye=bye}else{for(let i=0;i<a.length;i+=2)ties.push([a[i],a[i+1]])}C.ties=ties;C.pend=ties.some(t=>t[0]===0||t[1]===0)}
 function cupPens(a,b){const s=[0,0];for(let i=0;i<5;i++){s[0]+=rnd()<.76?1:0;s[1]+=rnd()<.76?1:0}while(s[0]===s[1]){s[0]+=rnd()<.76?1:0;s[1]+=rnd()<.76?1:0}return s}
 function cupRecord(a,b,res){const C=R.cup,sc=res.sc;let w,pens=null;if(sc[0]!==sc[1])w=sc[0]>sc[1]?a:b;else{pens=res.pens||cupPens(a,b);w=pens[0]>pens[1]?a:b}C.res.push({rd:C.rd,a,b,sc:sc.slice(),pens,w});return w}
 function cupSimTie(a,b){const res=simGame(a,b);res.cup=cupName(R.cup.rd);recGame(a,b,res);return cupRecord(a,b,res)}
@@ -58,7 +58,7 @@ function cupRoundEnd(){const C=R.cup,ws=C.res.filter(r=>r.rd===C.rd).map(r=>r.w)
  if(C.rd===cupNR()-1){C.win=ws[0];R.cupHist.push({s:R.season,w:C.win,f:mine||C.res[C.res.length-1]});addNews(`${R.t[C.win].n} win the cup!`,C.win===0);teamPl(C.win).forEach(p=>p.aw.push(`${R.season} Cup winner`));if(C.win===0)achGet('cup')}
  C.rd++;hSave()}
 function cupDue(){const C=R.cup;return feat('cup')&&C&&C.s===R.season&&!R.stage&&C.rd<cupNR()&&R.day>=C.days[C.rd]}
-function cupTick(){if(!cupDue())return;const C=R.cup;if(!C.ties)cupDraw();if(C.pend)return;C.ties.forEach(([a,b])=>cupSimTie(a,b));cupRoundEnd()}
+function cupTick(){if(!cupDue())return;const C=R.cup;if(!C.ties)cupDraw();if(C.rd>=cupNR())return;if(C.pend)return;C.ties.forEach(([a,b])=>cupSimTie(a,b));cupRoundEnd()}
 function cupMine(){const C=R.cup;return C&&C.ties?C.ties.find(t=>t[0]===0||t[1]===0):null}
 function cupSimMine(){const C=R.cup;if(!C||!C.pend)return;C.ties.forEach(([a,b])=>cupSimTie(a,b));cupRoundEnd();homeUI()}
 function cupPlay(){const t=cupMine();if(!t)return;newGame(t[0],t[1],{hlen:R.hlen});G.diff=R.diff;G.cupTie=t;G.cupName=cupName(R.cup.rd);$('ui').hidden=true;$('gamewrap').hidden=false;closeModal();hResize();try{if(feat('intro'))G.intro=6;rotCheck()}catch(e){}runLoop()}

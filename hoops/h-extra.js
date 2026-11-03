@@ -6,7 +6,7 @@
  ['Presentation','lobby2','Better pause menu','The pause menu shows the score by quarter, team stats and the top players so far.']];
  add.forEach(a=>{if(HFEATS.some(f=>f[1]==a[1]))return;let i=-1;HFEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});HFEATS.splice(i<0?HFEATS.length:i+1,0,a)})}
 // ---------- the tutorial ----------
-const TUT=[['Move your player with W A S D (or the arrow keys).','move'],['Hold Space to start your shot and let go when the meter reaches the green.','shot'],['Press E to pass to the most open teammate (or 1-5 for a position).','pass'],
+const TUT=[['Move your player with W A S D. The arrow keys are moves: drive, step-back and crossover.','move'],['Hold Space to start your shot and let go when the meter reaches the green.','shot'],['Press E to pass to the most open teammate (or 1-5 for a position).','pass'],
  ['Drive toward the basket and press Space near the rim for a layup or dunk.','rim'],['Now defend. Stay between your man and the basket. Press E to try a steal or Space to jump and contest.','def'],['Press Tab (or Q) to switch to the defender closest to the ball.','switch'],
  ['Change the play: C for your offense, V for your defense, X for the coach\'s suggestion.','calls'],['That\'s it! Press Esc any time for the menu, timeouts, substitutions and replays.','done']];
 function tutStart(){if(!R)return;const opp=R.t.map((_,i)=>i).filter(i=>i).sort((a,b)=>teamOvr(a)-teamOvr(b))[0];newGame(0,opp,{qlen:12});G.diff=0;G.tut={i:0,mv:0,t:0};G.tutor=1;G.intro=0;

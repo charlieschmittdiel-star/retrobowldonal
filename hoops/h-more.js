@@ -101,3 +101,28 @@ function groupNav(){if(!feat("navg")||innerWidth<=760)return;const side=document
   const d=document.createElement("details");d.className="ng";d.innerHTML=`<summary class="ni">${g}</summary>`;const last=[...side.querySelectorAll(":scope > button.ni, :scope > details.ng")].filter(x=>!btns.includes(x)).pop();(last||btns[0]).after(d);btns.forEach(b=>d.appendChild(b));d.open=!!NAVOPEN[g]||btns.some(b=>b.classList.contains("on"));d.ontoggle=()=>{NAVOPEN[g]=d.open}})}
 {const _sh=shell;shell=function(...a){const r=_sh.apply(this,a);try{groupNav()}catch(e){}return r}}
 const NAVG=[["Stats",["tstats","box","pr","lead"]],["Club",["offers","picks","staff","fin","owner","uni"]],["Honors",["hl","hist","recs","hof","ach"]],["Options",["feat","set","keys"]]];
+// ---------- arrow-key moves: WASD moves your player, the arrow keys are moves ----------
+// With the ball: the arrow toward the basket is an explosive drive, the arrow away from it is a step-back, and up or
+// down is a crossover that way. Without the ball on offense, an arrow is a quick cut that way; on defense it is a
+// quick defensive slide. In 2-player mode the arrow keys belong to player 2.
+{const add=[['Controls','arrows','Arrow-key moves','WASD moves. Arrow keys: toward the basket = drive, away = step-back, up/down = crossover. On defense they are quick slides.']];
+ add.forEach(a=>{if(HFEATS.some(f=>f[1]==a[1]))return;let i=-1;HFEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});HFEATS.splice(i<0?HFEATS.length:i+1,0,a)})}
+const ARK={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
+const arrowsOn=()=>feat('arrows')&&!(G&&G.ctl2);
+{const _mv=moveVec;moveVec=function(){if(!arrowsOn())return _mv();const sv={};for(const k in ARK){sv[k]=KEYS[k];KEYS[k]=0}try{return _mv()}finally{Object.assign(KEYS,sv)}}}
+function arrowMove(code){const e=G.ctl,d=ARK[code],b=G.b;if(!e||!d||G.phase!='live'||(e.cd.am||0)>0||e.stun>0)return;const v=topSpd(e),s=G.dir[0],hx=hoopX(s),toward=Math.sign(hx-e.x)||s;
+ if(G.poss===0&&b.st=='held'&&b.h===e){const m=e.man&&dist(e.man,e)<4.5?e.man:null;
+  if(d[1]){// crossover up or down
+   if(feat('cross')&&!(e.cd.cr>0)){const keep=e.vx,keep2=e.vy;crossover();e.vx=keep;e.vy=keep2}else{e.act={k:'cross',t:0};G.ev.push('bounce')}e.dash={x:e.vx*.3,y:d[1]*v*1.2,t:.32};e.cd.am=.75}
+  else if(d[0]===toward){// explosive first step toward the basket
+   e.dash={x:d[0]*v*1.3,y:(25-e.y)*.25,t:.45};e.cd.am=1.3;if(m&&rnd()<clamp(.25+((e.p.sk.spd+e.p.sk.han)/2-m.p.sk.pd)/80,.06,.6)){m.stun=.5;say('Blew right by him!',1)}}
+  else{// step-back for a jump shot
+   e.dash={x:d[0]*12,y:0,t:.22};e.cd.am=1.2;e.sbk=1.1;e.act={k:'cross',t:0};if(m&&rnd()<clamp(.3+(e.p.sk.han-m.p.sk.pd)/90,.08,.6)){m.stun=.35;say('Step-back!',.9)}}}
+ else if(G.poss===0){e.dash={x:d[0]*v*1.2,y:d[1]*v*1.2,t:.35};e.cd.am=.8}
+ else{e.dash={x:d[0]*v*1.25,y:d[1]*v*1.25,t:.2};e.cd.am=.45}}
+{const _uc=userControls;userControls=function(e,dt){if(e.dash&&e.dash.t>0&&G&&!G.auto&&!(G.meter&&G.meter.e===e)){if(!e.dash.go){e.dash.go=1;e.vx=e.dash.x;e.vy=e.dash.y}e.dash.t-=dt;e.tx=e.dash.x;e.ty=e.dash.y;return true}return _uc(e,dt)}}
+{const _sa=shotAdj;shotAdj=function(e,typ,info){let a=_sa(e,typ,info);if(e.sbk>0&&typ!='close'&&typ!='dunk')a+=.03;return a}}
+{const _hk=hKey;hKey=function(code,down){if(ARK[code]&&arrowsOn()&&G&&G.live&&!G.paused){if(down)arrowMove(code);return}return _hk(code,down)}}
+// move cooldowns that were never counted down (the crossover and a user pump fake only worked once a game)
+{const _st=hStep;hStep=function(dt){_st(dt);if(!G||!G.ent)return;G.ent.forEach(e=>{const c=e.cd;if(!c)return;if(c.cr>0)c.cr-=dt;if(c.am>0)c.am-=dt;if(e===G.ctl&&c.fk>0)c.fk-=dt;if(e.sbk>0)e.sbk-=dt})}}
+{const _kh=keysHTML;keysHTML=function(){const h=_kh();if(!feat('arrows'))return h;const r=(a,b)=>`<tr><td>${a}</td><td><kbd>${b}</kbd></td></tr>`;return h+`<table class="t"><tr><th colspan="2">Arrow-key moves</th></tr>${r('Explosive drive','Arrow toward the basket')}${r('Step-back (better jump shot)','Arrow away from the basket')}${r('Crossover up or down','↑ or ↓')}${r('Quick cut (offense, no ball) / defensive slide','Any arrow')}</table>`}}
