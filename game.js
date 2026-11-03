@@ -66,7 +66,9 @@ function snap(){if(G.phase!='pre'||G.ch)return;const u=G.poss=='U',d=G.dir,L=P.L
 let joy=[0,0];
 // WASD moves; the arrow keys are for moves (they still move in the Classic key layout)
 const AMV=()=>typeof OPT!='undefined'&&OPT.kbp=='classic';
-const inp=()=>{const x=((AMV()&&keys.arrowright)||keys.d?1:0)-((AMV()&&keys.arrowleft)||keys.a?1:0)+joy[0],y=((AMV()&&keys.arrowdown)||keys.s?1:0)-((AMV()&&keys.arrowup)||keys.w?1:0)+joy[1],m=Math.hypot(x,y)||1;return[x/m,y/m,x||y]};
+// a defensive arrow move (shuffle or backpedal) steers your defender for a moment
+let DFORCE=null;const dforce=()=>DFORCE&&DFORCE.u>performance.now()&&G&&G.poss!='U'?DFORCE:null;
+const inp=()=>{const df=dforce();if(df)return df.v;const x=((AMV()&&keys.arrowright)||keys.d?1:0)-((AMV()&&keys.arrowleft)||keys.a?1:0)+joy[0],y=((AMV()&&keys.arrowdown)||keys.s?1:0)-((AMV()&&keys.arrowup)||keys.w?1:0)+joy[1],m=Math.hypot(x,y)||1;return[x/m,y/m,x||y]};
 function mv(p,tx,ty,sp,dt){if(p.stun>0){p.stun-=dt;sp*=.25}sp*=moveSpd(p);const dx=tx-p.x,dy=ty-p.y,m=Math.hypot(dx,dy);if(m<.05){p.vx=p.vy=0;return}
  const sm=p.stm==null?100:p.stm;sp*=(sm>20?1:.35+.65*sm/20)*(p.drag||1);p.stm=Math.max(0,sm-(P.b&&P.b.c===p?10:2)*dt*(p.rp&&DS2()?1.3-fs(p,'sta')/165:1));
  let df=Math.atan2(dy,dx)-p.fa;df=Math.atan2(Math.sin(df),Math.cos(df));const ap=Math.min(Math.abs(df),p.tr*(p.jk>0?3:1)*dt);p.fa+=Math.sign(df)*ap;sp*=clamp(Math.cos(Math.abs(df)-ap),.2,1);
@@ -182,7 +184,7 @@ function step(dt){
   else{const z=p.zone||[p.x,p.y];
    if(Math.abs(z[0]-L)>=12){const rr=O.slice(1,6).filter(r=>(r.x-L)*d>6&&Math.abs(r.y-z[1])<(p.zr||10)).sort((a,e)=>(e.x-a.x)*d)[0];tx=L+d*deep;ty=rr?(z[1]+rr.y)/2:z[1]}
    else{const zz={x:z[0],y:z[1]},r=O.slice(1,6).filter(r=>dist(r,zz)<(p.zr||7)).sort((a,e)=>dist(a,zz)-dist(e,zz))[0];tx=r?r.x+d*1.5:z[0];ty=r?r.y:z[1]}}
-  if(!u&&p==cd&&im&&!autoMode())mv(p,p.x+ix*5,p.y+iy*5,p.spd*1.05*(p.hs>0?1.4:1),dt);else mv(p,tx,ty,sp*(p.hs>0?1.4:1)*(p.boost>0?1.1:1),dt)});
+  if(!u&&p==cd&&im&&!autoMode())mv(p,p.x+ix*5,p.y+iy*5,p.spd*1.05*(p.hs>0?1.4:1)*(dforce()?dforce().s:1),dt);else mv(p,tx,ty,sp*(p.hs>0?1.4:1)*(p.boost>0?1.1:1),dt)});
  if(c){if(u&&(!CAR()||(c.pid===R.me&&!autoMode()))){if(im)mv(c,c.x+ix*5,c.y+iy*5,c.spd*.95*(c.jk>0?1.15:1),dt);else c.vx=c.vy=0}
   else cpuRun(c,dt)}
  if(b.st=='air'){b.t+=dt;const k=Math.min(1,b.t/b.T);b.x=b.sx+(b.tx-b.sx)*k;b.y=b.sy+(b.ty-b.sy)*k;if(k>=1)resolve()}
