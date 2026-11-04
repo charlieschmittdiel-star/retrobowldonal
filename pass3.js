@@ -9,6 +9,7 @@
  ['On the field','kofc','Kickoff fair catch','Press F while a kickoff is in the air to call a fair catch. A fair catch inside your 25 puts the ball at the 25.'],
  ['On the field','truck2','Stronger truck','A truck runs the tackler over unless he is much stronger than the ball carrier.']];
  add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
+DEFOFF.add('truck2');
 const p3User=()=>G&&G.poss=='U'&&typeof qbIsMe=='function'&&qbIsMe()&&!(typeof autoMode=='function'&&autoMode());
 // ---------- accuracy: the spread of your throws ----------
 {const _ac=accSc;accSc=function(q,dd,tx,ty,pr){const sc=_ac(q,dd,tx,ty,pr);try{if(!feat('acc2')||!p3User()||!P)return sc;

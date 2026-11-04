@@ -12,7 +12,7 @@ function recordPlay(k,x){if(!G.box||P.kr||G.two||P.knl||P.spk)return;const d=G.d
   else if(P.rusher){sRec(P.rusher,'ry',g);if(k=='td')sRec(P.rusher,'rtd')}
   if(k=='tackle'&&P.tkl&&!P.oob)sRec(P.tkl,'tk')}}
 // ---------- clock ----------
-const QLEN=()=>(R.qlen||4)*60;
+const QLEN=()=>(R.qlen||2)*60;
 const lateHalf=()=>(G.q==2&&G.clk<=120)||(G.q>=4&&G.clk<=300);
 function hudText(){const m=Math.max(0,Math.ceil(G.clk)),q=G.q==5?'OT':'Q'+G.q;
  return`YOU ${G.sc[0]} - ${G.sc[1]} ${G.opp.n.slice(0,14)}  ${q} ${m/60|0}:${String(m%60).padStart(2,'0')} ${G.run?'(running)':'(stopped)'}  ${G.down} & ${G.ytg}  TO ${G.to[0]}-${G.to[1]}  ${G.poss=='U'?'Your ball':'CPU ball'}  Audibles ${G.aud}`}

@@ -96,7 +96,7 @@ function mkLeague(){const t=[];for(let i=0;i<32;i++)t.push({n:i?CITIES[i-1]+' '+
 function genTeam(tid,r){GR.forEach(g=>{for(let i=0;i<DEPTH[g];i++){const st=i<NEED[g],p=mkPl(g,22+(rnd()*11|0),st?r-3+rnd()*7:r-13+rnd()*8,st?12:16,tid);p.exp=R.season+(rnd()*4|0);p.yt=rnd()*4|0;R.pl.push(p)}});
  let pay=payroll(tid);if(pay>R.cap*.95){const f=R.cap*.92/pay;R.pl.forEach(p=>{if(p.tid===tid)p.sal=Math.max(MINSAL,Math.round(p.sal*f*10)/10)})}}
 function mkPicks(s){R.picks=R.picks||[];for(let rd=1;rd<=3;rd++)for(let t=0;t<32;t++)if(!R.picks.some(k=>k.s==s&&k.rd==rd&&k.orig==t))R.picks.push({s,rd,orig:t,own:t})}
-function newFranchise(){R={ver:SAVE_VER,uid:0,pts:3,st:{oc:0,dc:0,sc:0},season:1,pl:[],cap:220,lg:null,stage:null,diff:1,qlen:4,depth:{},dAuto:{},dead:[],awards:[],picks:[],news:[],prevWP:{}};
+function newFranchise(){R={ver:SAVE_VER,uid:0,pts:3,st:{oc:0,dc:0,sc:0},season:1,pl:[],cap:220,lg:null,stage:null,diff:1,qlen:2,ql2:1,depth:{},dAuto:{},dead:[],awards:[],picks:[],news:[],prevWP:{}};
  R.lg=mkLeague();GR.forEach(g=>{for(let i=0;i<DEPTH[g];i++)R.pl.push(mkPl(g,22+(rnd()*10|0),i<NEED[g]?66+rnd()*8:54+rnd()*8,i<NEED[g]?14:8,0))});
  R.cap=Math.max(220,Math.ceil(payroll(0)+12));for(let t=1;t<32;t++)genTeam(t,R.lg.t[t].r);
  R.lg.t.forEach((t,i)=>t.r=Math.round(teamR(i)));mkPicks(1);mkPicks(2);save()}
@@ -104,11 +104,11 @@ function newFranchise(){R={ver:SAVE_VER,uid:0,pts:3,st:{oc:0,dc:0,sc:0},season:1
 function migrate(){const v=R.ver||3;if(v>=SAVE_VER)return;
  if(R.q&&R.q.length){R.q.forEach(p=>{p.yrs=1;R.pl.push(p)})}
  R.pl.forEach(p=>{p.tid=0;p.exp=R.season+Math.max(1,p.yrs||1)-1;delete p.yrs;p.inj=0;p.ss=newSS();p.car=[];p.mood=mkMood();p.yt=1;p.aw=[]});
- R.st=R.st||{oc:0,dc:0};R.st.sc=R.st.sc||0;R.diff=1;R.qlen=4;R.depth={};R.dAuto={};R.dead=[];R.awards=[];R.news=[];R.prevWP={};R.picks=[];
+ R.st=R.st||{oc:0,dc:0};R.st.sc=R.st.sc||0;R.diff=1;R.qlen=2;R.ql2=1;R.depth={};R.dAuto={};R.dead=[];R.awards=[];R.news=[];R.prevWP={};R.picks=[];
  R.lg.t.forEach(t=>{t.pf=t.pf||0;t.pa=t.pa||0});for(let t=1;t<32;t++)genTeam(t,R.lg.t[t].r||66);
  mkPicks(R.season);mkPicks(R.season+1);
  if(R.stage=='resign'||R.stage=='draft'){R.aged=1;R.stage='draft';R.dr=null}else R.stage=null;delete R.q;R.ver=SAVE_VER}
 R=loadSave();
 if(!R){newFranchise();R.mode=MODE;save()}else{R.mode=R.mode||MODE;migrate();
- ['depth','dAuto'].forEach(k=>R[k]=R[k]||{});R.dead=R.dead||[];R.awards=R.awards||[];R.picks=R.picks||[];R.news=R.news||[];R.prevWP=R.prevWP||{};if(R.diff==null)R.diff=1;if(!R.qlen)R.qlen=4;R.st.sc=R.st.sc||0;
+ ['depth','dAuto'].forEach(k=>R[k]=R[k]||{});R.dead=R.dead||[];R.awards=R.awards||[];R.picks=R.picks||[];R.news=R.news||[];R.prevWP=R.prevWP||{};if(R.diff==null)R.diff=1;if(!R.qlen)R.qlen=2;if(!R.ql2){R.ql2=1;if(R.qlen==4)R.qlen=2}R.st.sc=R.st.sc||0;
  GR.forEach(g=>{while(R.pl.filter(p=>p.tid===0&&p.g==g).length<NEED[g]){const p=mkPl(g,26,60,6,0);p.sal=MINSAL;p.exp=R.season;R.pl.push(p)}});save()}
