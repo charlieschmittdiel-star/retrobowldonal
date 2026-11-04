@@ -88,7 +88,7 @@ function tipEnd(){const b=P.b,l={x:b.tx,y:b.ty};let r=null,rd=99,dd=null,m=99;
  P.off.forEach((q,i)=>{if(i&&(i<6||q.route.length)){const e=dist(q,l);if(e<rd){rd=e;r=q}}});P.def.forEach(p=>{const e=dist(p,l);if(e<m){m=e;dd=p}});b.st='dead';
  const sr=r&&rd<3.5?1/(rd+.6):0;let sd=dd&&m<3.5?.55/(m+.6):0;if(G.poss!='U'&&cd.hawk>0&&dist(cd,l)<3.5)sd*=2.5;
  if(sr+sd==0||rnd()>.45)return endPlay('inc');
- if(rnd()<sr/(sr+sd)){b.st='carry';b.c=r;P.rec=r;sRec(P.passer,'pc');sRec(r,'rc')}else{P.intBy=dd;endPlay('int',l.x)}}
+ if(rnd()<sr/(sr+sd)){b.st='carry';b.c=r;P.rec=r;sRec(P.passer,'pc');sRec(r,'rc')}else if(typeof feat=='function'&&feat('tipint')&&dd){P.intBy=dd;intReturn(l,dd)}else{P.intBy=dd;endPlay('int',l.x)}}
 function resolve(){const b=P.b,r=b.tgt,l={x:b.tx,y:b.ty};b.st='dead';let dd=null,m=99;P.def.forEach(p=>{const q=dist(p,l);if(q<m){m=q;dd=p}});
  if(G.poss!='U'&&cd.hawk>0&&dist(cd,l)<3.2){dd=cd;m=dist(cd,l);dd.hawked=1}
  const rd=r?dist(r,l):99;
@@ -97,6 +97,7 @@ function resolve(){const b=P.b,r=b.tgt,l={x:b.tx,y:b.ty};b.st='dead';let dd=null
  const hk=dd.hawked?1:0,tight=Math.max(clamp(1-m/3,0,1),hk*.8),ro=r?r.o:55;
  const ic=m<2.4?clamp((NF(.006,.016)+tight*NF(.09,.12)+(BK(dd)-CR(r,tight))/320)*(m<=rd+.3||hk?1:.35)+hk*.25,0,.6):0;
  const cc=r&&rd<2.4?clamp(NF(.95,.93)+NF(0,Math.hypot(b.tx-b.sx,b.ty-b.sy)<16?.2:Math.hypot(b.tx-b.sx,b.ty-b.sy)>26?-.1:0)-tight*NF(.5,.72)-hk*.15+(CR(r,tight)-CV(dd))/200+(P.off[0].o-70)/300-(rd>1.2?.2:0)-(m<rd?.15:0),.05,.95):0,u=rnd();
+ if(P.sure&&r&&rd<2.4){b.st='carry';b.c=r;P.rec=r;sRec(P.passer,'pc');sRec(r,'rc');return}
  if(u<ic)return intReturn(l,dd);
  if(u<ic+cc){b.st='carry';b.c=r;P.rec=r;sRec(P.passer,'pc');sRec(r,'rc')}else if(rnd()<(m<1.8?.4:rd<1.5?.22:.08))tip(l);else endPlay('inc')}
 function endPlay0(k,x){if(P.over)return;P.over=1;P.b.st='dead';P.off.concat(P.def).forEach(p=>{G.stm[p.t+p.s+p.i]=p.stm});const d=G.dir,u=G.poss=='U',gl=d>0?110:10;let msg='';x=x==null?P.L:x;
@@ -243,7 +244,7 @@ function draw(){const L=P.L,d=G.dir,b=P.b;camX+=(clamp((G.phase=='play'?b.x:L)-4
  if(P.aim){const t=aimT(),q=P.off[0],n=Math.max(2,Math.hypot(t[0]-q.x,t[1]-q.y)/1.5|0);X.fillStyle='#fff';for(let i=1;i<=n;i++){const f=i/n;X.beginPath();X.arc(px(q.x+(t[0]-q.x)*f),py(q.y+(t[1]-q.y)*f),2.5,0,7);X.fill()}X.strokeStyle='#fff';X.lineWidth=2;X.beginPath();X.arc(px(t[0]),py(t[1]),8,0,7);X.stroke()}
  [ctl,b.st=='carry'?b.c:null].forEach((p,i)=>{if(!p||(i==1&&p==ctl))return;const v=(p.stm==null?100:p.stm)/100;X.fillStyle='#000a';X.fillRect(px(p.x)-14,py(p.y)-26,28,5);X.fillStyle=v>.3?'#4ade80':v>.1?'#fbbf24':'#ef4444';X.fillRect(px(p.x)-13,py(p.y)-25,26*v,3)});
  if(ctl){const v=(ctl.stm==null?100:ctl.stm)/100;X.fillStyle='#000a';X.fillRect(W-170,6,160,20);X.fillStyle=v>.3?'#4ade80':v>.1?'#fbbf24':'#ef4444';X.fillRect(W-168,8,156*v,16);X.fillStyle='#fff';X.font='bold 11px sans-serif';X.textAlign='right';X.fillText('STAMINA',W-14,20)}
- X.textAlign='left';X.fillStyle='#8b5a2b';X.beginPath();X.ellipse(px(b.x),py(b.y)-(b.st=='air'?8:b.st=='tip'?4+Math.sin(Math.PI*Math.min(1,b.tt/b.T2))*18:0),6,4,0,0,7);X.fill();
+ X.textAlign='left';X.fillStyle='#8b5a2b';X.beginPath();X.ellipse(px(b.x),py(b.y)-(b.st=='air'?8:b.st=='tip'?4+Math.sin(Math.PI*Math.min(1,b.tt/b.T2))*(b.tipH?b.tipH*7.5:18):0),6,4,0,0,7);X.fill();
  if(G.poss!='U'&&cd){const bs=$('dctl').children;if(bs[3]){bs[1].style.opacity=cd.hk>0?.4:1;bs[2].style.opacity=cd.hcool>0?.4:1;bs[3].style.opacity=(cd.pr||P.t>1.6||P.b.st!='qb')?.4:1;bs[4].style.opacity=cd.swk>0?.4:1}}
  const m=Math.max(0,G.clk|0);$('hud').textContent=`YOU ${G.sc[0]} - ${G.sc[1]} ${G.opp.n.slice(0,14)}   Q${G.q}${G.ot?' OT':''} ${m/60|0}:${String(m%60).padStart(2,'0')}   ${G.down} & ${G.ytg}   ${G.poss=='U'?'Your ball':'CPU ball'}   Audibles: ${G.aud}`;$('msg').textContent=G.msg}
 let last=0;function loop(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;

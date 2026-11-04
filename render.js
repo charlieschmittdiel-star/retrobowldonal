@@ -106,7 +106,7 @@ function draw(){const L=P.L,d=G.dir,b=P.b,now=performance.now()/1000;ragTick();c
  if(sel>0&&P.off[sel])gring(P.off[sel].x,P.off[sel].y,1.5,'#ffd84d',2);
  if(P.look&&G.poss!='U'&&b.st=='qb'){const q=P.off[0],l=P.look;X.strokeStyle='#ff4d4d';X.lineWidth=2;X.setLineDash([3,5]);gline(q.x,q.y,l.x,l.y);X.setLineDash([]);gring(l.x,l.y,1.4,'#ff4d4d',2)}
  // ball height
- let bz=0;if(b.st=='air'){const f=clamp(b.t/b.T,0,1),pk=Math.min(9,Math.hypot(b.tx-b.sx,b.ty-b.sy)*.18)*(b.arc||1);bz=1.2+4*pk*f*(1-f)}else if(b.st=='kick'||b.st=='cel'||b.st=='loose')bz=b.z||0;else if(b.st=='tip')bz=.6+Math.sin(Math.PI*Math.min(1,b.tt/b.T2))*2.4;else if(b.st=='qb'||b.st=='carry')bz=1.1;
+ let bz=0;if(b.st=='air'){const f=clamp(b.t/b.T,0,1),pk=Math.min(9,Math.hypot(b.tx-b.sx,b.ty-b.sy)*.18)*(b.arc||1);bz=1.2+4*pk*f*(1-f)}else if(b.st=='kick'||b.st=='cel'||b.st=='loose')bz=b.z||0;else if(b.st=='tip')bz=.6+Math.sin(Math.PI*Math.min(1,b.tt/b.T2))*(b.tipH||2.4);else if(b.st=='qb'||b.st=='carry')bz=1.1;
  if(P.aim){const t=aimT(),q=P.off[0],dd=Math.hypot(t[0]-q.x,t[1]-q.y),pk=Math.min(9,dd*.18)*(G.tt=='lob'&&typeof feat=='function'&&feat('throwT')?1.9:G.tt=='bul'&&typeof feat=='function'&&feat('throwT')?.45:1),n=Math.max(3,dd/1.5|0);X.fillStyle='#fff';
   for(let i=1;i<=n;i++){const f=i/n,s=P2(q.x+(t[0]-q.x)*f,q.y+(t[1]-q.y)*f,1.2+4*pk*f*(1-f));X.beginPath();X.arc(s[0],s[1],2.3,0,7);X.fill()}
   gring(t[0],t[1],.9,'#ffffff',2)}
