@@ -74,8 +74,8 @@ function kEnd(){const kk=P.kk,d=G.dir,u=G.poss=='U',fd=kk.fd,side=u?tAbbr(R.lg.t
   if(kk.fo<1&&(lx-recvGoal)*d<0){G.nl=clamp(lx,11,109);G.msg=`Punt goes out of bounds at the ${yl(lx)}.`}
   else if((lx-recvGoal)*d>=0){G.nl=recvGoal-d*20;G.msg='Punt into the end zone: touchback.'}
   else{const yd=(recvGoal-lx)*d;
-   if(yd<10&&kk.hang>3&&rnd()<.6){G.nl=clamp(lx,11,109);G.msg=`Punt downed at the ${yl(lx)}!`}
-   else if(kk.hang>=NF(4.2,3.4)&&rnd()<NF(.3,.5)){G.nl=clamp(lx,11,109);G.msg=`Fair catch at the ${yl(lx)}.`}
+   if(!P.prc&&yd<10&&kk.hang>3&&rnd()<.6){G.nl=clamp(lx,11,109);G.msg=`Punt downed at the ${yl(lx)}!`}
+   else if(!P.prc&&kk.hang>=NF(4.2,3.4)&&rnd()<NF(.3,.5)){G.nl=clamp(lx,11,109);G.msg=`Fair catch at the ${yl(lx)}.`}
    else{lg(`${side}: ${kname} punts ${Math.round(kk.G0*kk.fo-14)} yards.`);mo(u,-3);return kReturn(lx,kk.ly,kk.hang)}}
   lg(`${side}: ${kname} punts ${Math.round(kk.G0*kk.fo-14)} yards. ${G.msg}`);mo(u,-3);sx('whistle');G.phase='post';G.pt=2;save();ui();return}
  // field goal / extra point: did it clear the bar between the uprights?
