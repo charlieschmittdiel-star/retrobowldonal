@@ -20,7 +20,11 @@ function pcdWho(){try{if(!P||!G)return'';const n=p=>p?xNm(p):'',m=G.msg||'',q=n(
  if(c&&(!P.kr||/Returned/.test(m))&&/Gain of|Loss of|TOUCHDOWN|FIRST DOWN|Returned/.test(m))return`${c} ${/Returned/.test(m)?'returns it':'carries'}${stop}`;
  return''}catch(e){return''}}
 // merge everything collected for one play into one card
-function pcdBuild(q){const seen=new Set(),items=[];q.forEach(x=>{const k=String(x.t||'').trim();if(!k||seen.has(k))return;seen.add(k);items.push(x)});if(!items.length)return null;
+function pcdBuild(q){q=q.map(x=>{let t=String(x.t||'');
+  if(/^TACKLED IN THE END ZONE/.test(t))t='TOUCHBACK';
+  else if(t.length>=26&&G&&G.msg){const f=G.msg.split(/[.!]/)[0].toUpperCase();if(f.startsWith(t)&&f.length>t.length){const cut=f.slice(0,36);t=cut.length<f.length?cut.replace(/\s+\S*$/,''):f}}
+  return Object.assign({},x,{t})});
+ const seen=new Set(),items=[];q.forEach(x=>{const k=String(x.t||'').trim();if(!k||seen.has(k))return;seen.add(k);items.push(x)});if(!items.length)return null;
  let h=items[0];items.forEach(x=>{if(pcdPri(x.t)>pcdPri(h.t))h=x});
  const tags=[],add=t=>{if(t&&t!==h.t&&!tags.includes(t))tags.push(t)};
  items.forEach(x=>{if(x===h)return;if(/^TOUCHDOWN/.test(x.t)&&pcdPri(h.t)>=90)return;add(x.t)});
