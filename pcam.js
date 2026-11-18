@@ -34,7 +34,7 @@ function pcUpdate(){const now=performance.now()/1000,dt=Math.min(.1,PC.last?now-
  let tx=f.x,ty=f.y;if(v=='3'&&b.st=='air'&&G.poss=='U'&&f===P.off[0]){const r=b.tgt;tx=r?r.x:b.tx;ty=r?r.y:b.ty;tx=f.x+(tx-f.x)*.65;ty=f.y+(ty-f.y)*.65}
  const ch=Math.cos(h),sh=Math.sin(h),sp=Math.hypot(f.vx||0,f.vy||0),jz=f.jz||0;let c;
  if(v=='1'){const bob=sp>1.5?Math.abs(Math.sin(now*(6+sp*.6)))*.07:0,lat=(-(f.vx||0)*sh+(f.vy||0)*ch)/Math.max(4,sp+2);
-  c={x:tx-ch*.45,y:ty-sh*.45,z:1.72+jz*.9+bob-(f.fall?1.1*Math.min(1,typeof fallProg=='function'?fallProg(f):0):0),h:h+clamp(lat,-.6,.6)*.35,p:.05,f:W*.56*(PC.fx||1)}}
+  c={x:tx-ch*.45,y:ty-sh*.45,z:1.72+jz*.9+bob-(f.fall?1.1*Math.min(1,typeof fallProg=='function'?fallProg(f):0):0),h:h+(PC.hd||0)+clamp(lat,-.6,.6)*.35,p:.05,f:W*.56*(PC.fx||1)}}
  else c={x:tx-ch*9.5,y:ty-sh*9.5,z:4.4,h,p:b.st=='air'||b.st=='kick'?.13:.25,f:W*.64};
  if(!PC.c||PC.cv!==v){PC.c=c;PC.cv=v}else{const o=PC.c,tm=PC.tm||1,k=1-Math.exp(-dt*(v=='1'?22:6.5)*tm),ka=1-Math.exp(-dt*(v=='1'?9:3.6)*tm);
   o.x+=(c.x-o.x)*k;o.y+=(c.y-o.y)*k;o.z+=(c.z-o.z)*k;o.h=pcAng(o.h,c.h,ka);o.p+=(c.p-o.p)*k;o.f=c.f}
