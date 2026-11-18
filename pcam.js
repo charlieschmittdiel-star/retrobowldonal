@@ -1,17 +1,19 @@
 'use strict';
 // Player camera (football): besides the normal sideline view, a third-person camera that rides behind the player
-// you control and a first-person view from his eyes. Tab switches views during a game. In the player views the
+// you control and a first-person view from his eyes. Tab switches views during a game, among the views whose switch is on (Game features page, both off by default). In the player views the
 // field is drawn with real perspective, everyone is sorted by distance from the camera, and WASD is turned so W
 // always runs forward (downfield). The game itself still simulates on the same flat field; only drawing,
 // mouse picking, the pull-back throw and the WASD direction change. Loaded right after opts.js, before any other
 // file wraps draw(), so every later overlay (names, weather, hints) keeps working on top of it.
-{const a=['Presentation','pcam','Player camera (first and third person)','Press Tab in a game to switch between the sideline view, a third-person camera behind your player and a first-person view from his eyes. In the player views W always runs downfield and A/D go left and right.'];
- if(!FEATS.some(f=>f[1]==a[1])){let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)}}
+{const add=[['Presentation','pcam3','Third-person camera','Off by default, so the normal sideline view stays the main one. Turn it on and press Tab in a game to swing the camera behind the player you control. In the player views W always runs downfield and A/D go left and right.'],
+ ['Presentation','pcam1','First-person camera','Off by default. Turn it on and press Tab in a game to see through your player\'s eyes, with his hands and the ball at the bottom of the screen. Works together with the third-person switch: Tab cycles through whichever views are on.']];
+ add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)});DEFOFF.add('pcam3');DEFOFF.add('pcam1')}
 const PCV={s:'Sideline view',3:'Third person',1:'First person'},PCN=.25,PCSPR=.6;
-const PC={c:null,f:700,cy:270,ht:0,focus:null,on:0,msg:'',msgT:0,last:0,lk:null,cur:null,side:new WeakMap()};
-function pcView(){const v=OPT.pview;return feat('pcam')&&(v=='3'||v=='1')?v:'s'}
-function pcSet(v){OPT.pview=v;optSave();PC.msg=PCV[v]+' · Tab to switch';PC.msgT=2.2;PC.c=null}
-function pcCycle(){const v=pcView();pcSet(v=='s'?'3':v=='3'?'1':'s')}
+const PC={v:'s',c:null,f:700,cy:270,ht:0,focus:null,on:0,msg:'',msgT:0,last:0,lk:null,cur:null,side:new WeakMap()};
+const pcOn=()=>[feat('pcam3')?'3':null,feat('pcam1')?'1':null].filter(Boolean);
+function pcView(){const v=PC.v;return(v=='3'&&feat('pcam3'))||(v=='1'&&feat('pcam1'))?v:'s'}
+function pcSet(v){PC.v=v;PC.msg=PCV[v]+(pcOn().length?' · Tab to switch':'');PC.msgT=2.2;PC.c=null}
+function pcCycle(){const l=['s',...pcOn()],i=l.indexOf(pcView());pcSet(l[(i+1)%l.length])}
 // is the player camera drawing this frame? (kicks, replays and menus between games stay on the sideline view)
 function pcWant(){try{if(pcView()=='s'||!G||!P||!P.b||!P.off||!P.def)return false;const ph=G.phase;if(ph!='pre'&&ph!='motion'&&ph!='play'&&ph!='post')return false;
   if(G.rp||(P.kk&&P.b.st!='carry'))return false;if(P.b.st=='kick'&&!(P.b.c))return false;return true}catch(e){return false}}
@@ -138,11 +140,8 @@ function pcLabel(){if(PC.msgT<=0||!G)return;const ks=typeof KS=='number'?KS:1;X.
 {const _dr=draw;draw=function(){PC.on=pcWant();if(!PC.on){PC.c=null;try{_dr()}finally{PC.on=0}pcLabel();return}
  try{pcDraw()}catch(e){console.error(e);PC.on=0;_dr()}pcLabel()}}
 // ---------- Tab switches the view ----------
-addEventListener('keydown',e=>{if(e.key!=='Tab'||e.ctrlKey||e.altKey||e.metaKey)return;try{if(!G||!P||!$('modal').hidden||!feat('pcam'))return;const a=document.activeElement;if(a&&/INPUT|SELECT|TEXTAREA/.test(a.tagName))return}catch(err){return}
+addEventListener('keydown',e=>{if(e.key!=='Tab'||e.ctrlKey||e.altKey||e.metaKey)return;try{if(!G||!P||!$('modal').hidden||!pcOn().length)return;const a=document.activeElement;if(a&&/INPUT|SELECT|TEXTAREA/.test(a.tagName))return}catch(err){return}
  e.preventDefault();e.stopImmediatePropagation();pcCycle()},true);
 // the Controls page lists Tab
-addEventListener('load',()=>{try{const _cp=ctlPage;ctlPage=function(...a){const r=_cp.apply(this,a);try{if(!feat('pcam'))return r;const t=[...document.querySelectorAll('#modal table td')].find(x=>x.textContent=='Pause / lobby');
+addEventListener('load',()=>{try{const _cp=ctlPage;ctlPage=function(...a){const r=_cp.apply(this,a);try{if(!pcOn().length)return r;const t=[...document.querySelectorAll('#modal table td')].find(x=>x.textContent=='Pause / lobby');
  if(t){const n=t.parentElement.children.length;t.parentElement.insertAdjacentHTML('afterend',`<tr><td>Camera view (sideline, third person, first person)</td><td><kbd>Tab</kbd></td>${'<td></td>'.repeat(Math.max(0,n-2))}</tr>`)}}catch(e){}return r};try{$('hlp').onclick=()=>ctlPage()}catch(e){}}catch(e){}});
-// starting view picker on the Game features page
-{const _fu=featUI;featUI=function(...a){const r=_fu.apply(this,a);try{const row=[...$('modal').querySelectorAll('.feat b')].find(x=>x.textContent.startsWith('Player camera'));if(row&&feat('pcam')){const m=pcView(),it=row.closest('.feat');
-  it.insertAdjacentHTML('afterend',`<div class="feat"><div class="row">${[['s','Sideline'],['3','Third person'],['1','First person']].map(([k,n])=>`<button class="${m==k?'on':''}" onclick="pcSet('${k}');featUI()">${n}</button>`).join('')}</div><div><b>Camera view</b><span class="small">The view games start in. Tab switches during a game.</span></div></div>`)}}catch(e){}return r}}
