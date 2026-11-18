@@ -34,9 +34,9 @@ function pcUpdate(){const now=performance.now()/1000,dt=Math.min(.1,PC.last?now-
  let tx=f.x,ty=f.y;if(v=='3'&&b.st=='air'&&G.poss=='U'&&f===P.off[0]){const r=b.tgt;tx=r?r.x:b.tx;ty=r?r.y:b.ty;tx=f.x+(tx-f.x)*.65;ty=f.y+(ty-f.y)*.65}
  const ch=Math.cos(h),sh=Math.sin(h),sp=Math.hypot(f.vx||0,f.vy||0),jz=f.jz||0;let c;
  if(v=='1'){const bob=sp>1.5?Math.abs(Math.sin(now*(6+sp*.6)))*.07:0,lat=(-(f.vx||0)*sh+(f.vy||0)*ch)/Math.max(4,sp+2);
-  c={x:tx-ch*.45,y:ty-sh*.45,z:1.72+jz*.9+bob-(f.fall?1.1*Math.min(1,typeof fallProg=='function'?fallProg(f):0):0),h:h+clamp(lat,-.6,.6)*.35,p:.05,f:W*.56}}
+  c={x:tx-ch*.45,y:ty-sh*.45,z:1.72+jz*.9+bob-(f.fall?1.1*Math.min(1,typeof fallProg=='function'?fallProg(f):0):0),h:h+clamp(lat,-.6,.6)*.35,p:.05,f:W*.56*(PC.fx||1)}}
  else c={x:tx-ch*9.5,y:ty-sh*9.5,z:4.4,h,p:b.st=='air'||b.st=='kick'?.13:.25,f:W*.64};
- if(!PC.c||Math.abs(PC.c.f-c.f)>1){PC.c=c}else{const o=PC.c,k=1-Math.exp(-dt*(v=='1'?22:6.5)),ka=1-Math.exp(-dt*(v=='1'?9:3.6));
+ if(!PC.c||PC.cv!==v){PC.c=c;PC.cv=v}else{const o=PC.c,tm=PC.tm||1,k=1-Math.exp(-dt*(v=='1'?22:6.5)*tm),ka=1-Math.exp(-dt*(v=='1'?9:3.6)*tm);
   o.x+=(c.x-o.x)*k;o.y+=(c.y-o.y)*k;o.z+=(c.z-o.z)*k;o.h=pcAng(o.h,c.h,ka);o.p+=(c.p-o.p)*k;o.f=c.f}
  PC.f=PC.c.f;PC.cy=TOP-4+PC.f*Math.tan(PC.c.p);if(PC.msgT>0)PC.msgT-=dt}
 // ---------- projection ----------
@@ -122,7 +122,7 @@ function pcDraw(){const L=P.L,d=G.dir,b=P.b,now=performance.now()/1000,v=pcView(
  all.forEach(([dep,p])=>{if(p==='ball'){if(b.st=='dead'&&G.phase!='post')return;const vg=pcCS(b.x,b.y,0),vs=pcCS(b.x,b.y,bz);if(vs[2]<.6)return;const g=pcSP(vg),s=pcSP(vs),k=pcK(vs[2]);
    if(bz>1.3&&vg[2]>PCN){X.fillStyle='rgba(0,0,0,.35)';X.beginPath();X.ellipse(g[0],g[1],5*k,2*k*clamp(PC.c.z/vg[2]*2,.2,1),0,0,7);X.fill()}
    if(b.st=='qb'||b.st=='carry')return;drawBall(s,k,b,now);return}
-  if(v=='1'&&p===f)return;if(dep<(v=='1'?.9:1.2))return;
+  if(v=='1'&&p===f&&!PC.gl)return;if(dep<(v=='1'?.9:1.2))return;
   const k=pcK(dep),fa=p.fa,vc=pcCS(p.x,p.y,0);let sg=PC.side.get(p)||1;if(fa!=null){const rt=Math.sin(fa-PC.c.h);if(rt>.25)sg=1;else if(rt<-.25)sg=-1;PC.side.set(p,sg);p.fa=sg>0?0:Math.PI}
   PC.cur={y:p.y,k};PC.lk={x:p.x,y:p.y,k};try{if(p.fall&&fallProg(p)>0)drawFallen(p,now);else heads.set(p,sprite(p,now))}catch(e){console.error(e)}finally{p.fa=fa;PC.cur=null}});
  DUST.forEach(q=>{const vv=pcCS(q.x,q.y,0);if(vv[2]<PCN)return;const s=pcSP(vv),a=1-q.t/q.life,k=pcK(vv[2])/PCSPR;X.fillStyle=`rgba(214,196,150,${(a*.55).toFixed(2)})`;X.beginPath();X.ellipse(s[0],s[1]-2*k,(q.r+q.t*1.4)*S*k,(q.r+q.t*1.4)*S*k*.35,0,0,7);X.fill()});
@@ -130,7 +130,7 @@ function pcDraw(){const L=P.L,d=G.dir,b=P.b,now=performance.now()/1000,v=pcView(
  heads.forEach((hy,p)=>{const s=P2(p.x,p.y);if(p.ml>0&&G.phase=='play'&&!(typeof lwHide=='function'&&lwHide(p))){X.fillStyle='#ffd84d';X.fillText(p.mv,s[0],hy-4)}});
  [ctl,b.st=='carry'?b.c:null].forEach((p,i)=>{if(!p||(i==1&&p==ctl)||!heads.has(p))return;const s=P2(p.x,p.y),hy=heads.get(p),vv=(p.stm==null?100:p.stm)/100;X.fillStyle='#000a';X.fillRect(s[0]-14,hy-14,28,5);X.fillStyle=vv>.3?'#4ade80':vv>.1?'#fbbf24':'#ef4444';X.fillRect(s[0]-13,hy-13,26*vv,3)});
  if(P.look&&G.poss!='U'&&b.st=='qb'){const vv=pcCS(P.look.x,P.look.y,0);if(vv[2]>PCN){const s=pcSP(vv);X.fillStyle='#ff4d4d';X.fillText('QB EYES',s[0],s[1]-30)}}
- if(v=='1'&&f)pcHands(f,now);
+ if(v=='1'&&f&&!PC.gl)pcHands(f,now);
  if(ctl&&G.phase=='play'){const vv=(ctl.stm==null?100:ctl.stm)/100;X.fillStyle='#000a';X.fillRect(W-170,6,160,20);X.fillStyle=vv>.3?'#4ade80':vv>.1?'#fbbf24':'#ef4444';X.fillRect(W-168,8,156*vv,16);X.fillStyle='#fff';X.font='bold 11px sans-serif';X.textAlign='right';X.fillText('STAMINA',W-14,20)}
  X.textAlign='left';
  if(G.poss!='U'&&cd){const bs=$('dctl').children;if(bs[3]){bs[1].style.opacity=cd.hk>0?.4:1;bs[2].style.opacity=cd.hcool>0?.4:1;bs[3].style.opacity=(cd.pr||P.t>1.6||P.b.st!='qb')?.4:1;if(bs[4])bs[4].style.opacity=cd.swk>0?.4:1}}
