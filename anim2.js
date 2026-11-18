@@ -5,8 +5,10 @@
 {const add=[['Presentation','run2','Smoother running','More knee lift and arm pump, leaning in at full speed and sitting back when slowing down.'],
  ['Presentation','cel2','More celebrations','New end-zone celebrations, teammates run over for chest bumps, and the other team hangs its head.'],
  ['Presentation','side2','Sideline reactions','The bench and coaches react to bad plays too: hands on helmets when the other team scores.'],
+ ['Presentation','qbpt','QB points on your defense','Before the snap on defense, the CPU quarterback points out your defense (this slows the pre-snap down). Off by default; on offense your QB still does it.'],
  ['Presentation','pre2','Pre-snap life','Before the snap the QB points out the defense, receivers and backs settle, linemen adjust and defensive backs bounce.']];
- add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
+ DEFOFF.add('qbpt');
+add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
 const CEL2=['salute','bow','shuffle','point','leap'];
 {const _ps=pose;pose=function(p,t,line){const o=_ps(p,t,line);try{
  const ph=G?G.phase:'',b=P&&P.b,an=p.an&&p.an.t<p.an.d?p.an:null,sp=Math.hypot(p.vx||0,p.vy||0),pre=ph=='pre'||ph=='motion';
@@ -29,7 +31,7 @@ const CEL2=['salute','bow','shuffle','point','leap'];
   else if(p.t!==c.p.t&&!p.fall&&p._sad){if(p._sad==1){o.l=1.9;o.d=1.2;o.A[1]=[[1.4,5.6],[1.6,3.6]];o.A[0]=[[.4,5.6],[.6,3.6]]}else{o.A[1]=[[1.6,10],[.6,11.2]];o.A[0]=[[-1,10],[0,11.2]]}}}
  // pre-snap life
  if(feat('pre2')&&ph=='pre'&&P&&!P.kk&&!line){const h=(p.i*37+(p.s=='O'?0:11))%7;
-  if(P.off[0]===p&&p.s=='O'){const k=(t*.4+h*.13)%1;if(k<.22){const ax=k<.11?1:0;o.A[1]=[[1.8,8.6],[3.3,8.9-ax*.4]]}}
+  if(P.off[0]===p&&p.s=='O'){const k=(t*.4+h*.13)%1;if(k<.22&&(G.poss=='U'||feat('qbpt'))){const ax=k<.11?1:0;o.A[1]=[[1.8,8.6],[3.3,8.9-ax*.4]]}}
   else if(p.s=='O'&&p.i<6){o.d+=Math.sin(t*1.6+h)*.12}
   else if(p.s=='D'&&p.i>=7){const k=Math.sin(t*5.5+h);o.d=Math.max(0,o.d+k*.18);o.F=[[.9,Math.max(0,k)*.35],[-.7,Math.max(0,-k)*.35]]}
   else if(p.s=='D'&&p.i>=4){const k=Math.sin(t*2.2+h);if(Math.abs(k)>.92)o.F=[[.9+k*.4,.3],[-.7,0]]}}
