@@ -3,20 +3,22 @@
 //  - Wide first-person view: a wider field of view that opens up a bit more for the quarterback and when running fast.
 //  - First-person throw help: a tag over every receiver (arrows at the screen edge when one is out of view), and the
 //    pull-back throw gently pulls toward the receiver nearest your aim.
-//  - First-person view follows the QB's head: the camera turns with his head (toward the aim, or over his shoulder on the run).
+//  - First-person view turns with the player: the QB's head turn, and everyone else's facing (a defender turned around sees backwards).
 //  - Smooth player switching: when the camera moves to a different player it glides over instead of jumping, with a
 //    short fade for long jumps such as a new play.
 // It wraps pcUpdate(), aimT() and draw() from pcam.js (plus a few tiny hooks there), so the original code stays as it was.
 {const add=[['Presentation','pcfov','Wide first-person view','On by default. Opens the first-person view up so you can see much more of the field, and a little wider still when you are the quarterback or sprinting. It only changes how much you can see, never ratings or physics.'],
  ['Presentation','pcthrow','First-person throw help','On by default. As the quarterback in first person you see a numbered tag over every receiver (an arrow at the screen edge when one is out of view), and the pull-back throw gently pulls toward the receiver nearest your aim. The slingshot throw works exactly as before.'],
- ['Presentation','pchead','First-person view follows the QB\'s head','On by default. As the quarterback in first person, your view turns the way his head turns (toward your aim while you pull back to throw, and over his shoulder when he runs and looks to the side), just like the third-person quarterback. W, A, S and D still run relative to downfield.'],
+ ['Presentation','pchead','First-person view turns with the player','On by default. In first person your view turns the way your player is facing. The quarterback looks where his head turns (toward your aim while you pull back to throw), and every other player looks where his body faces, so a defender running downfield with his back to the play sees backwards. W, A, S and D still run relative to downfield.'],
  ['Presentation','pctrans','Smooth player switching (player cameras)','On by default. When the player camera moves to a different player (a catch, a handoff, an interception, a defender switch) it glides over instead of jumping, and long jumps like a new play dissolve from black.']];
  add.forEach(a=>{if(FEATS.some(f=>f[1]==a[1]))return;let i=-1;FEATS.forEach((f,j)=>{if(f[0]==a[0])i=j});FEATS.splice(i<0?FEATS.length:i+1,0,a)})}
 const PC2={t:0,fx:null,tr:null,d:.5,f:null,x:0,y:0,at:0,fade:0,snap:null};
 // ---------- every frame, just before the camera moves ----------
 function pcPre(){const now=performance.now()/1000,dt=Math.min(.1,PC2.t?now-PC2.t:1/60);PC2.t=now;const v=pcView(),f=pcFocus(),b=P.b;if(!f)return;
- // head turn: the QB's view turns with his head (up to about 80 degrees), the same angle the third-person QB uses
- if(v=='1'&&feat('pchead')&&f===P.off[0]&&f.s=='O'&&G.poss=='U'&&(b.st=='qb'||b.st=='pre')&&typeof qLook=='function'){const hd=qLook(f)-pcHeading(f);PC.hd=clamp(Math.atan2(Math.sin(hd),Math.cos(hd)),-1.4,1.4)}else PC.hd=0
+ // head turn: the view turns with the player's head/body. The QB uses the same angle his third-person head uses (up to about 80 degrees);
+ // everyone else looks the way he is facing, so a defender running downfield with his back to the play sees backwards.
+ PC.hd=0;if(v=='1'&&feat('pchead')&&!f.fall){const qbv=f===P.off[0]&&f.s=='O'&&G.poss=='U'&&(b.st=='qb'||b.st=='pre')&&typeof qLook=='function',a=qbv?qLook(f):f.fa;
+  if(a!=null&&isFinite(a)){const hd=a-pcHeading(f);PC.hd=Math.atan2(Math.sin(hd),Math.cos(hd));if(qbv)PC.hd=clamp(PC.hd,-1.4,1.4)}}
  // field of view (the normal first-person lens is 0.56 of the screen width; smaller is wider)
  if(v=='1'&&feat('pcfov')){const qb=(b.st=='qb'||b.st=='pre')&&f===P.off[0]&&f.s=='O',car=b.st=='carry'&&b.c===f,sp=Math.hypot(f.vx||0,f.vy||0),t=((qb?.34:car?.4:.43)-Math.min(.03,sp*.004))/.56;
   PC2.fx=PC2.fx==null?t:PC2.fx+(t-PC2.fx)*(1-Math.exp(-dt*4));PC.fx=PC2.fx}
