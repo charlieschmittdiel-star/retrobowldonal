@@ -51,14 +51,14 @@ function hdGetOut(){const C=HD.car;if(!C)return;if(Math.abs(C.v)>60)return hdToa
  const spots=[[-s*30,c*30],[s*30,-c*30],[-c*44,-s*44],[c*44,s*44],[-s*46,c*46],[s*46,-c*46]];const o=spots.find(([dx,dy])=>!hdSolid(C.x+dx,C.y+dy,10));if(!o)return hdToast('No room to get out here.');
  C.v=0;HD.drive=0;HD.me.x=C.x+o[0];HD.me.y=C.y+o[1];HD.me.a=C.a;hdCarSave();hdKeysTxt()}
 function hdCarStep(dt){const C=HD.car,me=HD.me;if(!C||!feat('cars')){HD.drive=0;hdKeysTxt();return}const K=HD_CAR[C.id],h=HCAR();let gas=hdGas(C.id);
- const thr=HD.pan?0:(HDK.w?1:0)-(HDK.s?1:0),st=HD.pan?0:(HDK.d?1:0)-(HDK.a?1:0),road=hdOnRoad(C.x,C.y),top=K.top*(road?1:(K.grass||.55))*(gas<=0?.2:1);
+ const thr=HD.pan?0:(HDK.w?1:0)-(HDK.s?1:0),st=HD.pan?0:(HDK.d?1:0)-(HDK.a?1:0),road=hdOnRoad(C.x,C.y),top=K.top*(road?1:(K.grass||.55))*(gas<=0?.2:1)*(typeof hdCarMul=='function'?hdCarMul(C):1);
  if(thr>0)C.v+=(C.v<0?900:K.acc)*dt;else if(thr<0)C.v-=(C.v>0?900:K.acc*.6)*dt;else C.v*=Math.max(0,1-1.1*dt);
  if(HDK[' ']&&!HD.pan)C.v*=Math.max(0,1-4*dt);if(Math.abs(C.v)<4&&!thr)C.v=0;
  if(C.v>top)C.v=Math.max(top,C.v-900*dt);if(C.v<-top*.35)C.v=-top*.35;
  C.a+=st*dt*2.7*clamp(C.v/170,-1,1);
  const nx=C.x+Math.cos(C.a)*C.v*dt,ny=C.y+Math.sin(C.a)*C.v*dt;
  if(hdCarFree(nx,ny,C.a)){const d=Math.hypot(nx-C.x,ny-C.y);C.x=nx;C.y=ny;gas=Math.max(0,gas-d/K.rng*100);h.gas[C.id]=Math.round(gas*100)/100}
- else{if(Math.abs(C.v)>220)hdToast('Bonk!');C.v*=-.3}
+ else{const imp=Math.abs(C.v);if(imp>220)hdToast('Bonk!');C.v*=-.3;if(typeof hdCrash=='function')hdCrash(C,imp)}
  me.x=C.x;me.y=C.y;me.a=C.a;me.mv=0;HD.hudT+=dt*3;if(HD.horn>0)HD.horn-=dt;if(HD.wreck>0)HD.wreck-=dt;
  // people on the sidewalk: a fancy ride gets noticed, a near miss gets filmed
  const sp=Math.abs(C.v);HD.npc.forEach(n=>{const dd=Math.hypot(n.x-C.x,n.y-C.y);
@@ -89,7 +89,7 @@ function hdBuyCar(id){const K=HD_CAR[id],h=HCAR();if(!K||h.cars[id])return hdDea
  hdDealer(`The ${K.n.toLowerCase()} is yours. It's parked out front: walk to it and press F to get in.`)}
 function hdRideSet(id,where){const h=HCAR();if(!h.cars[id])return;h.ride=id;hdCarPlace(where=='dealer'?HD_DEALSPOT:HD_HOMESPOT);save();hdKeysTxt();
  if(where=='dealer')hdDealer(`Your ${HD_CAR[id].n.toLowerCase()} is out front.`);else hdHome(`Your ${HD_CAR[id].n.toLowerCase()} is parked at the curb.`)}
-function hdSell(id){const K=HD_CAR[id],h=HCAR();if(!K||!h.cars[id])return hdDealer();const v=hdC(K.p*HD_SELL);if(!confirm(`Sell your ${K.n.toLowerCase()} for ${HM$(v)}?`))return hdDealer();
+function hdSell(id){const K=HD_CAR[id],h=HCAR();if(!K||!h.cars[id])return hdDealer();const v=hdC(K.p*HD_SELL*(typeof hdSellMul=='function'?hdSellMul(id):1));if(!confirm(`Sell your ${K.n.toLowerCase()} for ${HM$(v)}?`))return hdDealer();
  delete h.cars[id];delete h.gas[id];hdPay(`Sold a car: ${K.n}`,v);if(h.ride==id){h.ride=null;h.car=null;if(HD)HD.car=null}save();hdKeysTxt();hdDealer(`Sold for ${HM$(v)}.`)}
 function hdFuel(note){const h=HCAR(),id=h.ride,K=id&&HD_CAR[id];if(!K)return hdPanel('gas','⛽ Fuel Stop','<p>You don\'t have a car yet. Miller Motors sells them.</p>',note);
  const g=Math.round(hdGas(id)),cost=hdFillCost(id),C=HD.car,at=HD.drive&&C&&hdAtPump(C.x,C.y);
@@ -101,7 +101,7 @@ function hdFuel(note){const h=HCAR(),id=h.ride,K=id&&HD_CAR[id];if(!K)return hdP
 function hdFill(truck){const h=HCAR(),id=h.ride;if(!id)return hdFuel();const cost=hdFillCost(id)+(truck?.01:0);if(!cost)return hdFuel();if(!hdCan(cost))return hdFuel('Not enough money yet.');
  hdPay(truck?`Fuel truck: ${HD_CAR[id].n}`:`Gas: ${HD_CAR[id].n}`,-cost);h.gas[id]=100;save();hdFuel('Tank full.')}
 {const _hh=hdHome;hdHome=function(...a){const r=_hh.apply(this,a);try{const pb=$('hdpan')&&$('hdpan').querySelector('.hdpb');if(!pb||!feat('cars'))return r;const h=HCAR(),ids=Object.keys(h.cars).filter(id=>HD_CAR[id]);
- pb.insertAdjacentHTML('beforeend',`<h3>Garage</h3>`+(ids.length?ids.map(id=>{const K=HD_CAR[id];return hdRow(`${hdSw(K.c)}${K.n}`,`Gas ${Math.round(hdGas(id))}%. ${hdCarPerks(K)}.`,'',h.ride==id?'<span class="good">Your ride</span>':hdBtn(`hdRideSet('${id}','home')`,'Drive this one'),h.ride==id?'own':'')}).join(''):'<p class="dim">No cars yet. Miller Motors is across the street.</p>'))}catch(e){console.error(e)}return r}}
+ pb.insertAdjacentHTML('beforeend',`<h3>Garage</h3>`+(ids.length?ids.map(id=>{const K=HD_CAR[id];return hdRow(`${hdSw(K.c)}${K.n}`,`Gas ${Math.round(hdGas(id))}%.${typeof hdCondTxt=='function'?hdCondTxt(id):''} ${hdCarPerks(K)}.`,'',h.ride==id?'<span class="good">Your ride</span>':hdBtn(`hdRideSet('${id}','home')`,'Drive this one'),h.ride==id?'own':'')}).join(''):'<p class="dim">No cars yet. Miller Motors is across the street.</p>'))}catch(e){console.error(e)}return r}}
 {const _ha=hdAgency;hdAgency=function(...a){const r=_ha.apply(this,a);try{const pb=$('hdpan')&&$('hdpan').querySelector('.hdpb'),K=hdRide();if(pb&&K&&K.spon)pb.insertAdjacentHTML('beforeend',`<p class="small good">Your ${K.n.toLowerCase()} adds +${Math.round(K.spon*100)}% to new sponsor offers.</p>`)}catch(e){console.error(e)}return r}}
 // ---------- after every game: upkeep for every car you own, fame from your ride ----------
 {const _cx=careerXP;careerXP=function(...a){const r=_cx.apply(this,a);try{if(CAR()&&R.me&&feat('hood')&&feat('cars')&&R.hood&&R.hood.cars){const h=HCAR(),ids=Object.keys(h.cars).filter(id=>HD_CAR[id]);
