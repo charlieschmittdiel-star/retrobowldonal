@@ -160,17 +160,17 @@ function hoodUI(){if(!CAR()||!R.me)return careerHub();if(G&&G.live)return;
  HD={on:1,cv:$('hdc'),me:{x:pos[0],y:pos[1],a:Math.PI/2,ph:0,mv:0,jk:0,jx:0,jy:0,spin:0},npc:hdNpcs(),pan:null,near:null,zone:null,t:0,last:0,hudT:9,look:hdLook(),msgT:0,cam:[0,0],Z:1};
  hdResize();hdHud();hdToast(h.log.length?`Welcome back. You have ${HM$(R.money||0)}.`:`Welcome to the Neighborhood. Walk with WASD, press E at a door to go inside.`);
  requestAnimationFrame(hdFrame)}
-function hoodClose(){if(!HD)return;const h=HDS();h.pos=[Math.round(HD.me.x),Math.round(HD.me.y)];HD.on=0;HD=null;const el=$('hood');if(el)el.remove();for(const k in HDK)HDK[k]=0;save();careerHub()}
+function hoodClose(){if(!HD)return;const h=HDS();try{if(typeof hdCarSave=='function')hdCarSave()}catch(e){console.error(e)}h.pos=[Math.round(HD.me.x),Math.round(HD.me.y)];HD.on=0;HD=null;const el=$('hood');if(el)el.remove();for(const k in HDK)HDK[k]=0;save();careerHub()}
 function hdResize(){if(!HD)return;const c=HD.cv,dpr=Math.min(2,globalThis.devicePixelRatio||1),w=innerWidth,h=innerHeight;c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c.style.width=w+'px';c.style.height=h+'px';HD.dpr=dpr;HD.Z=clamp(Math.min(w/1150,h/680),.75,1.5)}
 addEventListener('resize',()=>{try{hdResize()}catch(e){}});
 function hdFrame(ts){if(!HD||!HD.on)return;const dt=HD.last?Math.min(.05,(ts-HD.last)/1000):0;HD.last=ts;try{hdStep(dt);hdDraw()}catch(e){console.error(e)}requestAnimationFrame(hdFrame)}
 function hdStep(dt){const me=HD.me;HD.t+=dt;if(HD.msgT>0&&(HD.msgT-=dt)<=0){const m=$('hdmsg');if(m)m.classList.remove('on')}
- let dx=0,dy=0;if(!HD.pan){dx=(HDK.d?1:0)-(HDK.a?1:0);dy=(HDK.s?1:0)-(HDK.w?1:0)}const l=Math.hypot(dx,dy),run=HDK.shift?1:0,sp=run?330:200;
+ if(HD.drive&&typeof hdCarStep=='function')hdCarStep(dt);else{let dx=0,dy=0;if(!HD.pan){dx=(HDK.d?1:0)-(HDK.a?1:0);dy=(HDK.s?1:0)-(HDK.w?1:0)}const l=Math.hypot(dx,dy),run=HDK.shift?1:0,sp=run?330:200;
  let vx=l?dx/l*sp:0,vy=l?dy/l*sp:0;if(me.jk>0){me.jk-=dt;vx+=me.jx;vy+=me.jy}if(me.spin>0){me.spin-=dt;me.a+=dt*18;vx*=1.15;vy*=1.15}
  const nx=me.x+vx*dt,ny=me.y+vy*dt;if(!hdSolid(nx,me.y,10))me.x=nx;if(!hdSolid(me.x,ny,10))me.y=ny;
- me.mv=l?1:0;if(l){me.ph+=dt*(run?17:12);if(me.spin<=0){let df=Math.atan2(dy,dx)-me.a;df=Math.atan2(Math.sin(df),Math.cos(df));me.a+=df*Math.min(1,dt*14)}}else me.ph*=.8;
+ me.mv=l?1:0;if(l){me.ph+=dt*(run?17:12);if(me.spin<=0){let df=Math.atan2(dy,dx)-me.a;df=Math.atan2(Math.sin(df),Math.cos(df));me.a+=df*Math.min(1,dt*14)}}else me.ph*=.8}
  // the closest door
- let best=null,bd=60;HDBLD.forEach(b=>{const d=hdDoor(b),dd=Math.hypot(me.x-d[0],me.y-d[1]);if(dd<bd){bd=dd;best=b}});HD.near=best;
+ let best=null,bd=60;HDBLD.forEach(b=>{const d=hdDoor(b),dd=Math.hypot(me.x-d[0],me.y-d[1]);if(dd<bd){bd=dd;best=b}});HD.near=HD.drive?null:best;
  const z=HDZONE.find(z=>me.x>z.x&&me.x<z.x+z.w&&me.y>z.y&&me.y<z.y+z.h);if(z&&HD.zone!==z.k)hdToast(`${z.n}: pickup games open in a later update.`);HD.zone=z?z.k:null;
  // people on the sidewalks (they know you once you're famous)
  const f=fame(),p=meRow(),first=p?p.n.split(' ')[0]:'',tn=R.lg.t[0].n;
@@ -185,20 +185,20 @@ function hdStep(dt){const me=HD.me;HD.t+=dt;if(HD.msgT>0&&(HD.msgT-=dt)<=0){cons
 function hdDraw(){const c=HD.cv,g=c.getContext('2d');if(!g||!g.drawImage)return;const Z=HD.Z*HD.dpr,[cx,cy]=HD.cam,vw=c.width/Z,vh=c.height/Z;
  g.setTransform(1,0,0,1,0,0);g.fillStyle='#2d5a27';g.fillRect(0,0,c.width,c.height);g.setTransform(Z,0,0,Z,-cx*Z,-cy*Z);
  const sx=Math.max(0,cx),sy=Math.max(0,cy),sw=Math.min(HDW-sx,vw+2),sh=Math.min(HDH-sy,vh+2);if(sw>0&&sh>0)g.drawImage(hdBake(),sx,sy,sw,sh,sx,sy,sw,sh);
- const me=HD.me,all=HD.npc.map(n=>[n.y,()=>hdPerson(g,n.x,n.y,n.a,n.stop>0?0:n.ph,n.o)]);all.push([me.y,()=>hdPerson(g,me.x,me.y,me.a,me.ph,HD.look)]);all.sort((a,b)=>a[0]-b[0]).forEach(a=>a[1]());
- HD.npc.forEach(n=>{if(n.sayT>0&&n.say)hdBubble(g,n.x,n.y-26,n.say)});
+ const me=HD.me,all=HD.npc.map(n=>[n.y,()=>hdPerson(g,n.x,n.y,n.a,n.stop>0?0:n.ph,n.o)]);if(!HD.drive)all.push([me.y,()=>hdPerson(g,me.x,me.y,me.a,me.ph,HD.look)]);if(typeof hdCarDraw=='function')hdCarDraw(g,all);all.sort((a,b)=>a[0]-b[0]).forEach(a=>a[1]());
+ HD.npc.forEach(n=>{if(n.sayT>0&&n.say)hdBubble(g,n.x,n.y-26,n.say)});if(typeof hdCarUI=='function')hdCarUI(g);
  if(HD.near&&!HD.pan){const b=HD.near,d=hdDoor(b),pulse=.5+.5*Math.sin(HD.t*5);g.strokeStyle=`rgba(255,216,77,${.5+pulse*.5})`;g.lineWidth=3;g.beginPath();g.arc(d[0],d[1],16+pulse*3,0,7);g.stroke();
   hdBubble(g,me.x,me.y-30,b.soon?`${b.n}: coming soon`:`E  ${b.n}`,1)}}
 function hdBubble(g,x,y,t,key){g.font='bold 14px "Trebuchet MS",sans-serif';const w=g.measureText(t).width+16;g.fillStyle=key?'#ffd84d':'#ffffffee';hdRR(g,x-w/2,y-24,w,24,8);g.fill();
  g.beginPath();g.moveTo(x-6,y);g.lineTo(x+6,y);g.lineTo(x,y+7);g.fill();g.fillStyle='#111827';g.textAlign='center';g.textBaseline='middle';g.fillText(t,x,y-12)}
 function hdToast(t){const m=$('hdmsg');if(!m||!HD)return;m.textContent=t;m.classList.add('on');HD.msgT=3.2}
 function hdHud(){if(!HD)return;HD.hudT=0;const el=$('hdhud'),p=meRow();if(!el||!p)return;const f=fame(),h=HDS(),meal=h.meal&&HD_MEAL[h.meal];
- const s=`<div class="hdbox">${typeof pface=='function'?pface(p,38):''}<div><b>${esc(p.n)}</b><span class="hdm">${HM$(R.money||0)}</span><span>Fame ${f} · ${FAMEN(f)}</span><span class="small">${hdWeekTxt()} · paycheck ${HM$(hdPayWk())} a game${meal?` · next meal: ${meal[0]}`:''}</span></div></div>`;
+ const s=`<div class="hdbox">${typeof pface=='function'?pface(p,38):''}<div><b>${esc(p.n)}</b><span class="hdm">${HM$(R.money||0)}</span><span>Fame ${f} · ${FAMEN(f)}</span><span class="small">${hdWeekTxt()} · paycheck ${HM$(hdPayWk())} a game${meal?` · next meal: ${meal[0]}`:''}</span>${typeof hdHudX=='function'?hdHudX():''}</div></div>`;
  if(el.innerHTML!==s)el.innerHTML=s}
 // ---------- keys (only while the map is open; everything else in the game is left alone) ----------
 addEventListener('keydown',e=>{if(!HD||!HD.on)return;const tg=e.target&&e.target.tagName;if(tg=='INPUT'||tg=='SELECT'||tg=='TEXTAREA')return;
  const k=e.key.toLowerCase();e.stopImmediatePropagation();if(k==' '||k.startsWith('arrow')||k=='tab')e.preventDefault();HDK[k]=1;if(e.repeat)return;
- if(k=='escape'){if(HD.pan)hdPanClose();else hoodClose();return}if(k=='h'){if(HD.pan=='wallet')hdPanClose();else hdWallet();return}if(HD.pan)return;
+ if(k=='escape'){if(HD.pan)hdPanClose();else hoodClose();return}if(k=='h'){if(HD.pan=='wallet')hdPanClose();else hdWallet();return}if(HD.pan)return;if(typeof hdCarKey=='function'&&hdCarKey(k))return;
  if((k=='e'||k=='enter')&&HD.near)return hdEnter(HD.near.k);
  const me=HD.me;if((k=='arrowup'||k=='arrowdown')&&me.jk<=0){const s=k=='arrowup'?-1:1,pa=me.a+s*Math.PI/2;me.jk=.16;me.jx=Math.cos(pa)*520;me.jy=Math.sin(pa)*520}
  if((k=='arrowleft'||k=='arrowright')&&me.spin<=0)me.spin=.35},true);
