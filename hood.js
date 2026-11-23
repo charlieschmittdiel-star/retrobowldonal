@@ -99,7 +99,7 @@ function hdBake(){if(HD_BAKE)return HD_BAKE;const c=document.createElement('canv
  // football sandlot
  {const z=HDZONE[2];F('#4f9a43',z.x,z.y,z.w,z.h);F('#1d4ed8aa',z.x,z.y,46,z.h);F('#b91c1caa',z.x+z.w-46,z.y,46,z.h);g.fillStyle='#f8fafc';
   for(let x=z.x+46;x<=z.x+z.w-46;x+=42)F('#f8fafcbb',x-1,z.y+6,3,z.h-12);g.strokeStyle='#f8fafc';g.lineWidth=3;g.strokeRect(z.x+2,z.y+2,z.w-4,z.h-4)}
- HDZONE.forEach(z=>hdSign(g,z.x+z.w/2,z.y-16,`${z.n} · coming soon`,15,'#5b3a1ecc'));
+ HDZONE.forEach(z=>hdSign(g,z.x+z.w/2,z.y-16,typeof hdZoneSign=='function'?hdZoneSign(z):`${z.n} · coming soon`,15,'#5b3a1ecc'));
  // parking lot and parked cars (decoration for now)
  F('#4b5058',680,840,400,330);g.strokeStyle='#e5e7ebaa';g.lineWidth=2;for(let y=840;y<=1170;y+=100){g.beginPath();g.moveTo(690,y);g.lineTo(820,y);g.moveTo(860,y);g.lineTo(1000,y);g.stroke()}
  HDCARS.forEach(o=>hdCarTop(g,o.x+o.w/2,o.y+o.h/2,0,o.c));
@@ -171,7 +171,7 @@ function hdStep(dt){const me=HD.me;HD.t+=dt;if(HD.msgT>0&&(HD.msgT-=dt)<=0){cons
  me.mv=l?1:0;if(l){me.ph+=dt*(run?17:12);if(me.spin<=0){let df=Math.atan2(dy,dx)-me.a;df=Math.atan2(Math.sin(df),Math.cos(df));me.a+=df*Math.min(1,dt*14)}}else me.ph*=.8}
  // the closest door
  let best=null,bd=60;HDBLD.forEach(b=>{const d=hdDoor(b),dd=Math.hypot(me.x-d[0],me.y-d[1]);if(dd<bd){bd=dd;best=b}});HD.near=HD.drive?null:best;
- const z=HDZONE.find(z=>me.x>z.x&&me.x<z.x+z.w&&me.y>z.y&&me.y<z.y+z.h);if(z&&HD.zone!==z.k)hdToast(`${z.n}: pickup games open in a later update.`);HD.zone=z?z.k:null;
+ const z=HDZONE.find(z=>me.x>z.x&&me.x<z.x+z.w&&me.y>z.y&&me.y<z.y+z.h);if(z&&HD.zone!==z.k&&!HD.drive)hdToast(typeof hdZoneMsg=='function'?hdZoneMsg(z):`${z.n}: pickup games open in a later update.`);HD.zone=z?z.k:null;
  // people on the sidewalks (they know you once you're famous)
  const f=fame(),p=meRow(),first=p?p.n.split(' ')[0]:'',tn=R.lg.t[0].n;
  HD.npc.forEach(n=>{if(n.stop>0)n.stop-=dt;else{const w=n.w,len=Math.hypot(w[2]-w[0],w[3]-w[1]);n.f+=n.d*n.sp*dt/len;if(n.f>1||n.f<0){n.f=clamp(n.f,0,1);n.d*=-1}if(rnd()<dt*.08)n.stop=1+rnd()*2;
@@ -197,7 +197,7 @@ function hdHud(){if(!HD)return;HD.hudT=0;const el=$('hdhud'),p=meRow();if(!el||!
  if(el.innerHTML!==s)el.innerHTML=s}
 // ---------- keys (only while the map is open; everything else in the game is left alone) ----------
 addEventListener('keydown',e=>{if(!HD||!HD.on)return;const tg=e.target&&e.target.tagName;if(tg=='INPUT'||tg=='SELECT'||tg=='TEXTAREA')return;
- const k=e.key.toLowerCase();e.stopImmediatePropagation();if(k==' '||k.startsWith('arrow')||k=='tab')e.preventDefault();HDK[k]=1;if(e.repeat)return;
+ const k=e.key.toLowerCase();e.stopImmediatePropagation();if(k==' '||k.startsWith('arrow')||k=='tab')e.preventDefault();HDK[k]=1;if(typeof hdKeyHook=='function'&&hdKeyHook(k,e))return;if(e.repeat)return;
  if(k=='escape'){if(HD.pan)hdPanClose();else hoodClose();return}if(k=='h'){if(HD.pan=='wallet')hdPanClose();else hdWallet();return}if(HD.pan)return;if(typeof hdCarKey=='function'&&hdCarKey(k))return;
  if((k=='e'||k=='enter')&&HD.near)return hdEnter(HD.near.k);
  const me=HD.me;if((k=='arrowup'||k=='arrowdown')&&me.jk<=0){const s=k=='arrowup'?-1:1,pa=me.a+s*Math.PI/2;me.jk=.16;me.jx=Math.cos(pa)*520;me.jy=Math.sin(pa)*520}

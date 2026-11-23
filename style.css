@@ -232,3 +232,11 @@ body.trn #sb,body.trn #sb2,body.trn #pbp,body.trn #tip,body.trn #lt,body.trn #ac
 #hood .stats3,.pg .hdlog{margin-top:6px}#hood .stats3{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}#hood .stats3>div{background:#ffffff0d;border-radius:8px;padding:8px;text-align:center;display:flex;flex-direction:column}#hood .stats3 b{color:#ffd84d;font-size:18px}#hood .stats3 span{font-size:12px;opacity:.8}
 #hood table{width:100%;border-collapse:collapse;font-size:13px}#hood th,#hood td{padding:5px 6px;border-bottom:1px solid #ffffff12;text-align:left}#hood td.num,#hood th.num{text-align:right}
 .pg td.l{color:#ff8f7a}
+
+/* street pickup games (street.js, smini.js) */
+#hood .sgres{display:flex;flex-direction:column;align-items:center;margin:10px 0}#hood .sgres b{font:800 44px "Trebuchet MS",sans-serif;color:#ffd84d}#hood .sgres span{opacity:.8}
+#smw{position:absolute;inset:0;z-index:5;background:#1f3d1b}#smw canvas{position:absolute;left:0;top:0;display:block}
+#smhud{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#0b1626e8;border:1px solid #ffffff30;border-radius:10px;padding:6px 18px;display:flex;gap:14px;align-items:baseline;white-space:nowrap;pointer-events:none}
+#smhud b{color:#ffd84d;font-size:20px}#smhud span{font-size:14px;color:#e2e8f0}#smhud .small{font-size:12px;color:#cbd5e1}
+#smmsg{position:absolute;top:62px;left:50%;transform:translateX(-50%);background:#000c;padding:5px 16px;border-radius:12px;font-size:16px;opacity:0;transition:opacity .25s;pointer-events:none}#smmsg.on{opacity:1}
+#smkeys{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);max-width:94vw;text-align:center;background:#0b1626e0;border:1px solid #ffffff2a;border-radius:9px;padding:5px 14px;font-size:13px;color:#cbd5e1;pointer-events:none}
